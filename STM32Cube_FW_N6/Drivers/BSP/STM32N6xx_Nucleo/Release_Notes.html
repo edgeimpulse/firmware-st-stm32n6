@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Release Notes for STM32N6xx_Nucleo</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for">Release Notes for</h1>
+<h1 id="stm32n6xx_nucleo"><mark>STM32N6xx_Nucleo</mark></h1>
+<p>Copyright © 2023 STMicroelectronics<br />
+</p>
+<a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<p>This driver provides a set of functions to manage:</p>
+<ul>
+<li>LEDs, push-button, Virtual Com Port (VCP), USB-PD and external memory access on STM32N6xx_Nucleo Kit from STMicroelectronics</li>
+</ul>
+</div>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section6" checked aria-hidden="true"> <label for="collapse-section6" checked aria-hidden="true"><strong>V0.3.1 / 26-July-2024</strong></label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<h3 id="patch-release-of-stm32n6xx_nucleo-bsp-board-drivers">Patch release of <strong>STM32N6xx_Nucleo</strong> BSP board drivers</h3>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Changes compared with V0.3.0 release
+<ul>
+<li>Add Nucleo revC board support
+<ul>
+<li>Add external SMPS initialization function BSP_SMPS_Init()</li>
+</ul></li>
+<li>Correct BSP_XSPI_NOR_DeInit() function to ensure XSPI peripheral is unclocked after registers reset</li>
+</ul></li>
+</ul>
+<h2 id="dependencies">Dependencies</h2>
+<p>None</p>
+<h2 id="notes">Notes</h2>
+<p>stm32n6xx_nucleo_conf_template.h file must be copied in user application as stm32n6xx_nucleo_conf.h with optional configuration update</p>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" checked aria-hidden="true"><strong>V0.3.0 / 26-April-2024</strong></label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<h3 id="first-beta-release-of-stm32n6xx_nucleo-bsp-board-drivers">First beta release of <strong>STM32N6xx_Nucleo</strong> BSP board drivers</h3>
+<h2 id="contents-1">Contents</h2>
+<ul>
+<li>Changes compared with V0.2.0 release
+<ul>
+<li>Add USBPD PWR and BUS BSP for USBPD application needs</li>
+</ul></li>
+</ul>
+<h2 id="dependencies-1">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-1">Notes</h2>
+<p>stm32n6xx_nucleo_conf_template.h file must be copied in user application as stm32n6xx_nucleo_conf.h with optional configuration update</p>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" checked aria-hidden="true"><strong>V0.2.0 / 29-September-2023</strong></label>
+<div>
+<h2 id="main-changes-2">Main Changes</h2>
+<h3 id="second-alpha-release-of-stm32n6xx_nucleo-bsp-board-drivers">Second alpha release of <strong>STM32N6xx_Nucleo</strong> BSP board drivers</h3>
+<h2 id="contents-2">Contents</h2>
+<ul>
+<li>Changes compared with V0.2.0RC1 release
+<ul>
+<li>Correct LED_RED/LED_GREEN definitions</li>
+</ul>
+<br />
+</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on NUCLEO-N657X0-Q MB1940 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver verified on NUCLEO-N657X0-Q MB1940 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dependencies-2">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-2">Notes</h2>
+<p>stm32n6xx_nucleo_conf_template.h file must be copied in user application as stm32n6xx_nucleo_conf.h with optional configuration update</p>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" checked aria-hidden="true"><strong>V0.2.0RC1 / 29-June-2023</strong></label>
+<div>
+<h2 id="main-changes-3">Main Changes</h2>
+<h3 id="second-alpha-release-candidate-of-stm32n6xx_nucleo-bsp-board-drivers">Second alpha release candidate of <strong>STM32N6xx_Nucleo</strong> BSP board drivers</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on NUCLEO-N657X0-Q MB1940 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver available, validation on-going on NUCLEO-N657X0-Q MB1940 rev A</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations">Known Limitations</h2>
+<p>Validation of external flash access BSP driver not completed</p>
+<h2 id="dependencies-3">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-3">Notes</h2>
+<p>stm32n6xx_nucleo_conf_template.h file must be copied in user application as stm32n6xx_nucleo_conf.h with optional configuration update</p>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" checked aria-hidden="true"><strong>V0.1.0 / 12-May-2023</strong></label>
+<div>
+<h2 id="main-changes-4">Main Changes</h2>
+<h3 id="first-alpha-release-of-stm32n6xx_nucleo-bsp-board-drivers">First alpha release of <strong>STM32N6xx_Nucleo</strong> BSP board drivers</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on NUCLEO-N657X0-Q MB1940 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver not available</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-1">Known Limitations</h2>
+<p>BSP software to access external Flash memory is not delivered yet.</p>
+<h2 id="dependencies-4">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-4">Notes</h2>
+<p>stm32n6xx_nucleo_conf_template.h file must be copied in user application as stm32n6xx_nucleo_conf.h with optional configuration update</p>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" checked aria-hidden="true"><strong>V0.1.0RC1 / 14-April-2023</strong></label>
+<div>
+<h2 id="main-changes-5">Main Changes</h2>
+<h3 id="alpha-release-candidate-of-stm32n6xx_nucleo-bsp-board-drivers">Alpha release candidate of <strong>STM32N6xx_Nucleo</strong> BSP Board drivers</h3>
+<h2 id="known-limitations-2">Known Limitations</h2>
+<p>None</p>
+<h2 id="dependencies-5">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-5">Notes</h2>
+<p>stm32n6xx_nucleo_conf_template.h file must be copied in user application as stm32n6xx_nucleo_conf.h with optional configuration update</p>
+<p><br />
+</p>
+</div>
+</div>
+</div>
+</div>
+<footer class="sticky">
+<div class="columns">
+<div class="column" style="width:95%;">
+<p>For complete documentation on STM32, visit: <a href="http://www.st.com">www.st.com</a></p>
+<p><em>This release note uses up to date web standards and, for this reason, should not be opened with Internet Explorer but preferably with popular browsers such as Google Chrome, Mozilla Firefox, Opera or Microsoft Edge.</em></p>
+</div><div class="column" style="width:5%;">
+<p><abbr title="Based on template cx566953 version 2.0">Info</abbr></p>
+</div>
+</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,18 @@
+#include "region_defs.h"
+
+define memory mem with size = 4G;
+
+define region ROM_region = mem:[from BL2_CODE_START to BL2_CODE_LIMIT];
+define region RAM_region = mem:[from BL2_DATA_START to BL2_DATA_LIMIT];
+
+define block CSTACK with alignment = 8, size = BL2_MSP_STACK_SIZE { };
+define block HEAP with alignment = 8, size = BL2_HEAP_SIZE { };
+
+initialize by copy { readwrite };
+do not initialize  { section .noinit };
+
+place at address mem:BL2_CODE_START { readonly section .intvec };
+
+place in ROM_region   { readonly };
+place in RAM_region   { readwrite,
+                        block CSTACK, block HEAP };

@@ -1,0 +1,41 @@
+/**********************************************************************************/
+/**** Linker File (ICF) handled by STM32CubeMX/ProjectGenerator, don't touch ! ****/
+/**********************************************************************************/
+
+/*-Sizes-*/
+define symbol __intvect_start__ = 0x241A0000;
+
+define symbol __stack_size__ = 0x800;
+define symbol __heap_size__  = 0x200;
+
+define symbol __region_FSBL_start__  = 0x24180400;
+define symbol __region_FSBL_end__    = 0x2419FFFF;
+define symbol __region_ROM_start__   = 0x241A0000;
+define symbol __region_ROM_end__     = 0x241BFFFF;
+define symbol __region_RAM_start__   = 0x241C0000;
+define symbol __region_RAM_end__     = 0x241FFFFF;
+
+/*--------------------------------------------------------------------------------*/
+
+/*-Memory Regions-*/
+define memory mem with size = 4G;
+define region FSBL_region  = mem:[from __region_FSBL_start__  to __region_FSBL_end__];
+define region ROM_region   = mem:[from __region_ROM_start__ to __region_ROM_end__];
+define region RAM_region   = mem:[from __region_RAM_start__   to __region_RAM_end__];
+
+
+/*-Blocks-*/
+define block CSTACK with alignment = 8, size = __stack_size__ {};
+define block HEAP   with alignment = 8, size = __heap_size__  {};
+
+/*-Initialization strategies-*/
+initialize by copy { readwrite };
+do not initialize  { section .noinit };
+
+
+/*-Sections placements-*/
+place at address mem:__intvect_start__ { readonly section .intvec };
+
+place at address mem:__region_FSBL_start__ { section .fsbl_bin };
+place in ROM_region  { readonly };
+place in RAM_region  { readwrite, block HEAP, block CSTACK };

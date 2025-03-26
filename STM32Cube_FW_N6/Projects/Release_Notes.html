@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Release Notes for Projects of STM32CubeN6 Firmware Package</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../_htmresc/mini-st_2020.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" type="image/x-icon" href="../_htmresc/favicon.png" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for">Release Notes for</h1>
+<h1 id="projects-of-stm32cuben6-firmware-package"><mark>Projects of STM32CubeN6 Firmware Package</mark></h1>
+<p>Copyright © 2023 STMicroelectronics<br />
+</p>
+<a href="https://www.st.com" class="logo"><img src="../_htmresc/st_logo_2020.png" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<p>The projects are a set of applicative tasks that aim to explain and provide use cases of the different products features based on the products hardware (Boards, STM32 Core(s) features, interconnections and peripherals) and built around the different firmware components. They can be directly used or adapted by the STM32CubeN6 Firmware Package users. They provide basic functionalities, show main features or demonstrate performance. They are provided with preconfigured projects for the main supported toolchains.</p>
+<p>In the STM32CubeN6 Firmware Package, the projects are organized in a sequential scheme based on the following levels:</p>
+<ul>
+<li>Boards: Hardware platform (evaluation, discovery, nucleo boards)</li>
+<li>Project Category:
+<ul>
+<li>Applications</li>
+<li>Examples</li>
+<li>Examples_LL</li>
+<li>Examples_MIX</li>
+<li>Templates</li>
+<li>Templates_LL</li>
+</ul></li>
+<li>Project Class</li>
+<li>Project Subclass</li>
+</ul>
+<p>The Project Class refers to the main peripherals (drivers), middleware libraries or BSP classes while the projects Subclass stands for a project specific feature within a class.</p>
+<p>The exhaustive list of projects is provided in this table: <a href="STM32CubeProjectsList.html">STM32CubeProjectsList</a>.</p>
+</div>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section8" checked aria-hidden="true"> <label for="collapse-section8" aria-hidden="true"><strong>V0.5.0 / 28-June-2024</strong></label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<h3 id="third-beta-release-of-stm32cuben6-firmware-projects-supporting-stm32n6xx-devices-mounted-on-stm32n6570-dk-board-nucleo-n657x0-q-board.">Third beta release of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</h3>
+<ul>
+<li><p>Delivery of 107 templates, examples and applications running on STM32N6570-DK and NUCLEO-N657X0-Q<br />
+</p></li>
+<li>Changes compared with V0.4.0 and V0.4.1 releases
+<ul>
+<li>Addition of
+<ul>
+<li>CRYP_AES_GCM example</li>
+<li>DMA_RIF_management example</li>
+<li>PSSI_Master_Single_Com and PSSI_Slave_Single_Com examples</li>
+<li>PKA_ECCscalarMultiplication and PKA_ECDSA_Verify examples</li>
+<li>RNG_Config, RNG_MultiRNG and RNG_MultiRNG_IT examples</li>
+<li>RCC_UseHSEasSystemClock LL example</li>
+<li>External memory loader applications available under
+<ul>
+<li>Projects\NUCLEO-N657X0-Q\Templates\Template_FSBL_XIP</li>
+<li>Projects\STM32N6570-DK\Templates\Template_FSBL_XIP<br />
+</li>
+<li>Projects\NUCLEO-N657X0-Q\Templates\Template_Isolation_XIP</li>
+<li>Projects\STM32N6570-DK\Templates\Template_Isolation_XIP</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<p><br />
+The exhaustive list of projects is provided in this table (<a href="STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</p>
+<h2 id="contents">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">HAL Templates <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Applications <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Applications</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">HAL Templates <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Applications <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Applications</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6_CUSTOM_HW</td>
+<td style="text-align: left;">Examples</td>
+<td style="text-align: left;">Projects\STM32N6_CUSTOM_HW\Examples</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>Third beta release of templates, examples and applications
+<ul>
+<li>All examples and applications are available on IAR</li>
+<li>All templates are available on IAR and KEIL</li>
+<li>STM32N6570-DK <em>Template</em>, <em>Template_FSBL_LRUN</em>, <em>Template_Isolation_LRUN</em> and <em>UART_HyperTerminal_IT</em> example are available on CubeIDE</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.40.1</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.6.2.zip">Patch EWARM</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RealView Microcontroller Development Kit (MDK-ARM)</td>
+<td style="text-align: left;">V5.39</td>
+<td style="text-align: left;"><a href="../Utilities\PC_Software\Keil.STM32N6xx_DFP.0.1.2.zip">Patch MDK-ARM</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32CubeIDE</td>
+<td style="text-align: left;">V1.15.1.24-N6-A2</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A and MB1939B)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM or in external Flash,
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board, BOOT0 switch position doesn’t matter,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board, BOOT0 switch position doesn’t matter.</li>
+</ul></li>
+<li>to set the bootROM in boot from external Flash mode,
+<ul>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on STM32N6570-DK board,</li>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+<li>OTP bit HSLV_VDDIO3 must imperatively be set if NUCLEO-N657X0-Q board external memory is used.
+<ul>
+<li>User may resort to example <em>Projects\STM32N6570-DK\Examples\BSEC\BSEC_OTP_Config</em> to set OTP bits.</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility">Backward Compatibility</h2>
+<p>Enable <strong><span style="color:red">STM32N6XX_SI_CUT1_1</span></strong> compilation switch when using Cut1.1 samples.</p>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" aria-hidden="true"><strong>V0.4.1 / 17-May-2024</strong></label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<h3 id="patch-release-of-stm32cuben6-firmware-projects-supporting-stm32n6xx-devices-mounted-on-stm32n6570-dk-board-nucleo-n657x0-q-board.">Patch release of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</h3>
+<ul>
+<li>Changes compared with V0.4.0 release
+<ul>
+<li>Addition of
+<ul>
+<li>OEMuROT application</li>
+<li>OpenBootLoader application</li>
+<li>ADC_FixedTriggerLatency example</li>
+<li>DCMIPP_SnapshotDecimationMode example</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><br />
+The exhaustive list of projects is provided in this table (<a href="STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</p>
+<h2 id="contents-1">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Applications <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Applications</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-1">Known Limitations</h2>
+<ul>
+<li>Patch release of examples and applications
+<ul>
+<li>All examples and applications are available on IAR</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-1">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.40.1</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.6.0.zip">Patch EWARM</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RealView Microcontroller Development Kit (MDK-ARM)</td>
+<td style="text-align: left;">V5.39</td>
+<td style="text-align: left;"><a href="../Utilities\PC_Software\Keil.STM32N6xx_DFP.0.1.0.zip">Patch MDK-ARM</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32CubeIDE</td>
+<td style="text-align: left;">V1.13.1 Alpha1</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-1">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A and MB1939B)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM or in external Flash,
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board, BOOT0 switch position doesn’t matter,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board, BOOT0 switch position doesn’t matter.</li>
+</ul></li>
+<li>to set the bootROM in boot from external Flash mode,
+<ul>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on STM32N6570-DK board,</li>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+<li>OTP bit HSLV_VDDIO3 must imperatively be set if NUCLEO-N657X0-Q board external memory is used.
+<ul>
+<li>User may resort to example <em>Projects\STM32N6570-DK\Examples\BSEC\BSEC_OTP_Config</em> to set OTP bits.</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility-1">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-1">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="true"><strong>V0.4.0 / 26-April-2024</strong></label>
+<div>
+<h2 id="main-changes-2">Main Changes</h2>
+<h3 id="second-beta-release-of-stm32cuben6-firmware-projects-supporting-stm32n6xx-devices-mounted-on-stm32n6570-dk-board-nucleo-n657x0-q-board.">Second beta release of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</h3>
+<ul>
+<li>Delivery of 96 templates, examples and applications running on STM32N6570-DK and NUCLEO-N657X0-Q
+<ul>
+<li>Illustration of Secure / Non-Secure partition</li>
+<li>Examples of H264 video encoder with video stream stored in SD card or sent through Ethernet peripheral using the RTP protocol</li>
+<li>Applications illustrating Azure RTOS FileX, ThreadX, NetX and USBX features</li>
+<li>How to use BSEC, CORTEX (with illustration of HELIUM instructions), CRC, DCMIPP, DMA, DMA2D, DTS, FDCAN, FMC, GPIO, HASH, LTDC, MCE, PWR, RCC, RIF, SD, SYSCFG, TIM, UART (in DMA or interrupt mode) and XSPI peripherals</li>
+<li>Illustration of external memories access on custom board (addressing memories not supported on Discovery or Nucleo boards)
+<ul>
+<li>NAND and SDRAM external memories access through FMC peripheral</li>
+<li>Hyper Flash external memory access through XSPI peripheral</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><br />
+The exhaustive list of projects is provided in this table (<a href="STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</p>
+<h2 id="contents-2">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">HAL Templates <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Applications <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Applications</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Examples <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Applications <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Applications</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6_CUSTOM_HW</td>
+<td style="text-align: left;">Examples <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\STM32N6_CUSTOM_HW\Examples</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-2">Known Limitations</h2>
+<ul>
+<li>Second beta release of templates, examples and applications
+<ul>
+<li>All examples and applications are available on IAR</li>
+<li>All templates are available on IAR and KEIL</li>
+<li>STM32N6570-DK <em>Template</em>, <em>Template_FSBL_LRUN</em>, <em>Template_Isolation_LRUN</em> and <em>UART_HyperTerminal_IT</em> example are available on CubeIDE</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-2">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.40.1</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.6.0.zip">Patch EWARM</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RealView Microcontroller Development Kit (MDK-ARM)</td>
+<td style="text-align: left;">V5.39</td>
+<td style="text-align: left;"><a href="../Utilities\PC_Software\Keil.STM32N6xx_DFP.0.1.0.zip">Patch MDK-ARM</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32CubeIDE</td>
+<td style="text-align: left;">V1.13.1 Alpha1</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-2">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A and MB1939B)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM or in external Flash,
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board, BOOT0 switch position doesn’t matter,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board, BOOT0 switch position doesn’t matter.</li>
+</ul></li>
+<li>to set the bootROM in boot from external Flash mode,
+<ul>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on STM32N6570-DK board,</li>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+<li>OTP bit HSLV_VDDIO3 must imperatively be set if NUCLEO-N657X0-Q board external memory is used.
+<ul>
+<li>User may resort to example <em>Projects\STM32N6570-DK\Examples\BSEC\BSEC_OTP_Config</em> to set OTP bits.</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility-2">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-2">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="true"><strong>V0.3.0 / 08-December-2023</strong></label>
+<div>
+<h2 id="main-changes-3">Main Changes</h2>
+<h3 id="first-beta-release-of-stm32cuben6-firmware-projects-supporting-stm32n6xx-devices-mounted-on-stm32n6570-dk-board-nucleo-n657x0-q-board.">First beta release of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</h3>
+<ul>
+<li>Addition of two STM32N6570-DK templates and one example illustrating TrustZone application:
+<ul>
+<li><em>Template_Isolation_LRUN</em>: Load &amp; Run template</li>
+<li><em>Template_Isolation_XIP</em>: execute-in-place template</li>
+<li><em>PWR_STANDBY_TrustZone</em>: example illustrating entry and exit from Standby mode with jointly running secure and non-secure applications</li>
+</ul></li>
+</ul>
+<h2 id="contents-3">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">HAL Templates <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Examples <span class="icon-st-update"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Applications</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Applications</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Examples</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-3">Known Limitations</h2>
+<ul>
+<li>First beta release of templates, examples and applications
+<ul>
+<li>All templates, examples and applications are available on IAR</li>
+<li>STM32N6570-DK <em>Template</em>, <em>Template_FSBL_LRUN</em>, <em>Template_FSBL_XIP</em>, <em>Template_Isolation_LRUN</em> and <em>UART_HyperTerminal_IT</em> example are available on CubeIDE</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-3">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.40.1</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.6.0.zip">Patch EWARM</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RealView Microcontroller Development Kit (MDK-ARM)</td>
+<td style="text-align: left;">V5.38</td>
+<td style="text-align: left;"><a href="../Utilities\PC_Software\Keil.STM32N6xx_DFP.0.1.0.zip">Patch MDK-ARM</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32CubeIDE</td>
+<td style="text-align: left;">V1.13.1 Alpha1</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-3">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM or in external Flash,
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board, BOOT0 switch position doesn’t matter,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board, BOOT0 switch position doesn’t matter.</li>
+</ul></li>
+<li>to set the bootROM in boot from external Flash mode,
+<ul>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on STM32N6570-DK board,</li>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+<li>OTP bit HSLV_VDDIO3 must imperatively be set if NUCLEO-N657X0-Q board external memory is used.
+<ul>
+<li>User may resort to example <em>Projects\STM32N6570-DK\Examples\BSEC\BSEC_OTP_Config</em> to set OTP bits.</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility-3">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-3">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="true"><strong>V0.2.0 / 29-September-2023</strong></label>
+<div>
+<h2 id="main-changes-4">Main Changes</h2>
+<h3 id="second-alpha-release-candidate-of-stm32cuben6-firmware-projects-supporting-stm32n6xx-devices-mounted-on-stm32n6570-dk-board-nucleo-n657x0-q-board.">Second alpha release candidate of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</h3>
+<h2 id="contents-4">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">LL Templates <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Examples <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Examples</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Applications</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Applications</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates_LL</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">Examples <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Examples</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-4">Known Limitations</h2>
+<ul>
+<li>Second alpha release of templates, examples and applications
+<ul>
+<li>All templates, examples and applications are available on IAR</li>
+<li>STM32N6570-DK templates and <em>UART_HyperTerminal_IT</em> example are available on CubeIDE</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-4">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.40.1</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.6.0.zip">Patch EWARM</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RealView Microcontroller Development Kit (MDK-ARM)</td>
+<td style="text-align: left;">V5.38</td>
+<td style="text-align: left;"><a href="../Utilities\PC_Software\Keil.STM32N6xx_DFP.0.1.0.zip">Patch MDK-ARM</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32CubeIDE</td>
+<td style="text-align: left;">V1.13.1 Alpha1</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-4">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM or in external Flash,
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board, BOOT0 switch position doesn’t matter,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board, BOOT0 switch position doesn’t matter.</li>
+</ul></li>
+<li>to set the bootROM in boot from external Flash mode,
+<ul>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on STM32N6570-DK board,</li>
+<li>BOOT0 and BOOT1 switches positions should be 1-2 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+<li>OTP bit HSLV_VDDIO3 must imperatively be set if NUCLEO-N657X0-Q board external memory is used.
+<ul>
+<li>User may resort to example <em>Projects\STM32N6570-DK\Examples\BSEC\BSEC_OTP_Config</em> to set OTP bits.</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility-4">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-4">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section3"  aria-hidden="true"> <label for="collapse-section3" aria-hidden="true"><strong>V0.2.0RC1 / 29-June-2023</strong></label>
+<div>
+<h2 id="main-changes-5">Main Changes</h2>
+<h3 id="second-alpha-release-candidate">Second Alpha Release Candidate</h3>
+<p>Second alpha release candidate of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</p>
+<h2 id="contents-5">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Applications <span class="icon-st-add"></span></td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Applications</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates_LL</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-5">Known Limitations</h2>
+<ul>
+<li>Alpha release of first templates and applications (not fully validated, no API freeze)</li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-5">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Device</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.30.1</td>
+<td style="text-align: left;">STM32N6</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.4.1.zip">Patch EWARM</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-5">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM (e.g. for debug under IAR),
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+<li>OTP bit HSLV_VDDIO3 must imperatively be set if NUCLEO-N657X0-Q board external memory is used.<br />
+</li>
+</ul>
+<h2 id="backward-compatibility-5">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-5">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="true"><strong>V0.1.0 / 12-May-2023</strong></label>
+<div>
+<h2 id="main-changes-6">Main Changes</h2>
+<h3 id="alpha-release">Alpha Release</h3>
+<p>First alpha release of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</p>
+<h2 id="contents-6">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">HAL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NUCLEO-N657X0-Q</td>
+<td style="text-align: left;">LL Templates</td>
+<td style="text-align: left;">Projects\NUCLEO-N657X0-Q\Templates_LL</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-6">Known Limitations</h2>
+<ul>
+<li>Alpha release of first templates (not fully validated, no API freeze)</li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-6">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Device</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.30.1</td>
+<td style="text-align: left;">STM32N6</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.4.1.zip">Patch EWARM</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-6">Supported Devices and Boards</h2>
+<ul>
+<li>STM32N657xx, STM32N647xx and STM32N645xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warnings:</p>
+<ul>
+<li>to set the bootROM in development mode for binary download in internal SRAM (e.g. for debug under IAR),
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board.</li>
+</ul></li>
+<li>OTP bits HSLV_VDDIO2 and HSLV_VDDIO3 must imperatively be set if STM32N6570-DK board external memories are used.</li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility-6">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-6">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" checked aria-hidden="true"><strong>V0.1.0RC1 / 14-April-2023</strong></label>
+<div>
+<h2 id="main-changes-7">Main Changes</h2>
+<h3 id="alpha-release-candidate">Alpha Release Candidate</h3>
+<p>First alpha release candidate of STM32CubeN6 Firmware projects supporting <strong>STM32N6xx</strong> devices mounted on STM32N6570-DK board &amp; NUCLEO-N657X0-Q board.</p>
+<h2 id="contents-7">Contents</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Board</th>
+<th style="text-align: left;">Project category</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32N6570-DK</td>
+<td style="text-align: left;">Templates</td>
+<td style="text-align: left;">Projects\STM32N6570-DK\Templates</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-7">Known Limitations</h2>
+<ul>
+<li>Alpha release candidate of first templates (not fully validated, no API freeze)</li>
+</ul>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers-7">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Device</th>
+<th style="text-align: left;">Patch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td style="text-align: left;">V9.30.1</td>
+<td style="text-align: left;">STM32N6</td>
+<td style="text-align: left;"><a href="../Utilities/PC_Software/EWARMv9_STM32N6xx_V0.4.zip">Patch EWARM</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards-7">Supported Devices and boards</h2>
+<ul>
+<li>STM32N657xx, STM32N647xx and STM32N645xx devices</li>
+<li>STM32N6570-DK Discovery kit (MB1939A)</li>
+<li>NUCLEO-N657X0-Q kit (MB1940A)</li>
+</ul>
+<p>Warning: to set the bootROM in development mode for binary download in internal SRAM (e.g. for debug under IAR),</p>
+<ul>
+<li>BOOT1 switch position should be 1-3 on STM32N6570-DK board,</li>
+<li>BOOT1 switch position should be 2-3 on NUCLEO-N657X0-Q board.</li>
+</ul>
+<p><br />
+</p>
+<h2 id="backward-compatibility-7">Backward Compatibility</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="dependencies-7">Dependencies</h2>
+<ul>
+<li>None</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<footer class="sticky">
+<div class="columns">
+<div class="column" style="width:95%;">
+<p>For complete documentation on STM32N6xx, visit: <a href="http://www.st.com/STM32">www.st.com</a></p>
+<p><em>This release note uses up to date web standards and, for this reason, should not be opened with Internet Explorer but preferably with popular browsers such as Google Chrome, Mozilla Firefox, Opera or Microsoft Edge.</em></p>
+</div><div class="column" style="width:5%;">
+<p><abbr title="Based on template cx626901 version 2.0">Info</abbr></p>
+</div>
+</div>
+</footer>
+</body>
+</html>

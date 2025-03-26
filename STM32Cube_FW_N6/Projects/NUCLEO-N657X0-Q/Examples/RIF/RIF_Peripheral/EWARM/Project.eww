@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\AppliNonSecure\RIF_Peripheral_AppliNonSecure_NS.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\FSBL\RIF_Peripheral_FSBL.ewp</path>
+    </project>
+    <batchBuild>
+        <batchDefinition>
+            <name>Rif_Peripheral</name>
+            <member>
+                <project>RIF_Peripheral_FSBL</project>
+                <configuration>RIF_Peripheral_FSBL</configuration>
+            </member>
+            <member>
+                <project>RIF_Peripheral_AppliNonSecure_NS</project>
+                <configuration>RIF_Peripheral_AppliNonSecure_NS</configuration>
+            </member>
+        </batchDefinition>
+    </batchBuild>
+</workspace>

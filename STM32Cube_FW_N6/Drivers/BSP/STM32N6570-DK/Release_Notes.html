@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Release Notes for STM32N6570-DK</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for">Release Notes for</h1>
+<h1 id="stm32n6570-dk"><mark>STM32N6570-DK</mark></h1>
+<p>Copyright © 2023 STMicroelectronics<br />
+</p>
+<a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<p>This driver provides a set of functions to manage:</p>
+<ul>
+<li>LEDs, push-button, Virtual Com Port (VCP), Audio, USB-PD and external memories access on STM32N6570-DK Kit from STMicroelectronics</li>
+</ul>
+</div>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section11" checked aria-hidden="true"> <label for="collapse-section11" checked aria-hidden="true"><strong>V0.5.1 / 26-July-2024</strong></label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<h3 id="patch-release-of-stm32n6570-dk-bsp-board-drivers">Patch release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Changes compared with V0.5.0 release
+<ul>
+<li>Add STM32N6570-DK revC board support
+<ul>
+<li>Add external SMPS initialization function BSP_SMPS_Init()</li>
+<li>Change camera I2C instance from I2C2 to I2C1</li>
+</ul></li>
+<li>Correct BSP_XSPI_NOR_DeInit() function to ensure XSPI peripheral is unclocked after registers reset</li>
+</ul></li>
+</ul>
+<h2 id="known-limitations">Known Limitations</h2>
+<p>None</p>
+<h2 id="dependencies">Dependencies</h2>
+<p>None</p>
+<h2 id="notes">Notes</h2>
+<p>Enable <strong><span style="color:green">STM32N6570_DK_REV=STM32N6570_DK_A01</span></strong> compilation switch for BSP driver running on STM32N6570-DK MB1939 revA board.<br />
+Enable <strong><span style="color:green">STM32N6570_DK_REV=STM32N6570_DK_B01</span></strong> compilation switch for BSP driver running on STM32N6570-DK MB1939 revB board.</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section10" aria-hidden="true"> <label for="collapse-section10" checked aria-hidden="true"><strong>V0.5.0 / 28-June-2024</strong></label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<h3 id="third-beta-release-of-stm32n6570-dk-bsp-board-drivers">Third beta release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-1">Contents</h2>
+<ul>
+<li>Changes compared with V0.4.1 release
+<ul>
+<li>Update <em>stm32n6570_discovery_usbpd_pwr.c/.h</em> to support Discovery board rev B01 (updates of pins connected to tcpp03 component)</li>
+<li>Remove RIF and SRAM configuration from LTDC_MspInit()</li>
+<li>Update LCD_LAYER_0_ADDRESS and LCD_LAYER_1_ADDRESS in <em>stm32n6570_discovery_conf_template.h</em> to point at SRAM1 area</li>
+<li>Add <em>isp_param_conf.h</em> and update <em>stm32n6570_discovery_camera.c/h</em> to support IMX335 camera sensor</li>
+<li>Add <em>stm32n6570_discovery_camera_ov5640.c/h</em> to maintain OV56540 camera sensor support</li>
+</ul></li>
+</ul>
+<h2 id="known-limitations-1">Known Limitations</h2>
+<p>None</p>
+<h2 id="dependencies-1">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-1">Notes</h2>
+<p>Enable <strong><span style="color:green">USE_STM32N6570_DK_REV_B01</span></strong> compilation switch for BSP driver running on STM32N6570-DK MB1939 rev B01 board.</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section9" aria-hidden="true"> <label for="collapse-section9" checked aria-hidden="true"><strong>V0.4.1 / 17-May-2024</strong></label>
+<div>
+<h2 id="main-changes-2">Main Changes</h2>
+<h3 id="patch-release-of-stm32n6570-dk-bsp-board-drivers-1">Patch release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-2">Contents</h2>
+<ul>
+<li>Changes compared with V0.4.0 release
+<ul>
+<li>Add BSP_CAMERA_Suspend() and BSP_CAMERA_Resume() APIs</li>
+<li>Align stm32n6570_discovery_camera.c/.h with latest HAL DCMIPP version</li>
+<li>Limit RIF configuration in stm32n6570_discovery_camera.c to secure mode</li>
+</ul></li>
+</ul>
+<h2 id="known-limitations-2">Known Limitations</h2>
+<ul>
+<li>Image quality when resorting to IMX335 camera isn’t optimized yet and will be improved in next releases. User can resort to OV5640 camera sensor in the meantime.</li>
+</ul>
+<h2 id="dependencies-2">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-2">Notes</h2>
+<p>Enable <strong><span style="color:green">USE_STM32N6570_DK_REV_B01</span></strong> compilation switch for BSP driver running on STM32N6570-DK MB1939 rev B01 board.</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section8" aria-hidden="true"> <label for="collapse-section8" checked aria-hidden="true"><strong>V0.4.0 / 26-April-2024</strong></label>
+<div>
+<h2 id="main-changes-3">Main Changes</h2>
+<h3 id="second-beta-release-of-stm32n6570-dk-bsp-board-drivers">Second beta release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-3">Contents</h2>
+<ul>
+<li>Changes compared with V0.3.2 release
+<ul>
+<li>Remove characterization-related code from USB-PD BSP driver</li>
+<li>Update camera BSP driver
+<ul>
+<li>Remove pipe selection and only use PIPE1</li>
+<li>Add register callback feature</li>
+<li>Add downsize configuration for IMX335 camera sensor</li>
+<li>Add first version of dynamic image correction to camera BSP (will be improved in next releases)</li>
+<li>Align code with latest HAL DCMIPP driver that integrates CSI functions formerly provided in HAL CSI driver</li>
+<li>Update clock configuration</li>
+</ul></li>
+<li>Align LCD BSP driver with HAL LTDC latest version</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<table>
+<thead>
+<tr class="header">
+<th>STM32N6570-DK MB1939 prior to rev B01</th>
+<th>STM32N6570-DK MB1939 rev B01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PC8: SD_SEL</td>
+<td>PC8: CAMERA_NRST</td>
+</tr>
+<tr class="even">
+<td>PO5: CAMERA_NRST</td>
+<td>PO5: SD_SEL</td>
+</tr>
+<tr class="odd">
+<td>PD2: UCPD1_INT</td>
+<td>PD2: CAMERA_EN</td>
+</tr>
+<tr class="even">
+<td>PD10: CAMERA_EN</td>
+<td>PD10: UCPD1_INT</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-3">Known Limitations</h2>
+<ul>
+<li>Image quality when resorting to IMX335 camera isn’t optimized yet and will be improved in next releases. User can resort to OV5640 camera sensor in the meantime.</li>
+</ul>
+<h2 id="dependencies-3">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-3">Notes</h2>
+<p>Enable <strong><span style="color:green">USE_STM32N6570_DK_REV_B01</span></strong> compilation switch for BSP driver running on STM32N6570-DK MB1939 rev B01 board.</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" checked aria-hidden="true"><strong>V0.3.2 / 22-March-2024</strong></label>
+<div>
+<h2 id="main-changes-4">Main Changes</h2>
+<h3 id="official-patch-release-of-stm32n6570-dk-bsp-board-drivers">Official patch release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-4">Contents</h2>
+<ul>
+<li>Changes compared with V0.3.1 release
+<ul>
+<li>Add support of WM8904 audio codec embedded on STM32N6570-DK MB1939 rev B01 instead of CS42L51</li>
+<li>Swap P05 and PC8 pins to follow STM32N6570-DK MB1939 rev B01 implementation</li>
+<li>Swap PD2 and PD10 pins to follow STM32N6570-DK MB1939 rev B01 implementation</li>
+</ul>
+<br />
+</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP validation</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Audio codec</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev B01 board with Cut1.1 sample</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<table>
+<thead>
+<tr class="header">
+<th>STM32N6570-DK MB1939 prior to rev B01</th>
+<th>STM32N6570-DK MB1939 rev B01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PC8: SD_SEL</td>
+<td>PC8: CAMERA_NRST</td>
+</tr>
+<tr class="even">
+<td>PO5: CAMERA_NRST</td>
+<td>PO5: SD_SEL</td>
+</tr>
+<tr class="odd">
+<td>PD2: UCPD1_INT</td>
+<td>PD2: CAMERA_EN</td>
+</tr>
+<tr class="even">
+<td>PD10: CAMERA_EN</td>
+<td>PD10: UCPD1_INT</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-4">Known Limitations</h2>
+<ul>
+<li>Camera acquisition BSP driver can’t be used if USE_HAL_DCMIPP_REGISTER_CALLBACKS compilation switch is enabled</li>
+</ul>
+<h2 id="dependencies-4">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-4">Notes</h2>
+<p>Enable <strong><span style="color:green">USE_STM32N6570_DK_REV_B01</span></strong> compilation switch for BSP driver running on STM32N6570-DK MB1939 rev B01 board.</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" checked aria-hidden="true"><strong>V0.3.1 / 23-February-2024</strong></label>
+<div>
+<h2 id="main-changes-5">Main Changes</h2>
+<h3 id="official-patch-release-of-stm32n6570-dk-bsp-board-drivers-1">Official patch release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-5">Contents</h2>
+<ul>
+<li>Changes compared with V0.3.0 release
+<ul>
+<li>Add support of ARGB4444 and RGB888 formats by LCD BSP driver</li>
+</ul>
+<br />
+</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Display</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-5">Known Limitations</h2>
+<ul>
+<li>Camera acquisition BSP driver can’t be used if USE_HAL_DCMIPP_REGISTER_CALLBACKS compilation switch is enabled</li>
+</ul>
+<h2 id="dependencies-5">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-5">Notes</h2>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5"  aria-hidden="true"> <label for="collapse-section5" checked aria-hidden="true"><strong>V0.3.0 / 08-December-2023</strong></label>
+<div>
+<h2 id="main-changes-6">Main Changes</h2>
+<h3 id="first-beta-release-of-stm32n6570-dk-bsp-board-drivers">First beta release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-6">Contents</h2>
+<ul>
+<li>Changes compared with V0.2.0 release
+<ul>
+<li>Delivery of camera acquisition BSP driver stm32n6570_discovery_camera.c/h supporting OV5640 and IMX335 camera devices</li>
+<li>Misra-C:2012 warnings corrections</li>
+</ul>
+<br />
+</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">USB Power Delivery</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Audio record and playback</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">External PSRAM access</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Touch screen</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Camera acquisition</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Display</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-6">Known Limitations</h2>
+<ul>
+<li>Camera acquisition BSP driver can’t be used if USE_HAL_DCMIPP_REGISTER_CALLBACKS compilation switch is enabled</li>
+</ul>
+<h2 id="dependencies-6">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-6">Notes</h2>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4"  aria-hidden="true"> <label for="collapse-section4" checked aria-hidden="true"><strong>V0.2.0 / 29-September-2023</strong></label>
+<div>
+<h2 id="main-changes-7">Main Changes</h2>
+<h3 id="second-alpha-release-of-stm32n6570-dk-bsp-board-drivers">Second alpha release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<h2 id="contents-7">Contents</h2>
+<ul>
+<li>Changes compared with V0.2.0RC1 release
+<ul>
+<li>Correct Alternate Function associated with SDMMC2 instance</li>
+<li>Add Touch Screen BSP driver</li>
+<li>Correct BSP LCD timing values</li>
+<li>Development of camera acquisition BSP driver to support OV5640 and IMX335 camera devices</li>
+</ul>
+<br />
+</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">USB Power Delivery</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Audio record and playback</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">External PSRAM access</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.1 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Touch screen</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Camera acquisition</td>
+<td style="text-align: left;">Driver development on-going</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Display</td>
+<td style="text-align: left;">Driver development on-going</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-7">Known Limitations</h2>
+<ul>
+<li>Camera acquisition / image display BSP software is still under development even if basic usage is working</li>
+<li>Camera acquisition BSP driver can’t be used if USE_HAL_DCMIPP_REGISTER_CALLBACKS compilation switch is enabled</li>
+</ul>
+<h2 id="dependencies-7">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-7">Notes</h2>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" checked aria-hidden="true"><strong>V0.2.0RC1 / 29-June-2023</strong></label>
+<div>
+<h2 id="main-changes-8">Main Changes</h2>
+<h3 id="second-alpha-release-candidate-of-stm32n6570-dk-bsp-board-drivers">Second alpha release candidate of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">USB Power Delivery</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Audio record and playback</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">External PSRAM access</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Camera acquisition</td>
+<td style="text-align: left;">Driver development on-going</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Display</td>
+<td style="text-align: left;">Driver development on-going</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-8">Known Limitations</h2>
+<ul>
+<li>Camera acquisition / image display BSP software is still under development.</li>
+</ul>
+<h2 id="dependencies-8">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-8">Notes</h2>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" checked aria-hidden="true"><strong>V0.1.0 / 12-May-2023</strong></label>
+<div>
+<h2 id="main-changes-9">Main Changes</h2>
+<h3 id="first-alpha-release-of-stm32n6570-dk-bsp-board-drivers">First alpha release of <strong>STM32N6570-DK</strong> BSP board drivers</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">BSP</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">LEDs, Push button, Virtual Com Port</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">USB Power Delivery</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Audio record and playback</td>
+<td style="text-align: left;">Driver verified on STM32N6570-DK MB1939 rev A board with Cut1.0 sample mounted on socket</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">External Flash access</td>
+<td style="text-align: left;">Driver available. Tests on-going</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">External PSRAM access</td>
+<td style="text-align: left;">Driver available. Tests on-going</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Camera acquisition</td>
+<td style="text-align: left;">Driver development on-going</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Display</td>
+<td style="text-align: left;">Driver development on-going</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="known-limitations-9">Known Limitations</h2>
+<ul>
+<li>Testing of BSP software to access external Flash or external PSRAM memories is still on-going.</li>
+<li>Camera acquisition / image display BSP software is still under development.</li>
+</ul>
+<h2 id="dependencies-9">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-9">Notes</h2>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" checked aria-hidden="true"><strong>V0.1.0RC1 / 14-April-2023</strong></label>
+<div>
+<h2 id="main-changes-10">Main Changes</h2>
+<h3 id="alpha-release-candidate-of-stm32n6570-dk-bsp-board-drivers">Alpha release candidate of <strong>STM32N6570-DK</strong> BSP Board drivers</h3>
+<h2 id="known-limitations-10">Known Limitations</h2>
+<p>None</p>
+<h2 id="dependencies-10">Dependencies</h2>
+<p>None</p>
+<h2 id="notes-10">Notes</h2>
+<p><br />
+</p>
+</div>
+</div>
+</div>
+</div>
+<footer class="sticky">
+<div class="columns">
+<div class="column" style="width:95%;">
+<p>For complete documentation on STM32, visit: <a href="http://www.st.com">www.st.com</a></p>
+<p><em>This release note uses up to date web standards and, for this reason, should not be opened with Internet Explorer but preferably with popular browsers such as Google Chrome, Mozilla Firefox, Opera or Microsoft Edge.</em></p>
+</div><div class="column" style="width:5%;">
+<p><abbr title="Based on template cx566953 version 2.0">Info</abbr></p>
+</div>
+</div>
+</footer>
+</body>
+</html>

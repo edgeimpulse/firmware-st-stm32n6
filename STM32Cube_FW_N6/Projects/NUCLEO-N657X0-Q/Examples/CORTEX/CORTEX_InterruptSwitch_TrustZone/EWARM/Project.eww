@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+  <project>
+    <path>$WS_DIR$\AppliNonSecure\CORTEX_InterruptSwitch_TrustZone_AppliNonSecure_NS.ewp</path>
+  </project><project>
+    <path>$WS_DIR$\FSBL\CORTEX_InterruptSwitch_TrustZone_FSBL.ewp</path>
+  </project>
+  <batchBuild />
+</workspace>

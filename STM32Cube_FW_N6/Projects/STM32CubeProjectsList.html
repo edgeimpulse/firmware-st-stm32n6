@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Projects Overview</title>
+    <style>
+      .descriptionColumn { min-width:550px;}
+      em{color:red;font-weight: bold;}
+      importantLink {font-size:10pt; font-family: "Verdana","sans-serif" color:black;}
+      article{border: 1px solid #828282;margin: 20px 0px 20px 9px;}
+      body{font-family: Verdana;font-size: 10pt; color: black;margin-left: 40px;}
+      .picture{text-align: center}
+      .copyright{text-align: center}
+      h1{text-align: center;font-size: 20pt; font-family: Verdana; color: rgb(51, 102, 255);}
+    </style>
+  </head>
+  <body>
+
+    <h1>STM32CubeN6 Firmware Examples for STM32N6xx Series</h1>
+
+    <p class="copyright">Copyright 2024 STMicroelectronics</p>
+
+    <div class="picture">
+      <img alt="" id="_x0000_i1025" src="../_htmresc/st_logo_2020.png" style="border: 0px solid ; width: 104px; height: 77px;"/>
+    </div>
+
+    <p>The STM32CubeN6 Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</p>
+
+    <div class="picture">
+      <img alt="" src="../_htmresc/STM32Cube_2020.bmp"/>
+    </div>
+
+    <p>The examples are classified depending on the STM32Cube level they apply to, and are named as follows:</p>
+
+    <ul>
+      <li id="Examples"><b>Examples</b> uses only the HAL and BSP drivers (Middleware not used), having as objective to demonstrate the product/peripherals features and usage. The examples are organized per peripheral (a folder for each peripheral, ex. TIM) and offers different complexity level from basic usage of a given peripheral (ex. PWM generation using timer) till integration of several peripherals(use DAC for signals generation with synchronization from TIM6 and DMA). Board resources usage is reduced to the strict minimum.</li>
+      <li id="Examples_LL"><b>Examples_LL</b> uses only the LL drivers (HAL and Middleware not used), offering optimum implementation of typical use cases of the peripheral features and configuration procedures. The examples are organized per peripheral (a folder for each peripheral, ex. TIM) and runs exclusively on Nucleo board.</li>
+      <li id="Applications"><b>Applications</b> intends to demonstrate the product performance and how to use the different Middleware stacks available. The Applications are organized per Middleware (a folder for each Middleware, ex. USB Host) or product feature that need high level firmware bricks (ex. Audio). Integration Applications that use several Middleware stacks are provided as well.</li>
+      <li>A Template project is provided to allow user to quickly build any firmware application on a given board.</li>
+    </ul>
+
+    <p>The examples are located under STM32Cube_FW_N6_VX.Y.Z\Projects\, and all of them have the same structure:</p>
+
+    <ul>
+      <li>\Inc folder that contains all header files.</li>
+      <li>\Src folder for the sources code.</li>
+      <li>\EWARM, \MDK-ARM and \STM32CubeIDE folders contain the preconfigured project for each toolchain.</li>
+      <li>A readme describing the example behavior and the environment required to run the example.</li>
+    </ul>
+
+    <p>To run the example, you have to do the following:</p>
+
+    <ul>
+      <li>Open the example using your preferred toolchain.</li>
+      <li>Rebuild all files and load the image into target memory.</li>
+      <li>Run the example by following the readme instructions.</li>
+      <li>
+        <i><u>Note</u>: refer to section "Development Toolchains and Compilers" and "Supported Devices and EVAL, Nucleo and Discovery boards" of the Firmware package release notes to know about the SW/HW environment used for the Firmware development and validation. The correct operation of the provided examples is not guaranteed on some environments, for example when using different compiler or board versions.</i>
+      </li>
+    </ul>
+
+    <p>The provided examples can be tailored to run on any compatible hardware; user simply need to update the BSP drivers for his board, if it has the same hardware functions (LED, LCD display, pushbuttons...etc.). The BSP is based on a modular architecture that allows it to be ported easily to any hardware by just implementing the low level routines.</p>
+
+    <p>
+      <div>The table below contains the list of examples provided within STM32Cube_FW_N6 Firmware package.</div>
+    </p>
+
+    <p id="STM32N6xxImportantLink"></p>
+		<table border='1' bgcolor='#f0f0fF' >
+			<tr align=center style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;">
+				<td><b>Level</b></td>
+				<td><b>Module Name</b></td>
+				<td><b>Project Name</b></td>
+				<td class="descriptionColumn"><b>Description</b></td>
+				<td>STM32N6_CUSTOM_HW</td>
+				<td>STM32N6570-DK</td>
+				<td>NUCLEO-N657X0-Q</td>
+			</tr>
+      <tr align=center>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=6><p id="Templates">Templates</p></td>
+        <td align=left rowspan=5><p id="-">-</p></td>
+        <td align=left><p id="Template">Template</p></td>
+        <td align=left>
+This project provides a reference template based on the STM32Cube HAL API that can be used
+to build any firmware application. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Template_FSBL_LRUN">Template_FSBL_LRUN</p></td>
+        <td align=left>
+This project provides a reference FSBL LRUN template based on the STM32Cube HAL API that can be used to build any firmware application to execute in internal RAM (sub-project Appli). 
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Template_FSBL_XIP">Template_FSBL_XIP</p></td>
+        <td align=left>
+This project provides a reference FSBL XIP template based on the STM32Cube HAL API that can be used to build any firmware application to execute in external Flash (sub-project Appli). 
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Template_Isolation_LRUN">Template_Isolation_LRUN</p></td>
+        <td align=left>
+This project provides a reference TrustZone Isolation LRUN template based on the STM32Cube HAL API that can be used to build any firmware application made of a secure binary and of a non-secure binary to execute in internal SRAM.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Template_Isolation_XIP">Template_Isolation_XIP</p></td>
+        <td align=left>
+This project provides a reference TrustZone Isolation XIP template based on the STM32Cube HAL API that can be used to build any firmware application made of a secure binary and of a non-secure binary to execute in external flash memory.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+        <td colspan="3"><b>Total number of templates: 10</b></td>
+        <td>0</td>
+        <td>5</td>
+        <td>5</td>
+      </tr>
+      <tr align=center>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=2><p id="Templates_LL">Templates_LL</p></td>
+        <td align=left rowspan=1><p id="-">-</p></td>
+        <td align=left><p id="Template">Template</p></td>
+        <td align=left>
+This project provides a reference template based on the STM32Cube LL API that can be used
+to build any firmware application. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+        <td colspan="3"><b>Total number of templates_ll: 2</b></td>
+        <td>0</td>
+        <td>1</td>
+        <td>1</td>
+      </tr>
+      <tr align=center>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=63><p id="Examples">Examples</p></td>
+        <td align=left rowspan=1><p id="-">-</p></td>
+        <td align=left><p id="BSP">BSP</p></td>
+        <td align=left>
+This example provides a description of how to use the different BSP drivers.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="ADC">ADC</p></td>
+        <td align=left><p id="ADC_FixedTriggerLatency">ADC_FixedTriggerLatency</p></td>
+        <td align=left>
+How to use an ADC peripheral to perform a single ADC conversion on a channel
+at each trigger event from a timer without any uncertainty (fixed trigger latency).
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="BSEC">BSEC</p></td>
+        <td align=left><p id="BSEC_OTP_Config">BSEC_OTP_Config</p></td>
+        <td align=left>
+How to configure OTP (One-Time Programmable) bits.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BSEC_ShadowRegisters">BSEC_ShadowRegisters</p></td>
+        <td align=left>
+This project is targeted to run on STM32N6xx device on NUCLEO-N657X0 board from STMicroelectronics.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=7><p id="CORTEX">CORTEX</p></td>
+        <td align=left><p id="CORTEXM_ModePrivilege">CORTEXM_ModePrivilege</p></td>
+        <td align=left>
+How to modify the Thread mode privilege access and stack. Thread mode is entered
+on reset or when returning from an exception.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEXM_ProcessStack">CORTEXM_ProcessStack</p></td>
+        <td align=left>
+How to modify the Thread mode stack. Thread mode is entered on reset, and can be
+entered as a result of an exception return.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEXM_SysTick">CORTEXM_SysTick</p></td>
+        <td align=left>
+How to use the default SysTick configuration with a 1 ms timebase to toggle LEDs.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEX_CACHE">CORTEX_CACHE</p></td>
+        <td align=left>
+This project provides a CORTEXM cache example based on the CMSIS API that can be used
+to build any firmware application to execute from internal Flash.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEX_HELIUM">CORTEX_HELIUM</p></td>
+        <td align=left>
+This project describes how to use the SIMD Helium instructions.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEX_InterruptSwitch_TrustZone">CORTEX_InterruptSwitch_TrustZone</p></td>
+        <td align=left>
+This project describes how to switch from secure to non-secure domain.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEX_MPU">CORTEX_MPU</p></td>
+        <td align=left>
+This project provides a CORTEXM cache example based on the CMSIS API that can be used
+to build any firmware application to execute from internal Flash.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="CRC">CRC</p></td>
+        <td align=left><p id="CRC_ReverseModes">CRC_ReverseModes</p></td>
+        <td align=left>
+How to configure the CRC using the HAL API. The CRC (cyclic
+redundancy check) calculation unit computes the CRC code of a given buffer of
+32-bit data( words), input or output data reversal features are
+enabled, using a fixed generator polynomial(0x4C11DB7):
+X^32 + X^26 + X^23 + X^22 + X^16 + X^12 + X^11 + X^10 +X^8 + X^7 + X^5 + X^4 + X^2+ X +1  used in MPEG2.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="CRYP">CRYP</p></td>
+        <td align=left><p id="CRYP_AES_GCM">CRYP_AES_GCM</p></td>
+        <td align=left>
+How to use the CRYPTO peripheral to encrypt and decrypt data using AES with
+Galois/Counter mode (GCM).
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="DCMIPP">DCMIPP</p></td>
+        <td align=left><p id="DCMIPP_ContinuousMode">DCMIPP_ContinuousMode</p></td>
+        <td align=left>
+This example shows how to use the DCMIPP IP in continuous Mode as a Camera Serial Interface and it is based on the STM32Cube HAL API
+that can be used to build any firmware application. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="DCMIPP_SnapshotDecimationMode">DCMIPP_SnapshotDecimationMode</p></td>
+        <td align=left>
+This example shows how to use the DCMIPP IP in Snapshot Mode as a Camera Serial Interface and it is based on the STM32Cube HAL API
+that can be used to build any firmware application. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="DMA">DMA</p></td>
+        <td align=left><p id="DMA_RAMToRAM">DMA_RAMToRAM</p></td>
+        <td align=left>
+This example describes how to use DMA to transfer a word data buffer from SRAM memory to embedded
+SRAM through the HAL API. Isolation of the HPDMA channel is aligned with targeted memories.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="DMA_RIF_management">DMA_RIF_management</p></td>
+        <td align=left>
+How to use CID information to isolate DMA channels.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="DMA2D">DMA2D</p></td>
+        <td align=left><p id="DMA2D_MemToMemWithPFC">DMA2D_MemToMemWithPFC</p></td>
+        <td align=left>
+This example provides a description of how to configure the DMA2D peripheral in Memory-to-memory transfer mode with
+pixel format conversion (PFC) mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="DMA2D_MemoryToMemory">DMA2D_MemoryToMemory</p></td>
+        <td align=left>
+This example provides a description of how to configure DMA2D peripheral in Memory_to_Memory transfer mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="DTS">DTS</p></td>
+        <td align=left><p id="DTS_GetTemperature">DTS_GetTemperature</p></td>
+        <td align=left>
+How to configure and use the DTS to get the temperature of the die.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="FDCAN">FDCAN</p></td>
+        <td align=left><p id="FDCAN_Loopback">FDCAN_Loopback</p></td>
+        <td align=left>
+This example describes how to configure the FDCAN peripheral to  operate in loopback mode.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="FMC">FMC</p></td>
+        <td align=left><p id="FMC_NAND_Load_And_Run">FMC_NAND_Load_And_Run</p></td>
+        <td align=left>
+This example describes how to configure the FMC controller to access the NAND memory.
+</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="FMC_SDRAM_DataMemory">FMC_SDRAM_DataMemory</p></td>
+        <td align=left>
+This example describes how to configure the FMC controller to access the SDRAM memory.
+</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="GPIO">GPIO</p></td>
+        <td align=left><p id="GPIO_EXTI">GPIO_EXTI</p></td>
+        <td align=left>
+How to configure external interrupt lines.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="GPIO_IOToggle">GPIO_IOToggle</p></td>
+        <td align=left>
+How to configure and use GPIOs through the HAL API.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="HAL">HAL</p></td>
+        <td align=left><p id="HAL_TimeBase_TIM">HAL_TimeBase_TIM</p></td>
+        <td align=left>
+How to customize HAL using a general-purpose timer as main source of time base
+instead of Systick.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="HASH">HASH</p></td>
+        <td align=left><p id="HASH_SHA224SHA256_DMA">HASH_SHA224SHA256_DMA</p></td>
+        <td align=left>
+How to use the HASH peripheral to hash data with SHA224 and SHA256 algorithms.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="LTDC">LTDC</p></td>
+        <td align=left><p id="LTDC_Horizontal_Mirroring">LTDC_Horizontal_Mirroring</p></td>
+        <td align=left>
+This example shows how to use the LTDC IP to Mirror the displayed image and it is based on the STM32Cube HAL API
+that can be used to build any firmware application. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="LTDC_YUV_Full_Planar">LTDC_YUV_Full_Planar</p></td>
+        <td align=left>
+This example shows how to use the LTDC IP to display an YUV 420 full planar image and it is based on the STM32Cube HAL API
+that can be used to build any firmware application. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="MCE">MCE</p></td>
+        <td align=left><p id="MCE_AESEncryptDecryptData">MCE_AESEncryptDecryptData</p></td>
+        <td align=left>
+This project provides a description of how encrypt and decrypt data from external memory (PSRAM). 
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="MCE_NoekeonEncryptDecryptData">MCE_NoekeonEncryptDecryptData</p></td>
+        <td align=left>
+This project provides a description of how to encrypt and decrypt data from external memory (PSRAM).
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="PKA">PKA</p></td>
+        <td align=left><p id="PKA_ECCscalarMultiplication">PKA_ECCscalarMultiplication</p></td>
+        <td align=left>
+How to use the PKA peripheral to execute ECC scalar multiplication. This 
+allows generating a public key from a private key.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PKA_ECDSA_Verify">PKA_ECDSA_Verify</p></td>
+        <td align=left>
+How to determine if a given signature is valid regarding the Elliptic curve digital signature algorithm
+(ECDSA).
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="PSSI">PSSI</p></td>
+        <td align=left><p id="PSSI_Master_Single_Com">PSSI_Master_Single_Com</p></td>
+        <td align=left>How to handle a single communication procedure using two boards with PSSI in polling mode.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PSSI_Slave_Single_Com">PSSI_Slave_Single_Com</p></td>
+        <td align=left>How to handle a single communication procedure using two boards with PSSI in polling mode.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=5><p id="PWR">PWR</p></td>
+        <td align=left><p id="PWR_SLEEP">PWR_SLEEP</p></td>
+        <td align=left>
+How to enter the Sleep mode and wake up from this mode by using an interrupt.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_STANDBY">PWR_STANDBY</p></td>
+        <td align=left>
+How to enter the Standby mode and wake up from this mode by using a wake-up pin.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_STANDBY_RTC">PWR_STANDBY_RTC</p></td>
+        <td align=left>
+How to enter the Standby mode and wake-up from this mode by using the RTC wakeup timer.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_STANDBY_TrustZone">PWR_STANDBY_TrustZone</p></td>
+        <td align=left>
+How to enter the Standby mode with a joint secure/non-secure application and wake-up from this mode by using the RTC wakeup timer.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_STOP">PWR_STOP</p></td>
+        <td align=left>
+How to enter the Stop mode and wake-up from this mode by using an interrupt.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="RCC">RCC</p></td>
+        <td align=left><p id="RCC_SwitchClock">RCC_SwitchClock</p></td>
+        <td align=left>
+This example describes how to use the RCC HAL API to configure the CPU and system buses clocks and
+modify the clock settings on run time.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="RIF">RIF</p></td>
+        <td align=left><p id="RIF_Memory">RIF_Memory</p></td>
+        <td align=left>
+This example describes how to use the RIF HAL API to configure a RISAF in order to protect a memory from illegal accesses.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="RIF_Peripheral">RIF_Peripheral</p></td>
+        <td align=left>
+This example describes how to use the RIF HAL API to configure the RISC in order to protect a peripheral from illegal accesses.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=3><p id="RNG">RNG</p></td>
+        <td align=left><p id="RNG_Config">RNG_Config</p></td>
+        <td align=left>
+How to configure the RNG peripheral with HAL API. 
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="RNG_MultiRNG">RNG_MultiRNG</p></td>
+        <td align=left>  
+
+How to generate random numbers with the RNG HAL API. 
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="RNG_MultiRNG_IT">RNG_MultiRNG_IT</p></td>
+        <td align=left>
+How to generate random numbers under interrupt with the RNG HAL API. 
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="SD">SD</p></td>
+        <td align=left><p id="SD_ReadWrite_DMA">SD_ReadWrite_DMA</p></td>
+        <td align=left>
+This example performs some write and read transfers to SD Card with SDMMC IP internal DMA mode. Note that security is enabled by default on Cortex-M55.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="SYSCFG">SYSCFG</p></td>
+        <td align=left><p id="FLEXMEM_Configurations">FLEXMEM_Configurations</p></td>
+        <td align=left>
+This project is targeted to run on STM32N6xx device on NUCLEO-N657X0 board from STMicroelectronics.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="SYSCFG_WritePostingErrors">SYSCFG_WritePostingErrors</p></td>
+        <td align=left>
+This example shows how to detect write posting errors.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=5><p id="TIM">TIM</p></td>
+        <td align=left><p id="TIM_DeadtimeInsertion">TIM_DeadtimeInsertion</p></td>
+        <td align=left>
+This example shows how to configure the TIM peripheral in PWM (Pulse Width Modulation) mode
+with asymmetric deadtime insertion between the complementaty channels.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="TIM_Encoder">TIM_Encoder</p></td>
+        <td align=left>
+This example shows how to configure the TIM1 peripheral in encoder mode to
+determinate the rotation direction.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="TIM_ExternalClockMode1">TIM_ExternalClockMode1</p></td>
+        <td align=left>
+This example shows how to configure the TIM peripheral in external clock mode 1 and use the button as a clock source to light a LED after 5 presses.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="TIM_PWMOutput">TIM_PWMOutput</p></td>
+        <td align=left>
+This example shows how to configure the TIM peripheral in PWM (Pulse Width Modulation)
+mode.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="TIM_TimeBase">TIM_TimeBase</p></td>
+        <td align=left>
+This example shows how to configure the TIM peripheral to generate a time base of 
+one second with the corresponding Interrupt request.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=4><p id="UART">UART</p></td>
+        <td align=left><p id="UART_Console">UART_Console</p></td>
+        <td align=left>
+How to use the HAL UART API for UART transmission (printf/getchar) via console with user interaction.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="UART_HyperTerminal_DMA">UART_HyperTerminal_DMA</p></td>
+        <td align=left>
+UART transmission (transmit/receive) in DMA mode
+between a board and an HyperTerminal PC application.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="UART_HyperTerminal_IT">UART_HyperTerminal_IT</p></td>
+        <td align=left>
+UART transmission (transmit/receive) in Interrupt mode between a board and
+an HyperTerminal PC application.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="UART_ReceptionToIdle_CircularDMA">UART_ReceptionToIdle_CircularDMA</p></td>
+        <td align=left>
+How to use the HAL UART API for reception to IDLE event in circular DMA mode.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=4><p id="XSPI">XSPI</p></td>
+        <td align=left><p id="XSPIM_SwappedMode">XSPIM_SwappedMode</p></td>
+        <td align=left>
+- This project provides a description of how to configure XSPIM IO Manager peripheral and commuinicate
+  with external memories in Swapped mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="XSPI_HyperFLASH_ReadWrite">XSPI_HyperFLASH_ReadWrite</p></td>
+        <td align=left>
+How to use a XSPI HyperFLASH memory in indirect mode.
+</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="XSPI_NOR_AutoPolling_DTR">XSPI_NOR_AutoPolling_DTR</p></td>
+        <td align=left>
+How to use an XSPI NOR memory in Automatic polling mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="XSPI_PSRAM_MemoryMapped">XSPI_PSRAM_MemoryMapped</p></td>
+        <td align=left>
+How to use an XSPI PSRAM memory in memory-mapped mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+        <td colspan="3"><b>Total number of examples: 65</b></td>
+        <td>3</td>
+        <td>18</td>
+        <td>44</td>
+      </tr>
+      <tr align=center>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=4><p id="Examples_LL">Examples_LL</p></td>
+        <td align=left rowspan=1><p id="EXTI">EXTI</p></td>
+        <td align=left><p id="EXTI_ToggleLedOnIT_Init">EXTI_ToggleLedOnIT_Init</p></td>
+        <td align=left>
+This example describes how to configure the EXTI and use
+GPIOs to toggle the user LEDs available on the board when
+a user button is pressed. This example is based on the
+STM32N6xx LL API. Peripheral initialization is done using LL
+initialization function to demonstrate LL init usage.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="GPIO">GPIO</p></td>
+        <td align=left><p id="GPIO_InfiniteLedToggling_Init">GPIO_InfiniteLedToggling_Init</p></td>
+        <td align=left>
+How to configure and use GPIOs to toggle the on-board user LEDs
+every 250 ms. This example is based on the STM32N6xx LL API. The peripheral
+is initialized with LL initialization function to demonstrate LL init usage.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="TIM">TIM</p></td>
+        <td align=left><p id="TIM_TimeBase_Init">TIM_TimeBase_Init</p></td>
+        <td align=left>
+Configuration of the TIM peripheral to generate a timebase. This 
+example is based on the STM32N6xx TIM LL API. The peripheral initialization 
+uses LL unitary service functions for optimization purposes (performance and size). 
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+        <td colspan="3"><b>Total number of examples_ll: 3</b></td>
+        <td>0</td>
+        <td>0</td>
+        <td>3</td>
+      </tr>
+      <tr align=center>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=25><p id="Applications">Applications</p></td>
+        <td align=left rowspan=1><p id="-">-</p></td>
+        <td align=left><p id="OpenBootloader">OpenBootloader</p></td>
+        <td align=left>
+This application exploits OpenBootloader Middleware to demonstrate how to develop an application
+that can be used to program OTP words.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=3><p id="FileX">FileX</p></td>
+        <td align=left><p id="Fx_File_Edit_Standalone">Fx_File_Edit_Standalone</p></td>
+        <td align=left>
+This application provides an example of FileX stack usage on NUCLEO-N657X0-Q board, running in standalone mode (without ThreadX). It demonstrates how to create a Fat File system on the internal SRAM memory using FileX API.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Fx_MultiAccess">Fx_MultiAccess</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS FileX stack usage on STM32N6570-DK board, it demonstrates the FileX's concurrent file access capabilities. The application is designed to execute file operations on the SD card device, the code provides all required software code for handling SD card I/O operations.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Fx_uSD_File_Edit">Fx_uSD_File_Edit</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS FileX stack usage on STM32N6570-DK, it shows how to develop a basic SD card file
+operations application. The application is designed to handle SD card insertion/removal events, and depending on that state, it starts
+and stops file operations from and into the SD card.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=5><p id="NetXDuo">NetXDuo</p></td>
+        <td align=left><p id="Nx_SNTP_Client">Nx_SNTP_Client</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS NetX/NetXDuo stack usage.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Nx_TCP_Echo_Client">Nx_TCP_Echo_Client</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS NetX/NetXDuo stack usage.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Nx_TCP_Echo_Server">Nx_TCP_Echo_Server</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS NetX/NetXDuo stack usage .
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Nx_UDP_Echo_Client">Nx_UDP_Echo_Client</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS NetX/NetXDuo stack usage .
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Nx_UDP_Echo_Server">Nx_UDP_Echo_Server</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS NetX/NetXDuo stack usage .
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="ThreadX">ThreadX</p></td>
+        <td align=left><p id="Tx_Thread_Creation">Tx_Thread_Creation</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS ThreadX stack usage. It shows how to develop an application using the ThreadX thread management APIs.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=3><p id="USBPD">USBPD</p></td>
+        <td align=left><p id="USBPD_DRP_DRD">USBPD_DRP_DRD</p></td>
+        <td align=left>
+This application is a USBPD type C DRP (supporting Data Role Swap) using Azure RTOS.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="USBPD_SNK">USBPD_SNK</p></td>
+        <td align=left>
+This application is a USBPD type C Provider using Azure RTOS.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="USBPD_SRC">USBPD_SRC</p></td>
+        <td align=left>
+This application is a USBPD type C Provider using Azure RTOS.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=8><p id="USBX">USBX</p></td>
+        <td align=left><p id="Ux_Device_CDC_ACM">Ux_Device_CDC_ACM</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage on NUCLEO-N657X0-Q board,
+it shows how to develop USB Device communication class "CDC_ACM"  based application.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Device_CDC_ECM">Ux_Device_CDC_ECM</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS CDC_ECM stack usage on STM32N6570-DK board, it shows how to run web HTTP server based application stack
+over USB interface. 
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Device_HID">Ux_Device_HID</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage on NUCLEO-N657X0-Q board,
+it shows how to develop USB Device Human Interface "HID" mouse based application.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Device_HID_CDC_ACM">Ux_Device_HID_CDC_ACM</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage on NUCLEO-N657X0-Q board,
+it shows how to develop USB Device communication class "HID" and "CDC_ACM" based application.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Device_MSC">Ux_Device_MSC</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage on STM32N6570-DK board, it shows how to develop USB device mass storage class based application.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Host_DualClass">Ux_Host_DualClass</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Host_HID">Ux_Host_HID</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage.
+</td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Ux_Host_MSC">Ux_Host_MSC</p></td>
+        <td align=left>
+This application provides an example of Azure RTOS USBX stack usage. It shows how to develop USB Host Mass Storage "MSC" able to enumerate and communicate with a removable USB flash disk.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=3><p id="VENC">VENC</p></td>
+        <td align=left><p id="VENC_LRUN">VENC_LRUN</p></td>
+        <td align=left>
+This project demonstrates the use of the STM32N6 video encoder and the camera pipeline.<br>It is targeted to run on STM32N657xx device on STM32N6570-DK board from STMicroelectronics.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="VENC_LRUN_ThreadX">VENC_LRUN_ThreadX</p></td>
+        <td align=left>
+This project demonstrates the use of the STM32N6 video encoder and the camera pipeline.<br>It is targeted to run on STM32N657xx device on STM32N6570-DK board from STMicroelectronics.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="VENC_RTSP_Server">VENC_RTSP_Server</p></td>
+        <td align=left>
+This application provides an example of the H264 video encoder streamed through Azure RTOS NetX/NetXDuo on STM32N6570-DK board.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+        <td colspan="3"><b>Total number of applications: 27</b></td>
+        <td>0</td>
+        <td>13</td>
+        <td>14</td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+      	<td colspan="4"><b>Total number of projects: 107</b></td>
+      	<td>3</td>
+      	<td>37</td>
+      	<td>67</td>
+      </tr>
+    </table>
+  </body>
+</html>

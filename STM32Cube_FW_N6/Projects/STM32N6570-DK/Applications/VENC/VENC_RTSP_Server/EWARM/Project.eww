@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\FSBL\FSBL.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\Appli\VENC_RTSP_Server_Appli.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>

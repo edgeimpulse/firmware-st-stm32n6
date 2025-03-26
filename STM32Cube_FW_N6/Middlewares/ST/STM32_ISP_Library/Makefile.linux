@@ -1,0 +1,35 @@
+SYSROOT?=""
+SONAME_EXTENSION?=""
+LIBNAME = libstm32mwisp.so
+SONAME = $(LIBNAME)$(SONAME_EXTENSION)
+
+CFLAGS += -Wall -fPIC -Wextra -O2
+CFLAGS += -DLINUX -DISP_MW_CONFIG_FROM_NVMEM
+CFLAGS += -Iisp/Inc -Ievision/Inc
+CFLAGS += -I${SYSROOT}/usr/include/iqtune-linux-wrapper/ -L${SYSROOT}/usr/lib/
+
+LDFLAGS = -shared
+LDFLAGS += -Wl,--hash-style=gnu,-soname,$(SONAME)
+LDFLAGS += -liqtunelinuxwrapper
+
+SRCS  = isp/Src/ai_logging.c
+SRCS += isp/Src/isp_algo.c
+SRCS += isp/Src/isp_cmd_parser.c
+SRCS += isp/Src/isp_core.c
+SRCS += isp/Src/isp_services.c
+SRCS += isp/Src/isp_tool_com.c
+
+OBJS = $(SRCS:.c=.o)
+
+all: $(LIBNAME)
+
+$(LIBNAME): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $^
+
+$(SRCS:.c=.d):%.d:%.c
+	$(CC) $(CFLAGS) -MM $< >$@
+
+include $(SRCS:.c=.d)
+
+clean:
+	rm -rf $(OBJS) $(LIBNAME) $(SRCS:.c=.d)

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ProjectWorkspace xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_mpw.xsd">
+
+  <SchemaVersion>1.0</SchemaVersion>
+
+  <Header>### uVision Project, (C) Keil Software</Header>
+
+  <WorkspaceName>C:\git\n6_v0.4.0\Firmware\Projects\STM32N6570-DK\Templates\Template_FSBL_LRUN\MDK-ARM\Project.uvmpw</WorkspaceName>
+
+  <project>
+    <PathAndName>.\FSBL\FSBL.uvprojx</PathAndName>
+  </project>
+
+  <project>
+    <PathAndName>.\Appli\Appli.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
+    <NodeIsExpanded>1</NodeIsExpanded>
+  </project>
+
+</ProjectWorkspace>

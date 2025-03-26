@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\FSBL\FSBL.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\AppliSecure\Project_s.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\AppliNonSecure\Project_ns.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\ExtMemLoader\Template_Isolation_XIP_ExtMemLoader.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>

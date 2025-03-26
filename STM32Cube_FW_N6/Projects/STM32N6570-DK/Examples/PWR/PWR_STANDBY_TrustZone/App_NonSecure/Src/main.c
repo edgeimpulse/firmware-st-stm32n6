@@ -1,0 +1,208 @@
+/**
+  ******************************************************************************
+  * @file    PWR/PWR_STANDBY_TrustZone/App_NonSecure/Src/main.c
+  * @author  GPM Application Team
+  * @brief   Non-secure main program.
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2023 STMicroelectronics</center></h2>
+  *
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
+  *
+  ******************************************************************************
+  */
+
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "secure_nsc.h"
+
+/** @addtogroup STM32N6xx_HAL_Template
+  * @{
+  */
+
+/** @addtogroup HAL
+  * @{
+  */
+
+/* Private typedef -----------------------------------------------------------*/
+/* Private defines -----------------------------------------------------------*/
+/* Private macros ------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+void SecureFault_Callback(void);
+void SecureError_Callback(void);
+uint32_t Generate_RTCWUTimer_Interrupt(uint32_t TimeToWKUP);
+/* Global variables ----------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+/* Private functions ---------------------------------------------------------*/
+
+/**
+  * @brief  Main program
+  * @param  None
+  * @retval None
+  */
+int main(void)
+{
+
+  /* Reset of all peripherals, Initializes the Flash interface and the systick. */
+  HAL_Init();
+  
+  /* Register SecureFault callback defined in non-secure and to be called by secure handler */
+  SECURE_RegisterCallback(SECURE_FAULT_CB_ID, (void *)SecureFault_Callback);
+
+  /* Register SecureError callback defined in non-secure and to be called by secure handler */
+  SECURE_RegisterCallback(IAC_ERROR_CB_ID, (void *)SecureError_Callback);
+  
+  /*******************************************************************************
+  *                          Common Configuration Routines                       *
+  *******************************************************************************/
+
+  /* Initialize non-secure LED1 IO PO1 */
+  BSP_LED_Init(LED1);
+
+    /* Check low power flags */
+  if ((__HAL_PWR_GET_FLAG(PWR_FLAG_SBF) == 0U))
+  {
+    /* first run, blink slowly */
+    for(int i = 0; i < 10; i++)
+    {
+      /* Toggle LED2 every 500ms */
+      BSP_LED_Toggle(LED1);
+      HAL_Delay(500);
+    }
+
+  } else
+  {
+    /* clear standby flag */
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SBF);
+
+    for(int i = 0; i<50; i++){
+      /* Toggle LED2 every 100ms */
+      BSP_LED_Toggle(LED1);
+      HAL_Delay(100);
+    }
+  }
+
+  /* enable memory retention to keep application in standby */
+  HAL_PWREx_EnableTCMRetention();
+  HAL_PWREx_EnableTCMFLXRetention();
+
+  /* Set VTOR after standby to base of retention RAM */
+  __HAL_RCC_SYSCFG_CLK_ENABLE();
+  SYSCFG->INITSVTORCR = 0x34000000;
+  
+  /* wake up the system in 5s (5000ms) */
+  Generate_RTCWUTimer_Interrupt(5000);
+  /* Enter STANDBY mode */
+  HAL_PWR_EnterSTANDBYMode();
+  
+  while(1);
+}
+
+/**
+ * @brief  Generate RTC Wake Up Timer Event.
+ * @retval
+ */
+uint32_t Generate_RTCWUTimer_Interrupt(uint32_t TimeToWKUP)
+{
+      /* Set RTC Instance */
+  hrtc.Instance = RTC;
+
+  /* Set parameter to be configured */
+  hrtc.Init.HourFormat     = RTC_HOURFORMAT_12;
+  hrtc.Init.AsynchPrediv   = 0x7FU;
+  hrtc.Init.SynchPrediv    = 0xF9U;
+  hrtc.Init.OutPut         = RTC_OUTPUT_WAKEUP;
+  hrtc.Init.OutPutRemap    = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType     = RTC_OUTPUT_TYPE_PUSHPULL;
+
+  /* Initialize the RTC peripheral */
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    return 1; /* KO */
+  }
+
+  /*
+      LSI = 32KHz as RTC clock source.
+      LSI / RTC_WAKEUPCLOCK_RTCCLK_DIV16 = 2KHz.
+      => 0.5 * WakeUpCounter = TimeToWKUP (ms).
+      => WakeUpCounter = TimeTOWKUP*2
+  */
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, TimeToWKUP*2, RTC_WAKEUPCLOCK_RTCCLK_DIV16, 0) != HAL_OK)
+  {
+    return 2; /* KO */
+  }
+
+ return 0; /* OK */
+}
+
+/**
+  * @brief  Callback called by secure code following a secure fault interrupt
+  * @note   This callback is called by secure code thanks to the registration
+  *         done by the non-secure application with non-secure callable API
+  *         SECURE_RegisterCallback(SECURE_FAULT_CB_ID, (void *)SecureFault_Callback);
+  * @retval None
+  */
+void SecureFault_Callback(void)
+{
+  /* Go to infinite loop when Secure fault generated by IDAU/SAU check */
+  /* because of illegal access */
+  while (1)
+  {
+  }
+}
+
+/**
+  * @brief  Callback called by secure code following a IAC secure interrupt (IAC_IRQn)
+  * @note   This callback is called by secure code thanks to the registration
+  *         done by the non-secure application with non-secure callable API
+  *         SECURE_RegisterCallback(IAC_ERROR_CB_ID, (void *)SecureError_Callback);
+  * @retval None
+  */
+void SecureError_Callback(void)
+{
+  /* Go to infinite loop when Secure error generated by RIF IAC check */
+  /* because of illegal access */
+  while (1)
+  {
+  }
+}
+
+
+#ifdef  USE_FULL_ASSERT
+
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(file);
+  UNUSED(line);
+
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+
+  /* Infinite loop */
+  while (1)
+  {
+  }
+}
+#endif
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */

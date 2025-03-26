@@ -1,0 +1,13 @@
+/* Macro functions for cspybat */
+__var fh; /* File handle */
+__var hits; /* Remaining hits before exiting */
+/* Macro called at start to open a file */
+execUserSetup() {
+  __setCodeBreak("0x18002f80", 1,
+  "auto_reset()", "TRUE", "" );
+}
+
+auto_reset() {
+    #PC = __readMemory32(0x34000004, "Memory");
+    #SP = __readMemory32(0x34000000, "Memory");
+}
