@@ -32,9 +32,19 @@
 #ifndef _EI_CLASSIFIER_MODEL_METADATA_H_
 #define _EI_CLASSIFIER_MODEL_METADATA_H_
 
+/**
+* @file
+*  Auto-generated global deployment macros.
+*  model_metadata.h defines if certain functions are enabled or disabled in the whole project.
+*/
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#ifdef __cplusplus
+#include <tuple>
+#endif
+#include "edge-impulse-sdk/classifier/ei_constants.h"
 
 #define EI_CLASSIFIER_NONE                       255
 #define EI_CLASSIFIER_UTENSOR                    1
@@ -50,6 +60,7 @@
 #define EI_CLASSIFIER_ONNX_TIDL                  11
 #define EI_CLASSIFIER_MEMRYX                     12
 #define EI_CLASSIFIER_ETHOS_LINUX                13
+#define EI_CLASSIFIER_ATON                       14
 
 #define EI_CLASSIFIER_SENSOR_UNKNOWN             -1
 #define EI_CLASSIFIER_SENSOR_MICROPHONE          1
@@ -63,26 +74,28 @@
 #define EI_ANOMALY_TYPE_KMEANS                    1
 #define EI_ANOMALY_TYPE_GMM                       2
 #define EI_ANOMALY_TYPE_VISUAL_GMM                3
+#define EI_ANOMALY_TYPE_VISUAL_PATCHCORE          4
 
 // These must match the enum values in TensorFlow Lite's "TfLiteType"
 #define EI_CLASSIFIER_DATATYPE_FLOAT32           1
 #define EI_CLASSIFIER_DATATYPE_UINT8             3
 #define EI_CLASSIFIER_DATATYPE_INT8              9
 
-#define EI_CLASSIFIER_PROJECT_ID                 197
-#define EI_CLASSIFIER_PROJECT_OWNER              "Edge Impulse Profiling"
-#define EI_CLASSIFIER_PROJECT_NAME               "Demo: Constrained Object Detection"
-#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     1
-#define EI_CLASSIFIER_NN_INPUT_FRAME_SIZE        27648
-#define EI_CLASSIFIER_RAW_SAMPLE_COUNT           9216
+#define EI_CLASSIFIER_PROJECT_ID                 374487
+#define EI_CLASSIFIER_PROJECT_OWNER              "stm-internal"
+#define EI_CLASSIFIER_PROJECT_NAME               "conference-dataset-person-logo-only"
+#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     48
+#define EI_CLASSIFIER_NN_INPUT_FRAME_SIZE        150528
+#define EI_CLASSIFIER_RAW_SAMPLE_COUNT           50176
 #define EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME      1
 #define EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE       (EI_CLASSIFIER_RAW_SAMPLE_COUNT * EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME)
-#define EI_CLASSIFIER_INPUT_WIDTH                96
-#define EI_CLASSIFIER_INPUT_HEIGHT               96
+#define EI_CLASSIFIER_INPUT_WIDTH                224
+#define EI_CLASSIFIER_INPUT_HEIGHT               224
+#define EI_CLASSIFIER_RESIZE_MODE                EI_CLASSIFIER_RESIZE_FIT_SHORTEST
 #define EI_CLASSIFIER_INPUT_FRAMES               1
-#define EI_CLASSIFIER_NN_OUTPUT_COUNT            288
+#define EI_CLASSIFIER_NN_OUTPUT_COUNT            24696
 #define EI_CLASSIFIER_INTERVAL_MS                1
-#define EI_CLASSIFIER_LABEL_COUNT                1
+#define EI_CLASSIFIER_LABEL_COUNT                3
 #define EI_CLASSIFIER_HAS_ANOMALY                EI_ANOMALY_TYPE_UNKNOWN
 #define EI_CLASSIFIER_HAS_VISUAL_ANOMALY         0
 #define EI_CLASSIFIER_SINGLE_FEATURE_INPUT       1
@@ -91,23 +104,24 @@
 
 
 #define EI_CLASSIFIER_OBJECT_DETECTION             1
-#define EI_CLASSIFIER_OBJECT_DETECTION_LAST_LAYER  EI_CLASSIFIER_LAST_LAYER_FOMO
+#define EI_CLASSIFIER_OBJECT_DETECTION_LAST_LAYER  EI_CLASSIFIER_LAST_LAYER_YOLOV5
 #warning 'EI_CLASSFIER_OBJECT_DETECTION_COUNT' is used for the guaranteed minimum number of objects detected. To get all objects during inference use 'bounding_boxes_count' from the 'ei_impulse_result_t' struct instead.
 #define EI_CLASSIFIER_OBJECT_DETECTION_COUNT       10
-#define EI_CLASSIFIER_OBJECT_DETECTION_THRESHOLD   0.55
+#define EI_CLASSIFIER_OBJECT_DETECTION_THRESHOLD   0.5
 #define EI_CLASSIFIER_TFLITE_OUTPUT_DATA_TENSOR    0
 #define EI_CLASSIFIER_TFLITE_OUTPUT_LABELS_TENSOR  1
 #define EI_CLASSIFIER_TFLITE_OUTPUT_SCORE_TENSOR   2
 
-#define EI_CLASSIFIER_TFLITE_INPUT_DATATYPE         EI_CLASSIFIER_DATATYPE_INT8
-#define EI_CLASSIFIER_TFLITE_OUTPUT_DATATYPE        EI_CLASSIFIER_DATATYPE_INT8
+#define EI_CLASSIFIER_TFLITE_INPUT_DATATYPE         EI_CLASSIFIER_DATATYPE_UINT8
+#define EI_CLASSIFIER_TFLITE_OUTPUT_DATATYPE        EI_CLASSIFIER_DATATYPE_UINT8
 
+#define EI_CLASSIFIER_TFLITE_LARGEST_ARENA_SIZE  836646
 
-#define EI_CLASSIFIER_INFERENCING_ENGINE            EI_CLASSIFIER_TFLITE
+#define EI_CLASSIFIER_INFERENCING_ENGINE            EI_CLASSIFIER_ATON
 
 #define EI_CLASSIFIER_QUANTIZATION_ENABLED          1
 
-#define EI_CLASSIFIER_COMPILED                      1
+#define EI_CLASSIFIER_COMPILED                      0
 #define EI_CLASSIFIER_HAS_TFLITE_OPS_RESOLVER       0
 
 #define EI_CLASSIFIER_LOAD_IMAGE_SCALING         0
@@ -122,9 +136,11 @@
 #define EI_CLASSIFIER_LOAD_FFT_1024              0
 #define EI_CLASSIFIER_LOAD_FFT_2048              0
 #define EI_CLASSIFIER_LOAD_FFT_4096              0
+#define EI_CLASSIFIER_NON_STANDARD_FFT_SIZES     0
 
 #define EI_DSP_PARAMS_GENERATED 1
 
+#define EI_CLASSIFIER_DSP_AXES_INDEX_TYPE        uint8_t
 
 #define EI_CLASSIFIER_SENSOR                     EI_CLASSIFIER_SENSOR_CAMERA
 #define EI_CLASSIFIER_FUSION_AXES_STRING         "image"
@@ -136,8 +152,8 @@
 #define EI_CLASSIFIER_SLICE_SIZE                 (EI_CLASSIFIER_RAW_SAMPLE_COUNT / EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW)
 
 #define EI_STUDIO_VERSION_MAJOR             1
-#define EI_STUDIO_VERSION_MINOR             55
-#define EI_STUDIO_VERSION_PATCH             0
+#define EI_STUDIO_VERSION_MINOR             66
+#define EI_STUDIO_VERSION_PATCH             26
 
 #define EI_CLASSIFIER_HR_ENABLED            0
 
@@ -293,6 +309,7 @@ typedef struct {
     size_t named_axes_size;
     const char * ppg_ecg;
     int filter_preset;
+    int hr_win_size_s;
     float sensitivity;
     float acc_resting_std;
     const char * hrv_features;

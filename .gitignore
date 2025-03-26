@@ -4,3 +4,7 @@
 # model build output
 /model/st_ai_output
 /model/st_ai_ws
+
+# the usual
+.DS_Store
+/.vscode
