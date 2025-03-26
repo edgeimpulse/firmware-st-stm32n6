@@ -1,29 +1,18 @@
-# STM32N6 AI RTOS Application
+# Edge Impulse STM32N6 Application
 
-Computer Vision application to enable the deployment of object detections models on STM32N6570-DK board.
+Firmware project based on the STMicroElectronics STM32N6570-DK board. The firmware includes following both ingestion and inference code.
 
-This application is prebuilt with a people detection model "TinyYOLOv2".
 
-This top readme gives an overview of the app. Additional documentation is available in the [Doc](./Doc/) folder.
+## Ingestion
+Data sampling and uploading directly into Edge Impulse Studio. Connect the board over the `STLINK USB` to your computer and run the Edge Impulse CLI tools.
+Follow the [guide](https://docs.edgeimpulse.com/docs/edge-ai-hardware/mcu-+-ai-accelerators/stm32n6570-dk#id-4.-connecting-cli-to-development-kit) for the step-by-step procedure.
 
-## Doc Folder Content
+## Inference
+Run an Edge Impulse model on ST hardware. This firmware projects ships with an object detection model detecting: `Persons`, `EI logos` and `ST logos`. 
+To start inference use the CLI tool `edge-impulse-run-impulse`. This will start inference and shows bounding boxes / labels on the display and detailed info in the terminal.
+Starting the tool in debug mode: `edge-impulse-run-impulse --debug`, opens a webserver where you can view the results in your webbrowser.
 
-- [Application overview](Doc/Application-Overview.md)
-- [Boot Overview](Doc/Boot-Overview.md)
-- [Deploy your tflite model](Doc/Deploy-your-tflite-Model.md)
-- [STM32N6570-DK Revision build options](Doc/Build-Options.md#revision)
-- [Camera build options](Doc/Build-Options.md#cameras-module)
-
-## Features demonstrated in this example
-
-- Multi-threaded application flow (Azure RTOS ThreadX)
-- NPU accelerated quantized AI model inference
-- Dual DCMIPP pipes
-- DCMIPP crop, decimation, downscale
-- LTDC dual-layer implementation
-- DCMIPP ISP usage
-- Dev mode
-- Boot from External Flash
+Follow one of our [end-to-end tuturials](https://docs.edgeimpulse.com/docs/tutorials/end-to-end-tutorials/computer-vision/object-detection/object-detection) to build and deploy your own model.
 
 ## Hardware Support
 
@@ -39,9 +28,6 @@ BOOT0 switch position doesn't matter)
   - ST VD66GY Camera module
   - ST VD55G1 Camera module
   - ST VD1941 Camera module
-
-![Board](_htmresc/ImageBoard.JPG)
-STM32N6570-DK board with MB1854B IMX335.
 
 ## Tools version
 
@@ -60,19 +46,23 @@ __Boot modes:__
 
 ## Quickstart using prebuilt binaries
 
-### Flash prebuilt binaries
+### Flash prebuilt binaries using STM32CubeProgrammer
 
 Three binaries must be programmed in the board external flash using the following procedure:
 
   1. Switch BOOT1 switch to right position
-  2. Program `Binary/ai_fsbl_cut_2_0.hex` (To be done once) (First stage boot loader) (STM32N6570-DK-REV-C01)
-  3. Program `Binary/network_data.hex` (params of the networks; To be changed only when the network is changed)
-  4. Program `Binary/STM32N6_AI_RTOS_Application.hex` (firmware application)
+  2. Program `Upload/ai_fsbl_cut_2_0.hex` (To be done once) (First stage boot loader) (STM32N6570-DK-REV-C01)
+  3. Program `Upload/network_data.hex` (params of the networks; To be changed only when the network is changed)
+  4. Program `Upload/Project.hex` (firmware application)
   5. Switch BOOT1 switch to Left position
   6. Power down / up sequence
 
-__Note__: The `Binary/STM32N6_AI_RTOS_Application.hex` firmware is built for MB1939 STM32N6570-DK REV C01 with IMX335 Camera module.
-__Note__: The `Binary/ai_fsbl_cut_2_0.hex` firmware is built for MB1939 STM32N6570-DK REV C01. For previous board please use `Binary/ai_fsbl_cut_1_1.hex`. For the app binaries you need to build them.
+__Note__: The `Upload/Project.hex` firmware is built for MB1939 STM32N6570-DK REV C01 with IMX335 Camera module.
+__Note__: The `Upload/ai_fsbl_cut_2_0.hex` firmware is built for MB1939 STM32N6570-DK REV C01. For previous board please use `Binary/ai_fsbl_cut_1_1.hex`. For the app binaries you need to build them.
+
+### Flash prebuilt binaries using included scripts
+
+Alternatively to using the STM32CubeProgrammer directly, the scripts the `Upload` folder can be used. Instructions can be found in the [Readme](Upload/README.md)
 
 ### How to Program hex files using Command line
 
@@ -82,13 +72,13 @@ Make sure to have the STM32CubeProgrammer bin folder added in your path.
 export DKEL="<STM32CubeProgrammer_N6 Install Folder>/bin/ExternalLoader/MX66UW1G45G_STM32N6570-DK.stldr"
 
 # First Stage Boot loader
-STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -el $DKEL -hardRst -w Binary/ai_fsbl_cut_2_0.hex
+STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -el $DKEL -hardRst -w Upload/ai_fsbl_cut_2_0.hex
 
 # Network parameters and biases
-STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -el $DKEL -hardRst -w Binary/network_data.hex
+STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -el $DKEL -hardRst -w Upload/network_data.hex
 
 # Application Firmware
-STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -el $DKEL -hardRst -w Binary/STM32N6_AI_RTOS_Application.hex
+STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -el $DKEL -hardRst -w Upload/Project.hex
 ```
 
 ## Quickstart using source code
