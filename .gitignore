@@ -1,0 +1,6 @@
+# build output
+/build
+
+# model build output
+/model/st_ai_output
+/model/st_ai_ws
