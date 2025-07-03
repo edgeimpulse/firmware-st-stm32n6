@@ -45,7 +45,6 @@
 
 #include "edge-impulse-sdk/classifier/ei_model_types.h"
 #include "edge-impulse-sdk/classifier/inferencing_engines/engines.h"
-#include "edge-impulse-sdk/classifier/postprocessing/ei_postprocessing_common.h"
 
 const char* ei_classifier_inferencing_categories[] = { "ei", "person", "st" };
 
@@ -73,16 +72,18 @@ ei_model_dsp_t ei_dsp_blocks[ei_dsp_blocks_size] = {
         nullptr, // factory function
     }
 };
-
-const uint8_t ei_output_tensors_indices_33[1] = { 0 };
-const uint8_t ei_output_tensors_size_33 = 1;
 const ei_config_tflite_graph_t ei_config_tflite_graph_5 = { };
 
 const ei_learning_block_config_tflite_graph_t ei_learning_block_config_5 = {
     .implementation_version = 1,
+    .classification_mode = EI_CLASSIFIER_CLASSIFICATION_MODE_OBJECT_DETECTION,
     .block_id = 5,
-    .output_tensors_indices = ei_output_tensors_indices_33,
-    .output_tensors_size = ei_output_tensors_size_33,
+    .object_detection = 1,
+    .object_detection_last_layer = EI_CLASSIFIER_LAST_LAYER_YOLOV5,
+    .output_data_tensor = 0,
+    .output_labels_tensor = 1,
+    .output_score_tensor = 2,
+    .threshold = 0.5,
     .quantized = 1,
     .compiled = 0,
     .graph_config = (void*)&ei_config_tflite_graph_5
@@ -94,34 +95,20 @@ const uint8_t ei_learning_block_5_inputs_size = 1;
 const ei_learning_block_t ei_learning_blocks[ei_learning_blocks_size] = {
     {
         5,
+        false,
         &run_nn_inference,
         (void*)&ei_learning_block_config_5,
         EI_CLASSIFIER_IMAGE_SCALING_NONE,
         ei_learning_block_5_inputs,
-        ei_learning_block_5_inputs_size
+        ei_learning_block_5_inputs_size,
+        24696
     },
 };
 
-const ei_fill_result_fomo_i8_config_t ei_fill_result_fomo_i8_config_3 = {
-    .threshold = 0.55,
-    .out_width = 12,
-    .out_height = 12,
-    .object_detection_count = 10,
-    .zero_point = -128,
-    .scale = 0.00390625
-};
-const size_t ei_postprocessing_blocks_size = 1;
-const ei_postprocessing_block_t ei_postprocessing_blocks[ei_postprocessing_blocks_size] = {
-    {
-        .block_id = 3,
-        .type = EI_CLASSIFIER_MODE_OBJECT_DETECTION,
-        .init_fn = NULL,
-        .deinit_fn = NULL,
-        .postprocess_fn = &process_fomo_i8,
-        .display_fn = NULL,
-        .config = (void*)&ei_fill_result_fomo_i8_config_3,
-        .input_block_id = 3,
-    },
+
+const ei_object_detection_nms_config_t ei_object_detection_nms = {
+    0.0f, /* NMS confidence threshold */
+    0.2f  /* NMS IOU threshold */
 };
 
 const ei_impulse_t impulse_374487_0 = {
@@ -141,14 +128,22 @@ const ei_impulse_t impulse_374487_0 = {
     .input_frames = 1,
     .interval_ms = 1,
     .frequency = 0,
-
     .dsp_blocks_size = ei_dsp_blocks_size,
     .dsp_blocks = ei_dsp_blocks,
+    
+    .object_detection_count = 10,
+    .fomo_output_size = 0,
+    
+    
+    .visual_ad_grid_size_x = int((224 / 8) / 2 - 1),
+    .visual_ad_grid_size_y = int((224 / 8) / 2 - 1),
+    
+    .tflite_output_features_count = 24696,
     .learning_blocks_size = ei_learning_blocks_size,
     .learning_blocks = ei_learning_blocks,
 
-    .postprocessing_blocks_size = ei_postprocessing_blocks_size,
-    .postprocessing_blocks = ei_postprocessing_blocks,
+    .postprocessing_blocks_size = 0,
+    .postprocessing_blocks = nullptr,
 
     .inferencing_engine = EI_CLASSIFIER_ATON,
 
@@ -159,7 +154,8 @@ const ei_impulse_t impulse_374487_0 = {
 
     .has_anomaly = EI_ANOMALY_TYPE_UNKNOWN,
     .label_count = 3,
-    .categories = ei_classifier_inferencing_categories
+    .categories = ei_classifier_inferencing_categories,
+    .object_detection_nms = ei_object_detection_nms
 };
 
 ei_impulse_handle_t impulse_handle_374487_0 = ei_impulse_handle_t( &impulse_374487_0 );
