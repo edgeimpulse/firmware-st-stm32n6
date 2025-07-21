@@ -130,11 +130,7 @@ Infinite_Loop:
   .size g_pfnVectors, .-g_pfnVectors
 
 g_pfnVectors:
-#if defined(STM32N6XX_SI_CUT1_1)
-  .word 0x34110000
-#else
   .word _estack
-#endif /* STM32N6XX_SI_CUT1_1 */
   .word Reset_Handler
   .word NMI_Handler
   .word HardFault_Handler

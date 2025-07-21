@@ -122,7 +122,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32n6570_discovery_camera.h"
 #include "stm32n6570_discovery_bus.h"
-
+#include "isp_param_conf.h"
 /** @addtogroup BSP
   * @{
   */
@@ -151,8 +151,8 @@ ISP_HandleTypeDef    hcamera_isp;
   */
 static CAMERA_Drv_t *Camera_Drv = NULL;
 static CAMERA_Capabilities_t Camera_Cap;
-static uint32_t isp_gain;
-static uint32_t isp_exposure;
+static int32_t isp_gain;
+static int32_t isp_exposure;
 
 /**
   * @}
@@ -161,8 +161,8 @@ static uint32_t isp_exposure;
 /** @defgroup STM32N6570-DK_CAMERA_Private_FunctionsPrototypes CAMERA Private Functions Prototypes
   * @{
   */
-static void DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp);
-static void DCMIPP_MspDeInit(DCMIPP_HandleTypeDef *hdcmipp);
+static void DCMIPP_MspInit(const DCMIPP_HandleTypeDef *hdcmipp);
+static void DCMIPP_MspDeInit(const DCMIPP_HandleTypeDef *hdcmipp);
 
 #if (USE_HAL_DCMIPP_REGISTER_CALLBACKS > 0)
 static void DCMIPP_PIPE_LineEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe);
@@ -200,7 +200,9 @@ int32_t BSP_CAMERA_Init(uint32_t Instance, uint32_t Resolution, uint32_t PixelFo
 {
   int32_t ret = BSP_ERROR_NONE;
   ISP_AppliHelpersTypeDef appliHelpers = {0};
-  ISP_StatAreaTypeDef statArea = {0};
+  static const ISP_IQParamTypeDef* ISP_IQParamCacheInit[] = {
+    &ISP_IQParamCacheInit_IMX335
+   };
   if (Instance >= CAMERA_INSTANCES_NBR)
   {
     ret = BSP_ERROR_WRONG_PARAM;
@@ -242,6 +244,10 @@ int32_t BSP_CAMERA_Init(uint32_t Instance, uint32_t Resolution, uint32_t PixelFo
       else if (BSP_CAMERA_HwReset(0) != BSP_ERROR_NONE)
       {
         ret = BSP_ERROR_BUS_FAILURE;
+      }
+      else
+      {
+        /* No action */
       }
 
       if(ret == BSP_ERROR_NONE)
@@ -290,12 +296,8 @@ int32_t BSP_CAMERA_Init(uint32_t Instance, uint32_t Resolution, uint32_t PixelFo
               appliHelpers.SetSensorExposure = BSP_SetSensorExposureHelper;
               appliHelpers.GetSensorExposure = BSP_GetSensorExposureHelper;
 
-              statArea.X0 = 0;
-              statArea.Y0 = 0;
-              statArea.XSize = 2592;
-              statArea.YSize = 1944;
               /* Initialize the Image Signal Processing middleware */
-              if(ISP_Init(&hcamera_isp, &hcamera_dcmipp, 0, &appliHelpers, &statArea) != ISP_OK)
+              if(ISP_Init(&hcamera_isp, &hcamera_dcmipp, 0, &appliHelpers, ISP_IQParamCacheInit[0]) != ISP_OK)
               {
                 ret = BSP_ERROR_PERIPH_FAILURE;
               }
@@ -305,7 +307,7 @@ int32_t BSP_CAMERA_Init(uint32_t Instance, uint32_t Resolution, uint32_t PixelFo
               }
 #if (USE_HAL_DCMIPP_REGISTER_CALLBACKS > 0)
             }
-#endif
+#endif /* (USE_HAL_DCMIPP_REGISTER_CALLBACKS > 0) */
           }
         }
       }
@@ -323,7 +325,7 @@ int32_t BSP_CAMERA_Init(uint32_t Instance, uint32_t Resolution, uint32_t PixelFo
   */
 int32_t BSP_CAMERA_DeInit(uint32_t Instance)
 {
-  int32_t ret = BSP_ERROR_NONE;
+  int32_t ret;
 
   if (Instance >= CAMERA_INSTANCES_NBR)
   {
@@ -349,21 +351,27 @@ int32_t BSP_CAMERA_DeInit(uint32_t Instance)
         DCMIPP_MspDeInit(&hcamera_dcmipp);
 #endif /* (USE_HAL_DCMIPP_REGISTER_CALLBACKS == 0) */
 
-        /* De-initialize the camera module */
-        if (Camera_Drv->DeInit(Camera_CompObj) != IMX335_OK)
+      /* De-initialize the camera module */
+      if (Camera_Drv->DeInit(Camera_CompObj) != IMX335_OK)
+      {
+        ret = BSP_ERROR_COMPONENT_FAILURE;
+      }
+      /* Set Camera in Power Down */
+      else if (BSP_CAMERA_PwrDown(Instance) != BSP_ERROR_NONE)
+      {
+        ret = BSP_ERROR_BUS_FAILURE;
+      }
+      else
+      {
+        if(ISP_DeInit(&hcamera_isp) != ISP_OK)
         {
           ret = BSP_ERROR_COMPONENT_FAILURE;
-        }
-
-        /* Set Camera in Power Down */
-        else if (BSP_CAMERA_PwrDown(Instance) != BSP_ERROR_NONE)
-        {
-          ret = BSP_ERROR_BUS_FAILURE;
         }
         else
         {
           ret = BSP_ERROR_NONE;
         }
+      }
     }
   }
 
@@ -393,12 +401,16 @@ __weak HAL_StatusTypeDef MX_DCMIPP_Init(DCMIPP_HandleTypeDef *hdcmipp)
   csiconf.DataLaneMapping = DCMIPP_CSI_PHYSICAL_DATA_LANES;
   csiconf.NumberOfLanes   = DCMIPP_CSI_TWO_DATA_LANES;
   csiconf.PHYBitrate      = DCMIPP_CSI_PHY_BT_1600;
-  HAL_DCMIPP_CSI_SetConfig(hdcmipp, &csiconf);
-
+  if(HAL_DCMIPP_CSI_SetConfig(hdcmipp, &csiconf) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
   /* Configure the Virtual Channel 0 */
   /* Set Virtual Channel config */
-  HAL_DCMIPP_CSI_SetVCConfig(hdcmipp, DCMIPP_VIRTUAL_CHANNEL0, DCMIPP_CSI_DT_BPP10);
-
+  if(HAL_DCMIPP_CSI_SetVCConfig(hdcmipp, DCMIPP_VIRTUAL_CHANNEL0, DCMIPP_CSI_DT_BPP10) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   /* Configure the serial Pipe */
   pCSIPipeConf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
@@ -431,13 +443,14 @@ __weak HAL_StatusTypeDef MX_DCMIPP_Init(DCMIPP_HandleTypeDef *hdcmipp)
   DonwsizeConf.HDivFactor  = 316;
   DonwsizeConf.VDivFactor  = 253;
 
-  HAL_DCMIPP_PIPE_SetDownsizeConfig(hdcmipp, DCMIPP_PIPE1, &DonwsizeConf);
-  HAL_DCMIPP_PIPE_EnableDownsize(hdcmipp, DCMIPP_PIPE1);
-
-//  if (HAL_DCMIPP_PIPE_EnableGammaConversion(hdcmipp, DCMIPP_PIPE1) != HAL_OK)
-//  {
-//    return HAL_ERROR;
-//  }
+  if(HAL_DCMIPP_PIPE_SetDownsizeConfig(hdcmipp, DCMIPP_PIPE1, &DonwsizeConf) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
+  if(HAL_DCMIPP_PIPE_EnableDownsize(hdcmipp, DCMIPP_PIPE1) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   return HAL_OK;
 }
@@ -460,11 +473,11 @@ int32_t BSP_CAMERA_RegisterDefaultMspCallbacks(uint32_t Instance)
   else
   {
     /* Register MspInit/MspDeInit Callbacks */
-    if (HAL_DCMIPP_RegisterCallback(&hcamera_dcmipp, HAL_DCMIPP_MSPINIT_CB_ID, DCMIPP_MspInit) != HAL_OK)
+    if (HAL_DCMIPP_RegisterCallback(&hcamera_dcmipp, HAL_DCMIPP_MSPINIT_CB_ID, ((pDCMIPP_CallbackTypeDef) DCMIPP_MspInit)) != HAL_OK)
     {
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
-    else if (HAL_DCMIPP_RegisterCallback(&hcamera_dcmipp, HAL_DCMIPP_MSPDEINIT_CB_ID, DCMIPP_MspDeInit) != HAL_OK)
+    else if (HAL_DCMIPP_RegisterCallback(&hcamera_dcmipp, HAL_DCMIPP_MSPDEINIT_CB_ID, ((pDCMIPP_CallbackTypeDef) DCMIPP_MspDeInit)) != HAL_OK)
     {
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
@@ -514,12 +527,13 @@ int32_t BSP_CAMERA_RegisterMspCallbacks(uint32_t Instance, BSP_CAMERA_Cb_t *Call
 
 /**
   * @brief  DCMIPP Clock Config for DCMIPP.
-  * @param  hcsi  DCMIPP Handle
+  * @param  hdcmipp  DCMIPP Handle
   *         Being __weak it can be overwritten by the application
   * @retval HAL_status
   */
 __weak HAL_StatusTypeDef MX_DCMIPP_ClockConfig(DCMIPP_HandleTypeDef *hdcmipp)
 {
+  UNUSED(hdcmipp);
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   /* DCMIPP Clock Config */
   /* DCMIPP clock configuration */
@@ -540,7 +554,7 @@ __weak HAL_StatusTypeDef MX_DCMIPP_ClockConfig(DCMIPP_HandleTypeDef *hdcmipp)
 
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CSI;
   PeriphClkInitStruct.ICSelection[RCC_IC18].ClockSelection = RCC_ICCLKSOURCE_PLL1;
-  PeriphClkInitStruct.ICSelection[RCC_IC18].ClockDivider = 40;
+  PeriphClkInitStruct.ICSelection[RCC_IC18].ClockDivider = 60;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     return HAL_ERROR;
@@ -552,7 +566,7 @@ __weak HAL_StatusTypeDef MX_DCMIPP_ClockConfig(DCMIPP_HandleTypeDef *hdcmipp)
 /**
   * @brief  Starts the camera capture in the selected mode.
   * @param  Instance Camera instance.
-  * @param  pBff     pointer to the camera output buffer
+  * @param  pbuff     pointer to the camera output buffer
   * @param  Mode CAMERA_MODE_CONTINUOUS or CAMERA_MODE_SNAPSHOT
   * @retval BSP status
   */
@@ -568,6 +582,74 @@ int32_t BSP_CAMERA_Start(uint32_t Instance, uint8_t *pbuff, uint32_t Mode)
   {
     ret = BSP_ERROR_PERIPH_FAILURE;
   }
+  else
+  {
+    /* No action */
+  }
+  /* Start the Image Signal Processing */
+  if (ISP_Start(&hcamera_isp) != ISP_OK)
+  {
+    ret = BSP_ERROR_COMPONENT_FAILURE;
+  }
+  /* Return BSP status */
+  return ret;
+}
+
+/**
+  * @brief  Starts the camera capture in the selected mode using planar mode
+  * @param  Instance Camera instance.
+  * @param  pbuff     pointer to the camera output buffer
+  * @param  Mode CAMERA_MODE_CONTINUOUS or CAMERA_MODE_SNAPSHOT
+  * @retval BSP status
+  */
+int32_t BSP_CAMERA_FullPlanarStart(uint32_t Instance, DCMIPP_FullPlanarDstAddressTypeDef *pbuff, uint32_t Mode)
+{
+  int32_t ret = BSP_ERROR_NONE;
+
+  if (Instance >= CAMERA_INSTANCES_NBR)
+  {
+    ret = BSP_ERROR_WRONG_PARAM;
+  }
+  else if (HAL_DCMIPP_CSI_PIPE_FullPlanarStart(&hcamera_dcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, pbuff, Mode) != HAL_OK)
+  {
+    ret = BSP_ERROR_PERIPH_FAILURE;
+  }
+  else
+  {
+    /* No action */
+  }
+  /* Start the Image Signal Processing */
+  if (ISP_Start(&hcamera_isp) != ISP_OK)
+  {
+    ret = BSP_ERROR_COMPONENT_FAILURE;
+  }
+  /* Return BSP status */
+  return ret;
+}
+
+/**
+  * @brief  Starts the camera capture in the selected mode using semi-planar mode
+  * @param  Instance Camera instance.
+  * @param  pbuff     pointer to the camera output buffer
+  * @param  Mode CAMERA_MODE_CONTINUOUS or CAMERA_MODE_SNAPSHOT
+  * @retval BSP status
+  */
+int32_t BSP_CAMERA_SemiPlanarStart(uint32_t Instance, DCMIPP_SemiPlanarDstAddressTypeDef *pbuff, uint32_t Mode)
+{
+  int32_t ret = BSP_ERROR_NONE;
+
+  if (Instance >= CAMERA_INSTANCES_NBR)
+  {
+    ret = BSP_ERROR_WRONG_PARAM;
+  }
+  else if (HAL_DCMIPP_CSI_PIPE_SemiPlanarStart(&hcamera_dcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, pbuff, Mode) != HAL_OK)
+  {
+    ret = BSP_ERROR_PERIPH_FAILURE;
+  }
+  else
+  {
+    /* No action */
+  }
   /* Start the Image Signal Processing */
   if (ISP_Start(&hcamera_isp) != ISP_OK)
   {
@@ -580,8 +662,8 @@ int32_t BSP_CAMERA_Start(uint32_t Instance, uint8_t *pbuff, uint32_t Mode)
 /**
   * @brief  Starts the camera capture in selected mode.
   * @param  Instance Camera instance.
-  * @param  pBff1     pointer to the camera first output buffer
-  * @param  pBff2     pointer to the camera second output buffer
+  * @param  pbuff1     pointer to the camera first output buffer
+  * @param  pbuff2     pointer to the camera second output buffer
   * @param  Mode CAMERA_MODE_CONTINUOUS or CAMERA_MODE_SNAPSHOT
   * @retval BSP status
   */
@@ -596,6 +678,76 @@ int32_t BSP_CAMERA_DoubleBufferStart(uint32_t Instance, uint8_t *pbuff1, uint8_t
   else if (HAL_DCMIPP_CSI_PIPE_DoubleBufferStart(&hcamera_dcmipp, DCMIPP_PIPE1,DCMIPP_VIRTUAL_CHANNEL0, (uint32_t)pbuff1, (uint32_t)pbuff2, Mode) != HAL_OK)
   {
     ret = BSP_ERROR_PERIPH_FAILURE;
+  }
+  else
+  {
+    /* No action */
+  }
+  /* Start the Image Signal Processing */
+  if (ISP_Start(&hcamera_isp) != ISP_OK)
+  {
+    ret = BSP_ERROR_COMPONENT_FAILURE;
+  }
+  /* Return BSP status */
+  return ret;
+}
+
+/**
+  * @brief  Starts the camera capture in selected mode using planar.
+  * @param  Instance Camera instance.
+  * @param  pbuff1     pointer to the camera first output buffer
+  * @param  pbuff2     pointer to the camera second output buffer
+  * @param  Mode CAMERA_MODE_CONTINUOUS or CAMERA_MODE_SNAPSHOT
+  * @retval BSP status
+  */
+int32_t BSP_CAMERA_FullPlanarDoubleBufferStart(uint32_t Instance, DCMIPP_FullPlanarDstAddressTypeDef *pbuff1, DCMIPP_FullPlanarDstAddressTypeDef *pbuff2, uint32_t Mode)
+{
+  int32_t ret = BSP_ERROR_NONE;
+
+  if (Instance >= CAMERA_INSTANCES_NBR)
+  {
+    ret = BSP_ERROR_WRONG_PARAM;
+  }
+  else if (HAL_DCMIPP_CSI_PIPE_FullPlanarDoubleBufferStart(&hcamera_dcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, pbuff1, pbuff2, Mode) != HAL_OK)
+  {
+    ret = BSP_ERROR_PERIPH_FAILURE;
+  }
+  else
+  {
+    /* No action */
+  }
+  /* Start the Image Signal Processing */
+  if (ISP_Start(&hcamera_isp) != ISP_OK)
+  {
+    ret = BSP_ERROR_COMPONENT_FAILURE;
+  }
+  /* Return BSP status */
+  return ret;
+}
+
+/**
+  * @brief  Starts the camera capture in selected mode using semi-planar.
+  * @param  Instance Camera instance.
+  * @param  pbuff1     pointer to the camera first output buffer
+  * @param  pbuff2     pointer to the camera second output buffer
+  * @param  Mode CAMERA_MODE_CONTINUOUS or CAMERA_MODE_SNAPSHOT
+  * @retval BSP status
+  */
+int32_t BSP_CAMERA_SemiPlanarDoubleBufferStart(uint32_t Instance, DCMIPP_SemiPlanarDstAddressTypeDef *pbuff1, DCMIPP_SemiPlanarDstAddressTypeDef *pbuff2, uint32_t Mode)
+{
+  int32_t ret = BSP_ERROR_NONE;
+
+  if (Instance >= CAMERA_INSTANCES_NBR)
+  {
+    ret = BSP_ERROR_WRONG_PARAM;
+  }
+  else if (HAL_DCMIPP_CSI_PIPE_SemiPlanarDoubleBufferStart(&hcamera_dcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0, pbuff1, pbuff2, Mode) != HAL_OK)
+  {
+    ret = BSP_ERROR_PERIPH_FAILURE;
+  }
+  else
+  {
+    /* No action */
   }
   /* Start the Image Signal Processing */
   if (ISP_Start(&hcamera_isp) != ISP_OK)
@@ -623,6 +775,10 @@ int32_t BSP_CAMERA_Suspend(uint32_t Instance)
   {
     ret = BSP_ERROR_PERIPH_FAILURE;
   }
+  else
+  {
+    /* No action */
+  }
 
   /* Return BSP status */
   return ret;
@@ -645,6 +801,10 @@ int32_t BSP_CAMERA_Resume(uint32_t Instance)
   {
     ret = BSP_ERROR_PERIPH_FAILURE;
   }
+  else
+  {
+    /* No action */
+  }
 
   /* Return BSP status */
   return ret;
@@ -666,6 +826,10 @@ int32_t BSP_CAMERA_Stop(uint32_t Instance)
   else if (HAL_DCMIPP_CSI_PIPE_Stop(&hcamera_dcmipp, DCMIPP_PIPE1, DCMIPP_VIRTUAL_CHANNEL0) != HAL_OK)
   {
     ret = BSP_ERROR_PERIPH_FAILURE;
+  }
+  else
+  {
+    /* No action */
   }
 
   /* Return BSP status */
@@ -1389,7 +1553,6 @@ int32_t BSP_CAMERA_HwReset(uint32_t Instance)
     gpio_init_structure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
     HAL_GPIO_Init(NRST_CAM_PORT, &gpio_init_structure);
 
-#if (STM32N6570_DK_REV >= STM32N6570_DK_B01)
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET); // Disable MB1723 2V8 signal
     HAL_Delay(100);
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET); /* RESET low (reset active low) */
@@ -1398,16 +1561,6 @@ int32_t BSP_CAMERA_HwReset(uint32_t Instance)
     HAL_Delay(100);
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET); /* RESET high (release reset) */
     HAL_Delay(100);
-#else
-    HAL_GPIO_WritePin(GPIOO, GPIO_PIN_5, GPIO_PIN_RESET); // Disable MB1723 2V8 signal
-    HAL_Delay(100);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET); /* RESET low (reset active low) */
-    HAL_Delay(100);
-    HAL_GPIO_WritePin(GPIOO, GPIO_PIN_5, GPIO_PIN_SET); // ENABLE MB1723 2V8 signal
-    HAL_Delay(100);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET); /* RESET high (release reset) */
-    HAL_Delay(100);
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_B01) */
   }
   return ret;
 }
@@ -1555,12 +1708,14 @@ __weak void BSP_CAMERA_ErrorCallback(uint32_t Instance)
 /**
   * @brief  Line event callback
   * @param  hdcmipp  pointer to the DCMIPP handle
+  * @param  Pipe  pipe value
   * @retval None
   */
 void HAL_DCMIPP_PIPE_LineEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hdcmipp);
+  UNUSED(Pipe);
 
   BSP_CAMERA_LineEventCallback(0);
 }
@@ -1568,15 +1723,14 @@ void HAL_DCMIPP_PIPE_LineEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t P
 /**
   * @brief  Frame event callback
   * @param  hdcmipp pointer to the DCMIPP handle
+  * @param  Pipe  pipe value
   * @retval None
   */
 void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hdcmipp);
-
-  /* Call the ISP handler for Frame Event */
-  ISP_GatherStatistics(&hcamera_isp);
+  UNUSED(Pipe);
 
   BSP_CAMERA_FrameEventCallback(0);
 }
@@ -1584,15 +1738,19 @@ void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t 
 /**
   * @brief  Vsync event callback
   * @param  hdcmipp pointer to the DCMIPP handle
+  * @param  Pipe  pipe value
   * @retval None
   */
 void HAL_DCMIPP_PIPE_VsyncEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hdcmipp);
+  UNUSED(Pipe);
 
-  /* Call the ISP handler for VSync Event */
+  /* Update the frame counter and call the ISP statistics handler */
   ISP_IncMainFrameId(&hcamera_isp);
+  ISP_GatherStatistics(&hcamera_isp);
+  ISP_OutputMeta(&hcamera_isp);
 
   BSP_CAMERA_VsyncEventCallback(0);
 }
@@ -1600,12 +1758,14 @@ void HAL_DCMIPP_PIPE_VsyncEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t 
 /**
   * @brief  Pipe Error callback
   * @param  hdcmipp pointer to the DCMIPP handle
+  * @param  Pipe  pipe value
   * @retval None
   */
 void HAL_DCMIPP_PIPE_ErrorCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hdcmipp);
+  UNUSED(Pipe);
 
   BSP_CAMERA_PipeErrorCallback(0);
 }
@@ -1637,7 +1797,7 @@ void HAL_DCMIPP_ErrorCallback(DCMIPP_HandleTypeDef *hdcmipp)
   * @param  hdcmipp  DCMIPP handle
   * @retval None
   */
-static void DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp)
+static void DCMIPP_MspInit(const DCMIPP_HandleTypeDef *hdcmipp)
 {
   UNUSED(hdcmipp);
 
@@ -1671,7 +1831,7 @@ static void DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp)
   * @param  hdcmipp  DCMIPP handle
   * @retval None
   */
-static void DCMIPP_MspDeInit(DCMIPP_HandleTypeDef *hdcmipp)
+static void DCMIPP_MspDeInit(const DCMIPP_HandleTypeDef *hdcmipp)
 {
   UNUSED(hdcmipp);
 
@@ -1766,6 +1926,7 @@ static void DCMIPP_ErrorCallback(DCMIPP_HandleTypeDef *hdcmipp)
   */
 static ISP_StatusTypeDef BSP_GetSensorInfoHelper(uint32_t Instance, ISP_SensorInfoTypeDef *SensorInfo)
 {
+  UNUSED(Instance);
   return (ISP_StatusTypeDef) IMX335_GetSensorInfo(Camera_CompObj, (IMX335_SensorInfo_t *) SensorInfo);
 }
 
@@ -1775,6 +1936,7 @@ static ISP_StatusTypeDef BSP_GetSensorInfoHelper(uint32_t Instance, ISP_SensorIn
   */
 static ISP_StatusTypeDef BSP_SetSensorGainHelper(uint32_t Instance, int32_t Gain)
 {
+  UNUSED(Instance);
   isp_gain = Gain;
   return (ISP_StatusTypeDef) IMX335_SetGain(Camera_CompObj, Gain);
 }
@@ -1785,6 +1947,7 @@ static ISP_StatusTypeDef BSP_SetSensorGainHelper(uint32_t Instance, int32_t Gain
   */
 static ISP_StatusTypeDef BSP_GetSensorGainHelper(uint32_t Instance, int32_t *Gain)
 {
+  UNUSED(Instance);
   *Gain = isp_gain;
   return ISP_OK;
 }
@@ -1795,6 +1958,7 @@ static ISP_StatusTypeDef BSP_GetSensorGainHelper(uint32_t Instance, int32_t *Gai
   */
 static ISP_StatusTypeDef BSP_SetSensorExposureHelper(uint32_t Instance, int32_t Exposure)
 {
+  UNUSED(Instance);
   isp_exposure = Exposure;
   return (ISP_StatusTypeDef) IMX335_SetExposure(Camera_CompObj, Exposure);
 }
@@ -1805,6 +1969,7 @@ static ISP_StatusTypeDef BSP_SetSensorExposureHelper(uint32_t Instance, int32_t 
   */
 static ISP_StatusTypeDef BSP_GetSensorExposureHelper(uint32_t Instance, int32_t *Exposure)
 {
+  UNUSED(Instance);
   *Exposure = isp_exposure;
   return ISP_OK;
 }
@@ -1822,21 +1987,12 @@ static int32_t IMX335_Probe(uint32_t Resolution, uint32_t PixelFormat)
   static IMX335_Object_t   IMX335Obj;
 
   /* Configure the camera driver */
-#if (STM32N6570_DK_REV <= STM32N6570_DK_B01)
-  IOCtx.Address     = CAMERA_IMX335_ADDRESS;
-  IOCtx.Init        = BSP_I2C2_Init;
-  IOCtx.DeInit      = BSP_I2C2_DeInit;
-  IOCtx.ReadReg     = BSP_I2C2_ReadReg16;
-  IOCtx.WriteReg    = BSP_I2C2_WriteReg16;
-  IOCtx.GetTick     = BSP_GetTick;
-#else
   IOCtx.Address     = CAMERA_IMX335_ADDRESS;
   IOCtx.Init        = BSP_I2C1_Init;
   IOCtx.DeInit      = BSP_I2C1_DeInit;
   IOCtx.ReadReg     = BSP_I2C1_ReadReg16;
   IOCtx.WriteReg    = BSP_I2C1_WriteReg16;
   IOCtx.GetTick     = BSP_GetTick;
-#endif /* STM32N6570_DK_REV */
 
   if (IMX335_RegisterBusIO(&IMX335Obj, &IOCtx) != IMX335_OK)
   {
@@ -1848,7 +2004,7 @@ static int32_t IMX335_Probe(uint32_t Resolution, uint32_t PixelFormat)
   }
   else
   {
-    if (id != IMX335_CHIP_ID)
+    if (id != (uint32_t) IMX335_CHIP_ID)
     {
       ret = BSP_ERROR_UNKNOWN_COMPONENT;
     }

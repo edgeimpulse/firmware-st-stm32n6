@@ -206,8 +206,8 @@ typedef struct
 * Bit Group Name: None
 * Permission    : W
 *******************************************************************************/
-int32_t wm8904_write_reg(wm8904_ctx_t *ctx, uint16_t reg, uint16_t *data, uint16_t length);
-int32_t wm8904_read_reg(wm8904_ctx_t *ctx, uint16_t reg, uint16_t* data, uint16_t length);
+int32_t wm8904_write_reg(const wm8904_ctx_t *ctx, uint16_t reg, const uint16_t *data, uint16_t length);
+int32_t wm8904_read_reg(const wm8904_ctx_t *ctx, uint16_t reg, uint16_t* data, uint16_t length);
 
 #ifdef __cplusplus
 }

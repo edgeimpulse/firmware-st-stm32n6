@@ -55,11 +55,7 @@
         DATA
 __vector_table
 
-#if defined(STM32N6XX_SI_CUT1_1)
-        DCD     0x34110000                 ; Initial Stack pointer set above limit from boot ROM
-#else
         DCD     sfe(CSTACK)                ; Initial Stack pointer
-#endif /* STM32N6XX_SI_CUT1_1 */
         DCD     Reset_Handler              ; Reset Handler
 
         DCD     NMI_Handler                ; NMI Handler
@@ -286,9 +282,7 @@ __Vectors_Size  EQU   __Vectors_End - __Vectors
         PUBWEAK Reset_Handler
         SECTION .text:CODE:NOROOT:REORDER(2)
 Reset_Handler
-#if defined(STM32N6XX_SI_CUT1_1)
-        CPSID   I                        ; Disable IRQ
-#endif /* STM32N6XX_SI_CUT1_1 */
+
         LDR     LR, =0xFFFFFFFF
         LDR     R0, =sfb(CSTACK)
         MSR     MSPLIM, R0               ; Set Stack Pointer Limit

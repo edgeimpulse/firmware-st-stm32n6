@@ -538,10 +538,10 @@ typedef  void (*pLTDC_CallbackTypeDef)(LTDC_HandleTypeDef *hltdc);  /*!< pointer
 /** @defgroup LTDC_ARGB_SIZE LTDC ARGB pixel size in bytes
   * @{
   */
-#define LTDC_ARGB_PIXEL_SIZE_1_BYTE      0U       /*!<Custom ARGB with 1 byte per pixel          */
-#define LTDC_ARGB_PIXEL_SIZE_2_BYTES     1U       /*!<Custom ARGB with 2 bytes per pixel         */
-#define LTDC_ARGB_PIXEL_SIZE_3_BYTES     2U       /*!<Custom ARGB with 3 bytes per pixel         */
-#define LTDC_ARGB_PIXEL_SIZE_4_BYTES     3U       /*!<Custom ARGB with 4 bytes per pixel         */
+#define LTDC_ARGB_PIXEL_SIZE_1_BYTE      1U       /*!<Custom ARGB with 1 byte per pixel          */
+#define LTDC_ARGB_PIXEL_SIZE_2_BYTES     2U       /*!<Custom ARGB with 2 bytes per pixel         */
+#define LTDC_ARGB_PIXEL_SIZE_3_BYTES     3U       /*!<Custom ARGB with 3 bytes per pixel         */
+#define LTDC_ARGB_PIXEL_SIZE_4_BYTES     4U       /*!<Custom ARGB with 4 bytes per pixel         */
 /**
   * @}
   */
@@ -905,7 +905,8 @@ void  HAL_LTDC_IRQHandler(LTDC_HandleTypeDef *hltdc);
   */
 /* Peripheral Control functions ***********************************************/
 HAL_StatusTypeDef HAL_LTDC_ConfigLayer(LTDC_HandleTypeDef *hltdc, LTDC_LayerCfgTypeDef *pLayerCfg, uint32_t LayerIdx);
-HAL_StatusTypeDef HAL_LTDC_ConfigLayerFlexARGB(LTDC_HandleTypeDef *hltdc, const LTDC_LayerFlexARGBTypeDef *pLayerFlexARGB,
+HAL_StatusTypeDef HAL_LTDC_ConfigLayerFlexARGB(LTDC_HandleTypeDef *hltdc,
+                                               const LTDC_LayerFlexARGBTypeDef *pLayerFlexARGB,
                                                uint32_t LayerIdx);
 HAL_StatusTypeDef HAL_LTDC_ConfigLayerFlexYUVSemiPlanar(LTDC_HandleTypeDef *hltdc,
                                                         LTDC_LayerFlexYUVSemiPlanarTypeDef *pLayerFlexYUVSemiPlanar,
@@ -1094,9 +1095,8 @@ uint32_t              HAL_LTDC_GetError(const LTDC_HandleTypeDef *hltdc);
 #define IS_LTDC_BURST_LENGTH(__BURST_LENGTH__)                       (((__BURST_LENGTH__) <= 0x10U) &&\
                                                                       ((__BURST_LENGTH__) >= 0x1U))
 
-#define IS_LTDC_GAMMA_VALUE(__ONES__, __TENTHS__)                 (((__TENTHS__) <= 9U)                 &&\
-                                                                   ((__ONES__) <= 2U)                   &&\
-                                                                   (((__TENTHS__) + (__ONES__)) != 0U))
+#define IS_LTDC_GAMMA_VALUE(__ONES__, __TENTHS__)      ((((__TENTHS__) + ((__ONES__) * 10U)) >= 4U)   &&\
+                                                        (((__TENTHS__) + ((__ONES__) * 10U)) <= 29U))
 
 #define IS_LTDC_YUV2RGBCONVERTOR(__CONVERTOR__)  (((__CONVERTOR__) == LTDC_YUV2RGBCONVERTOR_BT709_FULL_RANGE)      ||\
                                                   ((__CONVERTOR__) == LTDC_YUV2RGBCONVERTOR_BT709_REDUCED_RANGE)   ||\

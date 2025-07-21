@@ -69,7 +69,8 @@ typedef enum
     H264ENCODE_DATA_ERROR = 2,
     H264ENCODE_HW_ERROR = 3,
     H264ENCODE_SYSTEM_ERROR = 4,
-    H264ENCODE_HW_RESET = 5
+    H264ENCODE_HW_RESET = 5,
+    H264ENCODE_FUSE_ERROR = 6,
 } h264EncodeFrame_e;
 
 /*------------------------------------------------------------------------------

@@ -2058,11 +2058,6 @@ HAL_StatusTypeDef HAL_ADCEx_InjectedConfigChannel(ADC_HandleTypeDef *hadc,
     /* Configuration of differential mode */
     if (pConfigInjected->InjectedSingleDiff == ADC_DIFFERENTIAL_ENDED)
     {
-      /* Set sampling time of the selected ADC corresponding negative channel */
-      LL_ADC_SetChannelSamplingTime(hadc->Instance,
-                                    __HAL_ADC_CHANNEL_DIFF_NEG_INPUT(hadc, pConfigInjected->InjectedChannel),
-                                    pConfigInjected->InjectedSamplingTime);
-
       /* Set ADC channel preselection of corresponding negative channel */
       LL_ADC_SetChannelPreselection(hadc->Instance,
                                     __HAL_ADC_CHANNEL_DIFF_NEG_INPUT(hadc, pConfigInjected->InjectedChannel));
@@ -2315,7 +2310,7 @@ HAL_StatusTypeDef ADC_Calibration_MeasureOffset(ADC_HandleTypeDef *hadc,
 
   HAL_StatusTypeDef tmp_hal_status = HAL_OK;
 
-  if ((LL_ADC_IsEnabled(hadc->Instance) != 0UL))
+  if (LL_ADC_IsEnabled(hadc->Instance) != 0UL)
   {
     /* Start ADC calibration */
     LL_ADC_StartCalibration(hadc->Instance, SingleDiff);

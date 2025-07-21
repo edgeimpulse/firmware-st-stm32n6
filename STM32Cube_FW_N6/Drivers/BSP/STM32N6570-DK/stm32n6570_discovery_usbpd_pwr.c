@@ -218,10 +218,8 @@ int32_t BSP_USBPD_PWR_Init(uint32_t PortNum)
           /* Initialize EXTI for FLGn signal */
           PWR_TCPP0203_ITConfigInit(PortNum);
 
-#if defined(USE_STM32N6570_DK_REV_B01)
           /* Enable component : TCPP Enable pin activation is needed only from B01 revision of DK board */
           TCPP0203_PORT0_ENABLE_GPIO_SET();
-#endif /* USE_STM32N6570_DK_REV_B01 */
 
           /* Initialize required BUS for communication */
           ret = PWR_TCPP0203_BUSConfigInit(PortNum, USBPD_PWR_Port_Configs[PortNum].Address);
@@ -1451,7 +1449,6 @@ static void PWR_TCPP0203_GPIOConfigInit(uint32_t PortNum)
 {
   UNUSED(PortNum);
 
-#if defined(USE_STM32N6570_DK_REV_B01)
   /* Configure ENABLE GPIO : Applies only from B01 revision of DK board */
   TCPP0203_PORT0_ENABLE_GPIO_CLK_ENABLE();
   /* Configure IO in output push-pull mode to drive ENABLE */
@@ -1463,7 +1460,6 @@ static void PWR_TCPP0203_GPIOConfigInit(uint32_t PortNum)
 
   /* Set ENABLE to default state */
   TCPP0203_PORT0_ENABLE_GPIO_DEFVALUE();
-#endif /* USE_STM32N6570_DK_REV_B01 */
 
   /* Configure IANA GPIO */
   TCPP0203_PORT0_IANA_GPIO_CLK_ENABLE();

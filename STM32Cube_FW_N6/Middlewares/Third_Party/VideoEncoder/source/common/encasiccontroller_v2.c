@@ -348,7 +348,7 @@ i32 EncAsicCheckStatus_V2(asicData_s * asic)
     }
     else if(status & ASIC_STATUS_FUSE)
     {
-        ret = ASIC_STATUS_ERROR;
+        ret = ASIC_STATUS_FUSE;
 
         EWLReleaseHw(asic->ewl);
     }

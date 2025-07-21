@@ -58,11 +58,7 @@ extern "C" {
 
 #if !defined (USE_STM32N6570_DK)
 #define USE_STM32N6570_DK
-#endif
-
-#if !defined(STM32N6570_DK_REV)
-#define STM32N6570_DK_REV STM32N6570_DK_C01
-#endif
+#endif /* defined (USE_STM32N6570_DK) */
 typedef enum
 {
   LED1 = 0U,
@@ -72,18 +68,6 @@ typedef enum
   LEDn,
 } Led_TypeDef;
 
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-typedef enum
-{
-  B2 = 0U,
-  BUTTON_USER1 = B2,
-  B3 = 1U,
-  BUTTON_USER2 = B3,
-  B4 = 2U,
-  BUTTON_TAMP  = B4,
-  BUTTONn,
-} Button_TypeDef;
-#else
 typedef enum
 {
   B2 = 0U,
@@ -92,7 +76,6 @@ typedef enum
   BUTTON_TAMP  = B4,
   BUTTONn,
 } Button_TypeDef;
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_C01) */
 typedef enum
 {
   BUTTON_MODE_GPIO = 0U,
@@ -170,9 +153,9 @@ typedef struct
 /**
   * @brief STM32N6570 Discovery BSP Driver version number
   */
-#define STM32N6570_DK_BSP_VERSION_MAIN   (0x00U) /*!< [31:24] main version */
-#define STM32N6570_DK_BSP_VERSION_SUB1   (0x05U) /*!< [23:16] sub1 version */
-#define STM32N6570_DK_BSP_VERSION_SUB2   (0x01U) /*!< [15:8]  sub2 version */
+#define STM32N6570_DK_BSP_VERSION_MAIN   (0x01U) /*!< [31:24] main version */
+#define STM32N6570_DK_BSP_VERSION_SUB1   (0x01U) /*!< [23:16] sub1 version */
+#define STM32N6570_DK_BSP_VERSION_SUB2   (0x00U) /*!< [15:8]  sub2 version */
 #define STM32N6570_DK_BSP_VERSION_RC     (0x00U) /*!< [7:0]  release candidate */
 #define STM32N6570_DK_BSP_VERSION        ((STM32N6570_DK_BSP_VERSION_MAIN << 24)\
                                             |(STM32N6570_DK_BSP_VERSION_SUB1 << 16)\
@@ -221,8 +204,6 @@ typedef struct
   * @}
   */
 
-#if (STM32N6570_DK_REV >= STM32N6570_DK_C01)
-
 /**
   * @brief External SMPS control pin
   */
@@ -230,19 +211,6 @@ typedef struct
 #define SMPS_GPIO_PIN                     GPIO_PIN_4
 #define SMPS_GPIO_CLK_ENABLE()            __HAL_RCC_GPIOF_CLK_ENABLE()
 
-#else
-
-/**
-  * @brief USER 2 push-button (B3)
-  */
-#define BUTTON_USER2_PIN                   GPIO_PIN_4
-#define BUTTON_USER2_GPIO_PORT             GPIOF
-#define BUTTON_USER2_GPIO_CLK_ENABLE()     __HAL_RCC_GPIOF_CLK_ENABLE()
-#define BUTTON_USER2_GPIO_CLK_DISABLE()    __HAL_RCC_GPIOF_CLK_DISABLE()
-#define BUTTON_USER2_EXTI_IRQn             EXTI4_IRQn
-#define BUTTON_USER2_EXTI_LINE             EXTI_LINE_4
-
-#endif /* (STM32N6570_DK_REV > STM32N6570_DK_B01) */
 /**
   * @}
   */
@@ -256,15 +224,6 @@ typedef struct
 #define BUTTON_TAMP_GPIO_CLK_DISABLE()    __HAL_RCC_GPIOE_CLK_DISABLE()
 #define BUTTON_TAMP_EXTI_IRQn             EXTI0_IRQn
 #define BUTTON_TAMP_EXTI_LINE             EXTI_LINE_0
-
-/**
-  * @brief External SMPS control pin
-  */
-#if (STM32N6570_DK_REV >= STM32N6570_DK_C01)
-#define SMPS_GPIO_PORT                    GPIOF
-#define SMPS_GPIO_PIN                     GPIO_PIN_4
-#define SMPS_GPIO_CLK_ENABLE()            __HAL_RCC_GPIOF_CLK_ENABLE()
-#endif /* (STM32N6570_DK_REV > STM32N6570_DK_B01) */
 
 /**
   * @}
@@ -345,9 +304,7 @@ uint32_t       BSP_GetVersion  (void);
 const uint8_t *BSP_GetBoardName(void);
 const uint8_t *BSP_GetBoardID  (void);
 
-#if (STM32N6570_DK_REV >= STM32N6570_DK_C01)
 void BSP_SMPS_Init(SMPSVoltage_TypeDef Voltage);
-#endif /* (STM32N6570_DK_REV > STM32N6570_DK_B01) */
 
 int32_t  BSP_LED_Init    (Led_TypeDef Led);
 void     BSP_LED_DeInit  (Led_TypeDef Led);

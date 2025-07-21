@@ -26,8 +26,6 @@
 #include "otp_interface.h"
 
 /* External variables --------------------------------------------------------*/
-extern OPENBL_Flashlayout_TypeDef FlashlayoutStruct;
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define USB_RAM_BUFFER_SIZE             20U  /* Size of USB buffer used to store received data from the host */
@@ -37,15 +35,13 @@ extern OPENBL_Flashlayout_TypeDef FlashlayoutStruct;
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static uint32_t OtpIndex;
-static uint8_t PhaseId       = PHASE_FLASHLAYOUT;
-static uint8_t PartitionNum  = PHASE_FLASHLAYOUT;
-static bool IsStartOperation = false;
 static uint32_t DestinationAddress;
+static uint8_t PhaseId = PHASE_FLASHLAYOUT;
 static Otp_Partition_t Otp;
 
 /* Private function prototypes -----------------------------------------------*/
-uint32_t OPENBL_USB_GetAddress(uint8_t Phase);
-uint8_t OPENBL_USB_GetPhase(uint32_t Alt);
+static uint32_t OPENBL_USB_GetAddress(uint8_t phase_id);
+static uint8_t OPENBL_USB_GetPhase(uint32_t alternate);
 
 /* Exported functions---------------------------------------------------------*/
 /**
@@ -98,11 +94,21 @@ uint16_t OPENBL_USB_EraseMemory(uint32_t Address)
   * @param  pSrc Pointer to the source buffer. Address to be written to.
   * @param  Alt USB Alternate.
   * @param  Length Number of data to be written (in bytes).
-  * @retval None.
+  * @retval Returns 0 if success else returns 1.
   */
-void OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t BlockNumber)
+uint32_t OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t BlockNumber)
 {
+  static uint32_t Phase3AddressOffset = 0U;
+  static uint32_t Phase3Counter       = 0U;
+  static uint32_t Phase4AddressOffset = 0U;
+  static uint32_t Phase5AddressOffset = 0U;
+  static uint32_t CurrentSector       = 0U;
+  static uint32_t LastSector          = 0U;
+  uint32_t temp_address;
   uint32_t i;
+  uint32_t error;
+
+  UNUSED(Alt);
 
   switch (PhaseId)
   {
@@ -121,36 +127,130 @@ void OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t 
 
       if (BlockNumber == 0U)
       {
+        OtpIndex = 0U;
+
         /* Set OTP values and status */
-        for (i = 8U, OtpIndex = 0U; (i < Length && (OtpIndex < OTP_PART_SIZE)); i += 4U, OtpIndex++)
+        for (i = 8U; ((i < Length) && (OtpIndex < OTP_PART_SIZE)); i += 4U)
         {
-          Otp.OtpPart[OtpIndex] = (((uint32_t)pSrc[i + 3] << 24U)
-                                   | ((uint32_t)pSrc[i + 2] << 16U)
-                                   | ((uint32_t)pSrc[i + 1] << 8U)
+          Otp.OtpPart[OtpIndex] = (((uint32_t)pSrc[i + 3U] << 24U)
+                                   | ((uint32_t)pSrc[i + 2U] << 16U)
+                                   | ((uint32_t)pSrc[i + 1U] << 8U)
                                    | (uint32_t)pSrc[i]);
+
+          OtpIndex++;
         }
       }
       else
       {
-        for (i = 0U, OtpIndex = (254U + ((BlockNumber - 1U) * 256U)); (i < Length && (OtpIndex < OTP_PART_SIZE)); i += 4U, OtpIndex++)
+        OtpIndex = (254U + ((BlockNumber - 1U) * 256U));
+
+        for (i = 0U; ((i < Length) && (OtpIndex < OTP_PART_SIZE)); i += 4U)
         {
-          Otp.OtpPart[OtpIndex] = (((uint32_t)pSrc[i + 3] << 24U)
-                                   | ((uint32_t)pSrc[i + 2] << 16U)
-                                   | ((uint32_t)pSrc[i + 1] << 8U)
+          Otp.OtpPart[OtpIndex] = (((uint32_t)pSrc[i + 3U] << 24U)
+                                   | ((uint32_t)pSrc[i + 2U] << 16U)
+                                   | ((uint32_t)pSrc[i + 1U] << 8U)
                                    | (uint32_t)pSrc[i]);
+
+          OtpIndex++;
         }
       }
 
       /* Write OTP */
       if (OtpIndex == OTP_PART_SIZE)
       {
-        OPENBL_OTP_Write(Otp);
+        if (OPENBL_OTP_Write(Otp) == OTP_ERROR)
+        {
+          /* Returns error if OTP write fails */
+          return 1U;
+        }
       }
 
       break;
 
-    case PHASE_0x3:
+    case PHASE_3:
+      /* As there will be multiple packet download request, addr needs to be incremented with amount of data already written in the memory */
+      DestinationAddress += Phase3AddressOffset;
+
+      /* Write memory */
       OPENBL_MEM_Write(DestinationAddress, pSrc, Length);
+
+      Phase3AddressOffset = Length;
+
+      break;
+
+    case PHASE_4:
+      /* External memory initialization is done only for the first download packet request and for phase/partition 4 only */
+      if (Phase3Counter == 0U)
+      {
+        /* Init the external memories */
+        if (OPENBL_MEM_Init(DestinationAddress) != 1U)
+        {
+          /* Returns error if the external memory initialisation fails */
+          return 1U;
+        }
+      }
+
+      /* As there will be multiple packet download requests
+         the address must be incremented with amount of data already written in the memory */
+      DestinationAddress += Phase4AddressOffset;
+
+      /* Get the current sector */
+      CurrentSector = ((DestinationAddress - EXT_MEMORY_START_ADDRESS) / EXT_MEMORY_SECTOR_SIZE) + 1U;
+      if (CurrentSector > LastSector)
+      {
+        /* Erase sector */
+        OPENBL_MEM_SectorErase(DestinationAddress, DestinationAddress, (DestinationAddress + Length));
+
+        /* Update last sector */
+        LastSector = CurrentSector;
+      }
+
+      /* Write memory data into memory */
+      OPENBL_MEM_Write(DestinationAddress, pSrc, Length);
+      Phase4AddressOffset  = 0U;
+      Phase4AddressOffset += Length;
+
+      /* Verify the data written in to memory */
+      error = (uint32_t) OPENBL_MEM_Verify(DestinationAddress, (uint32_t)pSrc, Length, 0U);
+
+      if ((error != 0U) && (error < (DestinationAddress + Length)))
+      {
+        /* Error detected when verifying written data */
+        return 1U;
+      }
+
+      Phase3Counter++;
+
+      break;
+
+    case PHASE_5:
+      DestinationAddress += Phase5AddressOffset;
+
+      /* Get the current sector */
+      CurrentSector = ((DestinationAddress - EXT_MEMORY_START_ADDRESS) / EXT_MEMORY_SECTOR_SIZE) + 1U;
+
+      if (CurrentSector > LastSector)
+      {
+        /* Erase sector */
+        OPENBL_MEM_SectorErase(DestinationAddress, DestinationAddress, (DestinationAddress + Length));
+
+        /* Update last sector */
+        LastSector = CurrentSector;
+      }
+      /* Write memory */
+      OPENBL_MEM_Write(DestinationAddress, pSrc, Length);
+
+      Phase5AddressOffset  = 0U;
+      Phase5AddressOffset += Length;
+
+      /* Verify data write to memory */
+      error = (uint32_t) OPENBL_MEM_Verify(DestinationAddress, (uint32_t)pSrc, Length, 0U);
+
+      if ((error != 0U) && (error < (DestinationAddress + Length)))
+      {
+        /* Error detected when verifying written data */
+        return 1U;
+      }
 
       break;
 
@@ -158,10 +258,13 @@ void OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t 
       /* First 256 is reserved for binary signature info */
       DestinationAddress = DestinationAddress + 256U;
 
+      temp_address = (uint32_t)pSrc;
+
       /* Parse the flash layout */
-      if (OPENBL_FlashLayout_Parse_Layout((uint32_t)pSrc + 256U, (Length - 256U)) == PARSE_ERROR)
+      if (OPENBL_FlashLayout_Parse_Layout(temp_address + 256U, (Length - 256U)) == PARSE_ERROR)
       {
-        while (1) {};
+        /* Return error */
+        return 1U;
       }
 
       break;
@@ -169,6 +272,8 @@ void OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t 
     default:
       break;
   }
+
+  return 0U;
 }
 
 /**
@@ -181,20 +286,21 @@ void OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t 
 uint8_t *OPENBL_USB_ReadMemory(uint32_t Alt, uint8_t *pDest, uint32_t Length, uint32_t BlockNumber)
 {
   uint32_t i;
+  static uint8_t PartitionNum  = PHASE_FLASHLAYOUT;
+  static bool IsStartOperation = false;
 
   PhaseId = OPENBL_USB_GetPhase(Alt);
 
   switch (PhaseId)
   {
     case PHASE_CMD:
-      /* Phase flash layout */
       if (PartitionNum == PHASE_FLASHLAYOUT)
       {
         PhaseId = PHASE_FLASHLAYOUT;
       }
       else if (PartitionNum < FlashlayoutStruct.partsize)
       {
-        PhaseId = FlashlayoutStruct.id[PartitionNum];
+        PhaseId = (uint8_t)FlashlayoutStruct.id[PartitionNum];
       }
       else
       {
@@ -233,8 +339,7 @@ uint8_t *OPENBL_USB_ReadMemory(uint32_t Alt, uint8_t *pDest, uint32_t Length, ui
       break;
 
     case PHASE_OTP:
-      /* Read OTP */
-      if (BlockNumber == 0)
+      if (BlockNumber == 0U)
       {
         Otp = OPENBL_OTP_Read();
 
@@ -250,21 +355,27 @@ uint8_t *OPENBL_USB_ReadMemory(uint32_t Alt, uint8_t *pDest, uint32_t Length, ui
         pDest[6] = (uint8_t)(Otp.GlobalState >> 16U);
         pDest[7] = (uint8_t)(Otp.GlobalState >> 24U);
 
+        OtpIndex = 0U;
+
         /* Get OTP values and status */
-        for (i = 8U, OtpIndex = 0U; (i < Length && (OtpIndex < OTP_PART_SIZE)); i += 4U, OtpIndex++)
+        for (i = 8U; ((i < Length) && (OtpIndex < OTP_PART_SIZE)); i += 4U)
         {
           /* 127 OTP sent for the first 1024 bytes block */
           /* BlockNumber == 0 : OtpIndex = 0..251 - 127 OTP x 8 bytes */
-          pDest[i]     = (uint8_t)(Otp.OtpPart[OtpIndex]);
-          pDest[i + 1] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 8U);
-          pDest[i + 2] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 16U);
-          pDest[i + 3] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 24U);
+          pDest[i]      = (uint8_t)(Otp.OtpPart[OtpIndex]);
+          pDest[i + 1U] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 8U);
+          pDest[i + 2U] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 16U);
+          pDest[i + 3U] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 24U);
+
+          OtpIndex++;
         }
 
       }
       else
       {
-        for (i = 0U, OtpIndex = (254U + ((BlockNumber - 1) * 256U)); (i < Length && (OtpIndex < OTP_PART_SIZE)); i += 4U, OtpIndex++)
+        OtpIndex = (254U + ((BlockNumber - 1U) * 256U));
+
+        for (i = 0U; ((i < Length) && (OtpIndex < OTP_PART_SIZE)); i += 4U)
         {
           /*
            * BlockNumber == 1 : OtpIndex = 254..505 - 128 OTP x 8 bytes = 1024 bytes - 8 bytes = 4 byes for OTP value & 4 bytes for status
@@ -272,10 +383,12 @@ uint8_t *OPENBL_USB_ReadMemory(uint32_t Alt, uint8_t *pDest, uint32_t Length, ui
            * BlockNumber == 3 : OtpIndex = 762..767 - 1024 bytes
            */
 
-          pDest[i]     = (uint8_t)(Otp.OtpPart[OtpIndex]);
-          pDest[i + 1] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 8U);
-          pDest[i + 2] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 16U);
-          pDest[i + 3] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 24U);
+          pDest[i]      = (uint8_t)(Otp.OtpPart[OtpIndex]);
+          pDest[i + 1U] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 8U);
+          pDest[i + 2U] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 16U);
+          pDest[i + 3U] = (uint8_t)(Otp.OtpPart[OtpIndex] >> 24U);
+
+          OtpIndex++;
         }
       }
       break;
@@ -369,67 +482,96 @@ void OPENBL_USB_ReadUnprotect(void)
 }
 
 /**
-  * @brief  Link between USB Alternate and STM32CubeProgrammer phase
-  * @param  Alt USB Alternate.
-  * @retval STM32CubeProgramer Phase.
+  * @brief  Link between USB Alternate and phase ID
+  * @param  Alternate USB alternate value sent by the host.
+  * @retval Returns phase ID.
   */
-uint8_t OPENBL_USB_GetPhase(uint32_t Alt)
+static uint8_t OPENBL_USB_GetPhase(uint32_t Alternate)
 {
-  uint8_t ret;
+  uint8_t phase_id;
 
-  switch (Alt)
+  switch (Alternate)
   {
     case 0U:
-      ret = PHASE_FLASHLAYOUT;
+      phase_id = PHASE_FLASHLAYOUT;
       break;
 
     case 1U:
-      ret = PHASE_0x3;
+      phase_id = PHASE_3;
       break;
 
     case 2U:
-      ret = PHASE_0x4;
+      phase_id = PHASE_4;
       break;
 
     case 3U:
-      ret = PHASE_CMD;
+      phase_id = PHASE_CMD;
       break;
 
     case 4U:
-      ret = PHASE_OTP;
+      phase_id = PHASE_OTP;
+      break;
+
+    case 5:
+      phase_id = PHASE_5;
       break;
 
     default:
-      ret = PHASE_END;
+      phase_id = PHASE_END;
       break;
   }
 
-  return ret;
+  return phase_id;
 }
 
 /**
-  * @brief  Get Address of STM32CubeProgrammer phase.
-  * @param  Phase USB Alternate.
-  * @retval STM32CubeProgrammer Phase.
+  * @brief  Get address following a given phase ID.
+  * @param  Phase Current phase ID.
+  * @retval Returns the address that corresponds to the current phase ID.
   */
-uint32_t OPENBL_USB_GetAddress(uint8_t Phase)
+static uint32_t OPENBL_USB_GetAddress(uint8_t Phase)
 {
-  uint32_t ret;
+  uint32_t i;
+  uint32_t address;
 
   switch (Phase)
   {
     case PHASE_FLASHLAYOUT:
-      ret = FLASHLAYOUT_ADDRESS;
+      address = FLASHLAYOUT_ADDRESS;
       break;
 
-    case PHASE_0x3:
-      ret = RAM_WRITE_ADDRESS;
+    case PHASE_3:
+      address = FLASH_LOADER_WRITE_ADDRESS;
+      break;
+
+    case PHASE_4:
+    case PHASE_5:
+      /* Check if the current Phase ID is present in the flash layout structure */
+      for (i = 0U; i < FlashlayoutStruct.partsize; i++)
+      {
+        if (FlashlayoutStruct.id[i] == Phase)
+        {
+          break;
+        }
+      }
+
+      if (i == FlashlayoutStruct.partsize)
+      {
+        /* Phase ID was not found in the flash layout structure */
+        address = UNDEF_ADDRESS;
+      }
+      else
+      {
+        /* Compute the destination address by using the offset provided by the user in the flash layout */
+        address = EXT_MEMORY_START_ADDRESS + FlashlayoutStruct.offset[i];
+      }
+
       break;
 
     default:
-      ret = UNDEF_ADDRESS;
+      address = UNDEF_ADDRESS;
       break;
   }
 
-  return ret;
+  return address;
 }

@@ -10,16 +10,21 @@
   "nominal_vdd": 0.8,
   "frequency": 1000,
   "vdd": 0.8,
+  "switches": [
+   { "index":  0, "num": 1, "type": "STRSWITCH", "version": "1.6" }
+  ],
   "accelerators": [
-   { "index":  0, "num": 4, "version": "0.0", "power": 30.132, "type": "CONVACC" },
-   { "index":  0, "num": 2, "version": "0.0", "power": 9.09, "type": "POOL"    },
-   { "index":  0, "num": 4, "version": "0.0", "power": 5.877, "type": "ARITH"   },
-   { "index":  0, "num": 2, "version": "0.0", "power": 5.30, "type": "ACTIV"   },
-   { "index":  0, "num": 2, "version": "0.0", "power": 5.57, "type": "DECUN"   },
-   { "index":  0, "num": 1, "version": "0.0", "power": 5.57, "type": "RECBUF"   },
-   { "index":  0, "num": 5, "version": "0.0", "power": 5.331, "type": "STRENG", "params": [ { "name": "MEM_PORT", "val": 0 } ] },
-   { "index":  5, "num": 5, "version": "0.0", "power": 5.331, "type": "STRENG", "params": [ { "name": "MEM_PORT", "val": 1 } ] },
-   { "index":  0, "num": 1, "version": "0.0", "power": 200.0, "type": "PROCESSOR" }
+   { "index":  0, "num": 5, "type": "STRENG",      "version": "5.0",  "power": 5.331,  "inPorts": [ 0 ],       "outPorts": [ 0 ], "params": [ { "name": "MEM_PORT", "val": 0 } ] },
+   { "index":  5, "num": 5, "type": "STRENG",      "version": "5.0",  "power": 5.331,  "inPorts": [ 0 ],       "outPorts": [ 0 ], "params": [ { "name": "MEM_PORT", "val": 1 } ] },
+   { "index":  0, "num": 4, "type": "CONVACC",     "version": "5.1",  "power": 30.132, "inPorts": [ 0, 0, 0 ], "outPorts": [ 0 ] },
+   { "index":  0, "num": 2, "type": "DECUN",       "version": "1.10", "power": 5.57,   "inPorts": [ 0, 0 ],    "outPorts": [ 0 ] },
+   { "index":  0, "num": 2, "type": "ACTIV",       "version": "1.1",  "power": 5.30,   "inPorts": [ 0 ],       "outPorts": [ 0 ] },
+   { "index":  0, "num": 4, "type": "ARITH",       "version": "1.0",  "power": 5.877,  "inPorts": [ 0, 0 ],    "outPorts": [ 0 ] },
+   { "index":  0, "num": 2, "type": "POOL",        "version": "1.1",  "power": 9.09,   "inPorts": [ 0 ],       "outPorts": [ 0 ] },
+   { "index":  0, "num": 1, "type": "RECBUF",      "version": "3.2",  "power": 5.57,   "inPorts": [ 0, 0, 0 ], "outPorts": [ 0, 0, 0 ] },
+   { "index":  0, "num": 1, "type": "EPOCHCTRL",   "version": "1.1",  "power": 0.0 },
+   { "index":  0, "num": 1, "type": "DEBUG_TRACE", "version": "1.1",  "power": 0.0 },
+   { "index":  0, "num": 1, "type": "PROCESSOR",   "version": "0.0",  "power": 0.0 }
   ]
  }
 }

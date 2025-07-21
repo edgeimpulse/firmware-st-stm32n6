@@ -27,7 +27,6 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern ISP_HandleTypeDef hIsp;
-
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -39,33 +38,30 @@ extern ISP_HandleTypeDef hIsp;
 void HAL_DCMIPP_PIPE_VsyncEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
 {
   UNUSED(hdcmipp);
-
+  /* Update the frame counter and call the ISP statistics handler */
   if (Pipe == DCMIPP_PIPE1 )
   {
     /* Call the IPS statistics handler */
+    ISP_IncMainFrameId(&hIsp);
     ISP_GatherStatistics(&hIsp);
+    ISP_OutputMeta(&hIsp);
   }
-
   /* Additional applicative processing can be implemented from here */
 }
 
 /**
  * @brief  Frame Event callback on pipe
- * @param  hdcmipp DCMIPP device handle
- *         Pipe    Pipe receiving the callback
+ * @param  Pipe  Pipe receiving the callback
  * @retval None
  */
 void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe)
 {
   UNUSED(hdcmipp);
-
+  /* Update the frame counter for the pipes used to dump the frame */
   switch (Pipe)
   {
     case DCMIPP_PIPE0 :
       ISP_IncDumpFrameId(&hIsp);
-      break;
-    case DCMIPP_PIPE1 :
-      ISP_IncMainFrameId(&hIsp);
       break;
     case DCMIPP_PIPE2 :
       ISP_IncAncillaryFrameId(&hIsp);

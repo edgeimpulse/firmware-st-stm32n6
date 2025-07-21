@@ -25,26 +25,13 @@
 #include "isp_tool_com.h"
 #include "isp_cmd_parser.h"
 #endif
+#include <math.h>
 
 /* Private types -------------------------------------------------------------*/
 /* Private constants ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-#define EXPOSURE_OFFSET 4
-uint8_t ISP_ExposureTarget[9]= {
-  /* Compute the possible target exposure */
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 0.25),  // -2   EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 0.375), // -3/2 EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 0.5),   // -1   EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 0.75),  // -1/2 EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE),         // +0   EV = ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 1.5),   // +1/2 EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 2),     // +1   EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 3),     // +3/2 EV compared to the ideal target exposure
-  (uint8_t)(ISP_IDEAL_TARGET_EXPOSURE * 4)      // +2   EV compared to the ideal target exposure
-};
-
 /* Private functions ---------------------------------------------------------*/
 
 /* Exported functions --------------------------------------------------------*/
@@ -57,7 +44,7 @@ uint8_t ISP_ExposureTarget[9]= {
   * @param  pAppliHelpers: pointer to application helpers. The application helpers are used
   *         by the ISP to interact with the application. get/set sensor exp/gain/ and get sensor info are mandatory,
   *         while the other helpers are optional and can be set to NULL
-  * @param  pStatArea: pointer to statistic area used by the IQ algorithms.
+  * @param  ISP_IQParamCacheInit: pointer to ISP sensors specific params.
   *         If NULL, then the statistic area IQ static parameter is used.
   * @retval ISP status
   */
@@ -65,7 +52,7 @@ ISP_StatusTypeDef ISP_Init(ISP_HandleTypeDef *hIsp,
                            void *hDcmipp,
                            uint32_t CameraInstance,
                            ISP_AppliHelpersTypeDef *pAppliHelpers,
-                           ISP_StatAreaTypeDef *pStatArea)
+                           const ISP_IQParamTypeDef *ISP_IQParamCacheInit)
 {
   ISP_StatusTypeDef ret;
 
@@ -114,13 +101,45 @@ ISP_StatusTypeDef ISP_Init(ISP_HandleTypeDef *hIsp,
      return ISP_ERR_APP_HELPER_UNDEFINED;
    }
 
-  if (pStatArea != NULL)
+  /* Initialize IQ param (read from non volatile memory) */
+  ret = ISP_SVC_IQParam_Init(hIsp, ISP_IQParamCacheInit);
+  if (ret != ISP_OK)
   {
-    hIsp->statArea = *pStatArea;
+    return ret;
   }
 
-  /* Initialize IQ param (read from non volatile memory) */
-  ret = ISP_SVC_IQParam_Init(hIsp);
+  /* Set decimation configuration */
+  /* Get Sensor Info */
+  ret = ISP_SVC_Sensor_GetInfo(hIsp, &hIsp->sensorInfo);
+  if (ret != ISP_OK)
+  {
+    return ret;
+  }
+  /* Compute the ISP decimation value according to the sensor resolution and the maximum ISP resolution */
+  /* It is mandatory to ensure that RAW frame size does not exceed 2688 width prior to demosaicing */
+  ISP_DecimationTypeDef decimation;
+  if ((hIsp->sensorInfo.width / ISP_DECIM_FACTOR_1) < ISP_RAW_MAX_WIDTH)
+  {
+    decimation.factor = ISP_DECIM_FACTOR_1;
+  }
+  else if ((hIsp->sensorInfo.width  / ISP_DECIM_FACTOR_2) < ISP_RAW_MAX_WIDTH)
+  {
+    decimation.factor = ISP_DECIM_FACTOR_2;
+  }
+  else if ((hIsp->sensorInfo.width  / ISP_DECIM_FACTOR_4) < ISP_RAW_MAX_WIDTH)
+  {
+    decimation.factor = ISP_DECIM_FACTOR_4;
+  }
+  else if ((hIsp->sensorInfo.width  / ISP_DECIM_FACTOR_8) < ISP_RAW_MAX_WIDTH)
+  {
+    decimation.factor = ISP_DECIM_FACTOR_8;
+  }
+  else
+  {
+    printf("ERROR: No possible decimation factor to target ISP RAW width constraint\r\n");
+    return ISP_ERR_DECIMATION_EINVAL;
+  }
+  ret = ISP_SVC_ISP_SetDecimation(hIsp, &decimation);
   if (ret != ISP_OK)
   {
     return ret;
@@ -132,6 +151,9 @@ ISP_StatusTypeDef ISP_Init(ISP_HandleTypeDef *hIsp,
   {
     return ret;
   }
+
+  /* Initialize the statistic engine */
+  ISP_SVC_Stats_Init(hIsp);
 
   return ISP_OK;
 }
@@ -158,7 +180,9 @@ ISP_StatusTypeDef ISP_DeInit(ISP_HandleTypeDef *hIsp)
     return ret;
   }
 
-  // TODO: uninitialize tool_com
+  /* Re-initialized the hIsp structure */
+  memset(hIsp, 0, sizeof(*hIsp));
+
   return ISP_OK;
 }
 
@@ -200,12 +224,6 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
     return ret;
   }
 
-  ret = ISP_SVC_ISP_SetDecimation(hIsp, &IQParamConfig->decimation);
-  if (ret != ISP_OK)
-  {
-    return ret;
-  }
-
   ret = ISP_SVC_ISP_SetContrast(hIsp, &IQParamConfig->contrast);
   if (ret != ISP_OK)
   {
@@ -213,7 +231,7 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
   }
 
   /* Set optional static configurations */
-  if (IQParamConfig->sensorGainStatic.gain != 0)
+  if ((IQParamConfig->sensorGainStatic.gain != 0) && (!IQParamConfig->AECAlgo.enable))
   {
     ret = ISP_SVC_Sensor_SetGain(hIsp, &IQParamConfig->sensorGainStatic);
     if (ret != ISP_OK)
@@ -222,7 +240,7 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
     }
   }
 
-  if (IQParamConfig->sensorExposureStatic.exposure != 0)
+  if ((IQParamConfig->sensorExposureStatic.exposure != 0) && (!IQParamConfig->AECAlgo.enable))
   {
     ret = ISP_SVC_Sensor_SetExposure(hIsp, &IQParamConfig->sensorExposureStatic);
     if (ret != ISP_OK)
@@ -249,7 +267,7 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
     }
   }
 
-  if (IQParamConfig->ispGainStatic.enable != 0)
+  if ((IQParamConfig->ispGainStatic.enable != 0) && (!IQParamConfig->AWBAlgo.enable))
   {
     ret = ISP_SVC_ISP_SetGain(hIsp, &IQParamConfig->ispGainStatic);
     if (ret != ISP_OK)
@@ -258,7 +276,7 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
     }
   }
 
-  if (IQParamConfig->colorConvStatic.enable != 0)
+  if ((IQParamConfig->colorConvStatic.enable != 0) && (!IQParamConfig->AWBAlgo.enable))
   {
     ret = ISP_SVC_ISP_SetColorConv(hIsp, &IQParamConfig->colorConvStatic);
     if (ret != ISP_OK)
@@ -267,17 +285,15 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
     }
   }
 
-  /* Configure statistic area (defined by the application or by an optional static configuration) */
-  /* Get its config from IQ params if it was not provided by the application at ISP_Init() */
+  /* Configure statistic area if not already configured by ISP_SetStatArea() */
   if ((hIsp->statArea.XSize == 0) || (hIsp->statArea.YSize == 0))
   {
-    hIsp->statArea = IQParamConfig->statAreaStatic;
-  }
-
-  ret = ISP_SVC_ISP_SetStatArea(hIsp, &hIsp->statArea, &IQParamConfig->decimation);
-  if (ret != ISP_OK)
-  {
-    return ret;
+    /* Configure statistic area from IQ params */
+    ret = ISP_SVC_ISP_SetStatArea(hIsp, &IQParamConfig->statAreaStatic);
+    if (ret != ISP_OK)
+    {
+      return ret;
+    }
   }
 
   ret = ISP_SVC_ISP_SetGamma(hIsp, &IQParamConfig->gamma);
@@ -287,9 +303,7 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
   }
 
   /* Initialize the exposure target based on the selected exposure compensation */
-  IQParamConfig->AECAlgo.exposureTarget = ISP_ExposureTarget[IQParamConfig->AECAlgo.exposureCompensation + EXPOSURE_OFFSET];
-
-  /* TODO: If applicable (parameters TBCONF), configure the fixed-value sensor parameters as defined by the IQ tuning tool */
+  IQParamConfig->AECAlgo.exposureTarget = (uint32_t) (ISP_IDEAL_TARGET_EXPOSURE * pow(2, (float)IQParamConfig->AECAlgo.exposureCompensation / 2));
 
   return ISP_OK;
 }
@@ -302,10 +316,9 @@ ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp)
   */
 ISP_StatusTypeDef ISP_BackgroundProcess(ISP_HandleTypeDef *hIsp)
 {
-  static uint32_t LastFrameId;
-  uint32_t CurrentFrameId;
-  ISP_StatusTypeDef retCmdParser = ISP_OK, retAlgo = ISP_OK, retStats = ISP_OK;
+  ISP_StatusTypeDef retAlgo, retStats;
 #ifdef ISP_MW_TUNING_TOOL_SUPPORT
+  ISP_StatusTypeDef retCmdParser = ISP_OK;
   uint8_t *cmd;
 #endif
 
@@ -324,19 +337,16 @@ ISP_StatusTypeDef ISP_BackgroundProcess(ISP_HandleTypeDef *hIsp)
   /* Check if a statistics gathering cycle has been completed to call the statistic callbacks */
   retStats = ISP_SVC_Stats_ProcessCallbacks(hIsp);
 
-  CurrentFrameId = ISP_SVC_Misc_GetMainFrameId(hIsp);
-  if (CurrentFrameId != LastFrameId)
-  {
-    /* A new frame has been received : process the algorithms */
-    LastFrameId = CurrentFrameId;
-    retAlgo = ISP_Algo_Process(hIsp);
-  }
+  /* Process the algorithms */
+  retAlgo = ISP_Algo_Process(hIsp);
 
+#ifdef ISP_MW_TUNING_TOOL_SUPPORT
   if (retCmdParser != ISP_OK)
   {
     return retCmdParser;
   }
-  else if (retStats != ISP_OK)
+#endif
+  if (retStats != ISP_OK)
   {
     return retStats;
   }
@@ -345,19 +355,6 @@ ISP_StatusTypeDef ISP_BackgroundProcess(ISP_HandleTypeDef *hIsp)
     return retAlgo;
   }
 
-  return ISP_OK;
-}
-
-/**
-  * @brief  ISP_SetApplicationCB
-  *         Register the application optional CB to get informed of ISP update
-  * @param  hIsp: ISP device handle
-  * @param  pAppliCB: Pointer to application CB
-  * @retval Operation status
-  */
-ISP_StatusTypeDef ISP_SetApplicationCB(ISP_HandleTypeDef *hIsp, ISP_AppliCBTypeDef *pAppliCB)
-{
-  hIsp->appliCB = *pAppliCB;
   return ISP_OK;
 }
 
@@ -374,7 +371,7 @@ ISP_StatusTypeDef ISP_SetExposureTarget(ISP_HandleTypeDef *hIsp, ISP_ExposureCom
 
   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
   IQParamConfig->AECAlgo.exposureCompensation = ExposureCompensation;
-  IQParamConfig->AECAlgo.exposureTarget = ISP_ExposureTarget[ExposureCompensation + EXPOSURE_OFFSET];
+  IQParamConfig->AECAlgo.exposureTarget = (uint32_t) (ISP_IDEAL_TARGET_EXPOSURE * pow(2, (float)ExposureCompensation / 2));
 
   return ISP_OK;
 }
@@ -389,17 +386,45 @@ ISP_StatusTypeDef ISP_SetExposureTarget(ISP_HandleTypeDef *hIsp, ISP_ExposureCom
 ISP_StatusTypeDef ISP_GetExposureTarget(ISP_HandleTypeDef *hIsp, ISP_ExposureCompTypeDef *pExposureCompensation, uint32_t *pExposureTarget)
 {
   ISP_IQParamTypeDef *IQParamConfig;
-  size_t length = sizeof(ISP_ExposureTarget) / sizeof(ISP_ExposureTarget[0]);
 
   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
   *pExposureTarget = IQParamConfig->AECAlgo.exposureTarget;
-  for (unsigned int i = 0; i < length ; i++)
-  {
-    if (ISP_ExposureTarget[i] == IQParamConfig->AECAlgo.exposureTarget)
-    {
-      *pExposureCompensation = i - EXPOSURE_OFFSET;
-    }
-  }
+  *pExposureCompensation = IQParamConfig->AECAlgo.exposureCompensation;
+
+  return ISP_OK;
+}
+
+/**
+  * @brief  ISP_SetAECState
+  *         Set AEC algorithm state
+  * @param  hIsp: ISP device handle
+  * @param  enable: AEC algorithm state ('true' if algo is running, 'false' if algo is stopped)
+  * @retval Operation status
+  */
+ISP_StatusTypeDef ISP_SetAECState(ISP_HandleTypeDef *hIsp, uint8_t enable)
+{
+  ISP_IQParamTypeDef *IQParamConfig;
+
+  IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+  IQParamConfig->AECAlgo.enable = enable;
+
+  return ISP_OK;
+}
+
+/**
+  * @brief  ISP_GetAECState
+  *         Get AEC algorithm state
+  * @param  hIsp: ISP device handle
+  * @param  pEnable: AEC algorithm pointer to current state ('true' if algo is running, 'false' if algo is stopped)
+  * @retval Operation status
+  */
+ISP_StatusTypeDef ISP_GetAECState(ISP_HandleTypeDef *hIsp, uint8_t *pEnable)
+{
+  ISP_IQParamTypeDef *IQParamConfig;
+
+  IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+  *pEnable = IQParamConfig->AECAlgo.enable;
+
   return ISP_OK;
 }
 
@@ -443,11 +468,7 @@ ISP_StatusTypeDef ISP_SetWBRefMode(ISP_HandleTypeDef *hIsp, uint8_t Automatic, u
   if (Automatic)
   {
     /* Start the AWB algorithm */
-    /* TODO: call AWB Algo Init() */
-
     IQParamConfig->AWBAlgo.enable = 1;
-
-    /* TBD: shall we call ISP_SVC_Misc_SetWBRefMode with an "auto (0xffff)" value? */
   }
   else
   {
@@ -465,8 +486,6 @@ ISP_StatusTypeDef ISP_SetWBRefMode(ISP_HandleTypeDef *hIsp, uint8_t Automatic, u
     }
 
     /* Stop the AWB algorithm */
-    /* TODO: call AWB Algo DeInit(). TBD: shall we add some delay to avoid race conditions before applying the manual config? */
-
     IQParamConfig->AWBAlgo.enable = 0;
 
     /* Apply ISP RGB gains and Color Conversion */
@@ -520,6 +539,43 @@ ISP_StatusTypeDef ISP_GetWBRefMode(ISP_HandleTypeDef *hIsp, uint8_t *pAutomatic,
     ISP_SVC_Misc_GetWBRefMode(hIsp, pRefColorTemp);
 
   return ISP_OK;
+}
+
+/**
+  * @brief  ISP_GetDecimationFactor
+  *         Get the decimation factor applied in the ISP pipeline.
+  *         This decimation factor ensures that RAW frame size does not exceed 2688 width prior to demosaicing
+  * @param  hIsp: ISP device handle
+  * @param  pDecimation: Pointer to the decimation factor
+  * @retval Operation status
+  */
+ISP_StatusTypeDef ISP_GetDecimationFactor(ISP_HandleTypeDef *hIsp, ISP_DecimationTypeDef *pDecimation)
+{
+  return ISP_SVC_ISP_GetDecimation(hIsp, pDecimation);
+}
+
+/**
+  * @brief  ISP_SetStatArea
+  *         Set statistic area (position and size) defined by the user
+  * @param  hIsp: ISP device handle
+  * @param  pStatArea: Pointer to the statistic area
+  * @retval Operation status
+  */
+ISP_StatusTypeDef ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pStatArea)
+{
+  return ISP_SVC_ISP_SetStatArea(hIsp, pStatArea);
+}
+
+/**
+  * @brief  ISP_GetStatArea
+  *         Get current statistic area
+  * @param  hIsp: ISP device handle
+  * @param  pStatArea: Pointer to the statistic area
+  * @retval Operation status
+  */
+ISP_StatusTypeDef ISP_GetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pStatArea)
+{
+  return ISP_SVC_ISP_GetStatArea(hIsp, pStatArea);
 }
 
 /**
@@ -597,4 +653,20 @@ void ISP_IncDumpFrameId(ISP_HandleTypeDef *hIsp)
 uint32_t ISP_GetDumpFrameId(ISP_HandleTypeDef *hIsp)
 {
   return ISP_SVC_Misc_GetDumpFrameId(hIsp);
+}
+
+/**
+  * @brief  ISP_OutputMeta
+  *         Print out ISP Meta data for test or debug purpose
+  * @param  hIsp: ISP device handle
+  * @retval None
+  */
+void ISP_OutputMeta(ISP_HandleTypeDef *hIsp)
+{
+  extern ISP_MetaTypeDef Meta;
+
+  if (Meta.outputEnable)
+  {
+    printf("Meta[%ld]: L = %d, TG = %ld, G = %ld, E = %ld, CT = %ld\r\n", hIsp->MainPipe_FrameCount, Meta.averageL, Meta.exposureTarget, Meta.gain, Meta.exposure, Meta.colorTemp);
+  }
 }

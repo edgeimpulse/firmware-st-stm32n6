@@ -678,7 +678,7 @@ int32_t IMX335_SetExposure(IMX335_Object_t *pObj, int32_t exposure)
   }
   else
   {
-    shutter = vmax - (exposure / IMX335_1H_PERIOD_USEC);
+    shutter = ( vmax - (exposure /((uint32_t) IMX335_1H_PERIOD_USEC)));
 
     if (shutter < IMX335_SHUTTER_MIN)
     {

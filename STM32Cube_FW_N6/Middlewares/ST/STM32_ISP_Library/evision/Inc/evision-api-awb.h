@@ -135,14 +135,14 @@ typedef struct evision_awb_profile {
     /*! @brief
      * The ISP color correction matrix coefficients. <br/>
      * <b>Note:</b> The individual color correction matrix coefficients are stored using the float type.
-     * The coefficients can be stored as ratios or as a flaoting point representation of integer values.
+     * The coefficients can be stored as ratios or as a floating point representation of integer values.
      * It is up to the user to convert the values to the format expected by the sensor/ISP.
      */
     float ccm_coefficients[EVISION_AWB_CCM_SIZE][EVISION_AWB_CCM_SIZE];
     /*! @brief
      * The ISP color correction matrix offset coefficients. <br/>
      * <b>Note:</b> The individual color correction matrix offset coefficients are stored using the float type.
-     * The coefficients can be stored as ratios or as a flaoting point representation of integer values.
+     * The coefficients can be stored as ratios or as a floating point representation of integer values.
      * It is up to the user to convert the values to the format expected by the sensor/ISP.
      */
     float ccm_offsets[EVISION_AWB_CCM_SIZE];
@@ -156,7 +156,7 @@ typedef struct evision_awb_profile {
  * @brief Sensor specific AWB calibration data, member of #evision_awb_estimator_t.
  *
  * Contains sensor specific AWB calibration data for accurate color rendering.
- * Support for both continous AWB and profile selection based AWB.
+ * Support for both continious AWB and profile selection based AWB.
  *
  */
 typedef struct evision_awb_calib_data {
@@ -313,11 +313,6 @@ typedef struct evision_awb_estimator {
     evision_state_t state;
 
     /*! @brief
-     * Handler for logging purposes. <br/>
-     * <b>Restrictions:</b> Internal algorithm parameter. Must not be changed! */
-    evision_log_t log;
-
-    /*! @brief
      * Computed sensor/ISP gain values stored as float values.
      * To be applied to the sensor/ISP after conversion to the format expected by the sensor/ISP. <br/>
      * <b>Restrictions:</b> Internal algorithm parameter. Must not be changed! <br/>
@@ -376,6 +371,10 @@ typedef struct evision_awb_estimator {
      */
     evision_awb_hyper_param_t hyper_params;
 
+    /*! @brief
+     * Handler to output logs. <br/> */
+    evision_api_log_callback log_cb;
+
 } evision_awb_estimator_t;
 
 /************************************************************************
@@ -394,6 +393,7 @@ typedef struct evision_awb_estimator {
  * @fn evision_awb_estimator_t* evision_api_awb_new(void);
  * @brief Create a new #evision_awb_estimator_t instance.
  *
+ * @param[in] log_cb Callback to output logs.
  * @return The address of the created instance. NULL if it failed.
  *
  * This function performs dynamic memory allocations for the AWB estimator.
@@ -401,7 +401,7 @@ typedef struct evision_awb_estimator {
  *
  * @warning Allocates memory. Free memory with evision_api_awb_delete().
  */
-evision_awb_estimator_t* evision_api_awb_new(void);
+evision_awb_estimator_t* evision_api_awb_new(evision_api_log_callback log_cb);
 
 /**
  * @fn evision_return_t evision_api_awb_delete(evision_awb_estimator_t* self);
@@ -454,7 +454,7 @@ void evision_api_awb_set_profile(evision_awb_profile_t* awb_profile,
  * The choice of the actual number of profiles and the color temperature of the illumination for each profile is
  * generally dependent on the intended application and/or the available hardware equipement for generating the calibration data.
  * They must be complete in the sense that they must contain all the required fields (channel gains and color correction coefficients).
- * It is the user's responsability to ensure that this is indeed the case.
+ * It is the user's responsibility to ensure that this is indeed the case.
  *
  * The decision thresholds must be unique and specified in ascending order.
  * Between each pair of adjacent profiles there must be exactly one decision threshold.
@@ -502,6 +502,7 @@ evision_return_t evision_api_awb_init_profiles(evision_awb_estimator_t* const se
 evision_return_t evision_api_awb_run_average(evision_awb_estimator_t* const self, const evision_image_t* const image,
     uint8_t use_ext_meas, double ext_meas[EVISION_AWB_EXT_MEAS_SIZE]);
 
+#ifdef ALGO_SW_STATISTICS
 /**
  * @brief Run the AWB estimator on the selected ROIs.
  *
@@ -538,5 +539,6 @@ evision_return_t evision_api_awb_run_average(evision_awb_estimator_t* const self
 evision_return_t evision_api_awb_run_roi(evision_awb_estimator_t* const self,
     const evision_image_t* const image, const evision_roi_array_t* const roi_array,
     uint8_t use_ext_meas, double ext_meas[EVISION_AWB_EXT_MEAS_SIZE]);
+#endif
 
 #endif /* EVISION_API_AWB_H_ */

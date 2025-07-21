@@ -79,9 +79,9 @@ static const u32 h264PrevModeFavor[52] = {
 
 /* H.264 motion estimation parameters */
 static const u32 h264InterFavor[52] = {
-    4,   4,   5,   6,   6,   7,   8,   9,  10,  12,  13,  15,  17,  19,  
-    21,  24,  26,  30,  34,  38,  42,  48,  53,  60,  68,  76,  85,  96, 
-    107, 121, 136, 152, 171, 192, 215, 242, 272, 305, 342, 384, 431, 484, 
+    4,   4,   5,   6,   6,   7,   8,   9,  10,  12,  13,  15,  17,  19,
+    21,  24,  26,  30,  34,  38,  42,  48,  53,  60,  68,  76,  85,  96,
+    107, 121, 136, 152, 171, 192, 215, 242, 272, 305, 342, 384, 431, 484,
     544, 610, 685, 769, 863, 969, 1088, 1221, 1370, 1538
 };
 
@@ -139,7 +139,7 @@ static const i32 h264DmvPenalty[128] =   /* 4*sqrt(i*4*6) */
      195,  196,  197,  198,  199,  200,  201,  202,  203,  204,
      205,  206,  207,  208,  209,  210,  211,  211,  212,  213,
      214,  215,  216,  217,  218,  219,  219,  220
-    };    
+    };
 
 
 /*------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ static i32 float2fixpoint8(float data);
 static i32 float2fixpoint8(float data)
 {
     i32 i = 0;
-    i32 result = 0; 
+    i32 result = 0;
     float pow2=2.0;
     /*0.16 format*/
     float base = 0.5;
@@ -170,15 +170,15 @@ static i32 float2fixpoint8(float data)
         {
            result |= 1;
            data -= base;
- 
+
         }
 
         pow2 *= 2;
         base = 1.0/pow2;
-      
+
     }
     return result;
-    
+
 }
 
 /*------------------------------------------------------------------------------
@@ -239,6 +239,9 @@ h264EncodeFrame_e H264CodeFrame(h264Instance_s * inst)
             /* Release HW so that it can be used by other codecs */
             EWLReleaseHw(asic->ewl);
 
+            /* Prevent infinite loop in case of encoding timeout */
+            go_on = 0;            
+
         }
         else
         {
@@ -263,6 +266,9 @@ h264EncodeFrame_e H264CodeFrame(h264Instance_s * inst)
             case ASIC_STATUS_HW_RESET:
                 ret = H264ENCODE_HW_RESET;
                 break;
+            case ASIC_STATUS_FUSE:
+                ret = H264ENCODE_FUSE_ERROR;
+                break;
             case ASIC_STATUS_FRAME_READY:
                 {
                     /* Stream header remainder ie. last not full 64-bit address
@@ -280,7 +286,7 @@ h264EncodeFrame_e H264CodeFrame(h264Instance_s * inst)
             case ASIC_STATUS_LINE_BUFFER_DONE:
                 ret = H264ENCODE_OK;
                 /* SW handshaking: the callback function should wait until enough mb rows has been
-                 *   feed into the input buffer and then update the input write pointer to make  
+                 *   feed into the input buffer and then update the input write pointer to make
                  *   the encoder continue to run. */
                 if (!inst->inputLineBuf.inputLineBufHwModeEn)
                 {
@@ -289,7 +295,7 @@ h264EncodeFrame_e H264CodeFrame(h264Instance_s * inst)
                 }
                 break;
             case ASIC_STATUS_RFC_BUFF_OVERFLOW:
-                /* when current frame is finished, the software force the slice type to I slice 
+                /* when current frame is finished, the software force the slice type to I slice
                  *   in next frame, and set a bigger QP */
                 inst->rfcBufOverflow = ENCHW_YES;
                 ret = H264ENCODE_OK;
@@ -304,7 +310,7 @@ h264EncodeFrame_e H264CodeFrame(h264Instance_s * inst)
             if (asic->irqStatus & ASIC_STATUS_RFC_BUFF_OVERFLOW)
                 inst->rfcBufOverflow = ENCHW_YES;
 
-            go_on = (status == ASIC_STATUS_SLICE_READY) || 
+            go_on = (status == ASIC_STATUS_SLICE_READY) ||
                     (status == ASIC_STATUS_LINE_BUFFER_DONE) ||
                     (status == ASIC_STATUS_RFC_BUFF_OVERFLOW);
 
@@ -402,9 +408,9 @@ void H264SetNewFrame(h264Instance_s * inst)
 
     regs->picInitQp = (u32) (inst->picParameterSet.picInitQpMinus26 + 26);
 
-   
+
     regs->qp = qpHdr = inst->rateControl.qpHdr >> QP_FRACTIONAL_BITS;
-    
+
     regs->qpfrac = (inst->rateControl.qpHdr - (asic->regs.qp << QP_FRACTIONAL_BITS))<<(16 - QP_FRACTIONAL_BITS);
 
     regs->qpMin = qpMin = inst->rateControl.qpMin >> QP_FRACTIONAL_BITS;
@@ -544,7 +550,7 @@ void H264SetNewFrame(h264Instance_s * inst)
              regs->madQpDelta[0] = CLIP3(regs->madQpDelta[0], -8, 7);
              regs->madQpDelta[1] = CLIP3(inst->preProcess.qpOffset[1], -30, 30);
              regs->madQpDelta[2] = CLIP3(inst->preProcess.qpOffset[2], -30, 30); /* AROI ID 3 */
-        } 
+        }
         else
         {
             //not support MADQP adjustment
@@ -616,7 +622,7 @@ void H264SetNewFrame(h264Instance_s * inst)
             regs->pen[s][i] = 0;
         for (i = ASIC_PENALTY_DZ_RATE0; i <= ASIC_PENALTY_DZ_SKIP1; i++)
             regs->pen[s][i] = 0;
-#endif            
+#endif
         regs->pen[s][ASIC_PENALTY_GOLDEN] = h264DiffMvPenalty[qp[s]]/2;
         if (regs->pen[s][ASIC_PENALTY_GOLDEN] > 255)
             regs->pen[s][ASIC_PENALTY_GOLDEN] = 255;
@@ -645,7 +651,7 @@ void H264SetNewFrame(h264Instance_s * inst)
             regs->pen[qpAddr][ASIC_PENALTY_I4_PREV_MODE_FAVOR] = h264PrevModeFavor[CLIP3(CLIP3(qpHdr - s + regs->offsetSliceQp,0,51),qpMin, qpMax)];
             regs->pen[qpAddr][ASIC_PENALTY_INTER_FAVOR] = h264InterFavor[CLIP3(CLIP3(qpHdr - s + regs->offsetSliceQp,0,51),qpMin, qpMax)];
             regs->pen[qpAddr][ASIC_PENALTY_SKIP] = h264SkipSadPenalty[CLIP3(CLIP3(qpHdr - s + regs->offsetSliceQp,0,51),qpMin, qpMax)];
-           #if 0 
+           #if 0
             {
                 i32 tmp = h264DiffMvPenalty4p[CLIP3(CLIP3(qpHdr - s + regs->offsetSliceQp,0,51),qpMin, qpMax)]/10;
                 tmp = (tmp + 4) / 8;
@@ -670,11 +676,11 @@ void H264SetNewFrame(h264Instance_s * inst)
                 regs->pen[(lamdaIdx & 0x1f)][i] = 0;
             for (i = ASIC_PENALTY_DZ_RATE0; i <= ASIC_PENALTY_DZ_SKIP1; i++)
                 regs->pen[(lamdaIdx & 0x1f)][i] = 0;
-#endif                
+#endif
             regs->pen[(lamdaIdx & 0x1f)][ASIC_PENALTY_GOLDEN] = h264DiffMvPenalty[CLIP3(CLIP3(qpHdr - s + regs->offsetSliceQp,0,51),qpMin, qpMax)]/2;
             if (regs->pen[(lamdaIdx & 0x1f)][ASIC_PENALTY_GOLDEN] > 255)
                 regs->pen[(lamdaIdx & 0x1f)][ASIC_PENALTY_GOLDEN] = 255;
-                
+
             //regs->pen[(lamdaIdx & 0x1f)][ASIC_PENALTY_DMV_COST_CONST] = 0;
             //regs->pen[(lamdaIdx & 0x1f)][ASIC_PENALTY_COST_INTER] = 0;
         }

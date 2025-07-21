@@ -47,7 +47,7 @@ extern "C" {
 /* Usage of nucleo board */
 #if !defined (USE_NUCLEO_144)
 #define USE_NUCLEO_144
-#endif
+#endif /* !defined (USE_NUCLEO_144) */
 
 /* Usage of COM feature */
 #define USE_BSP_COM_FEATURE 1U

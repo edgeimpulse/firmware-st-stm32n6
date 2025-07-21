@@ -31,17 +31,22 @@
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
-ISP_StatusTypeDef ISP_Init(ISP_HandleTypeDef *hIsp, void *hDcmipp, uint32_t CameraInstance, ISP_AppliHelpersTypeDef *pAppliHelpers, ISP_StatAreaTypeDef *pStatArea);
+ISP_StatusTypeDef ISP_Init(ISP_HandleTypeDef *hIsp, void *hDcmipp, uint32_t CameraInstance, ISP_AppliHelpersTypeDef *pAppliHelpers, const ISP_IQParamTypeDef *ISP_IQParamCacheInit);
 ISP_StatusTypeDef ISP_DeInit(ISP_HandleTypeDef *hIsp);
 ISP_StatusTypeDef ISP_Start(ISP_HandleTypeDef *hIsp);
 ISP_StatusTypeDef ISP_BackgroundProcess(ISP_HandleTypeDef *hIsp);
-ISP_StatusTypeDef ISP_SetApplicationCB(ISP_HandleTypeDef *hIsp, ISP_AppliCBTypeDef *pAppliCB);
 
 ISP_StatusTypeDef ISP_SetExposureTarget(ISP_HandleTypeDef *hIsp, ISP_ExposureCompTypeDef ExposureCompensation);
 ISP_StatusTypeDef ISP_GetExposureTarget(ISP_HandleTypeDef *hIsp, ISP_ExposureCompTypeDef *pExposureCompensation, uint32_t *pExposureTarget);
 ISP_StatusTypeDef ISP_ListWBRefModes(ISP_HandleTypeDef *hIsp, uint32_t RefColorTemp[]);
+ISP_StatusTypeDef ISP_SetAECState(ISP_HandleTypeDef *hIsp, uint8_t enable);
+ISP_StatusTypeDef ISP_GetAECState(ISP_HandleTypeDef *hIsp, uint8_t *pEnable);
 ISP_StatusTypeDef ISP_SetWBRefMode(ISP_HandleTypeDef *hIsp, uint8_t Automatic, uint32_t RefColorTemp);
 ISP_StatusTypeDef ISP_GetWBRefMode(ISP_HandleTypeDef *hIsp, uint8_t *pAutomatic, uint32_t *pRefColorTemp);
+ISP_StatusTypeDef ISP_GetDecimationFactor(ISP_HandleTypeDef *hIsp, ISP_DecimationTypeDef *pDecimation);
+ISP_StatusTypeDef ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pStatArea);
+ISP_StatusTypeDef ISP_GetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pStatArea);
+
 void ISP_GatherStatistics(ISP_HandleTypeDef *hIsp);
 void ISP_IncMainFrameId(ISP_HandleTypeDef *hIsp);
 uint32_t ISP_GetMainFrameId(ISP_HandleTypeDef *hIsp);
@@ -49,5 +54,6 @@ void ISP_IncAncillaryFrameId(ISP_HandleTypeDef *hIsp);
 uint32_t ISP_GetAncillaryFrameId(ISP_HandleTypeDef *hIsp);
 void ISP_IncDumpFrameId(ISP_HandleTypeDef *hIsp);
 uint32_t ISP_GetDumpFrameId(ISP_HandleTypeDef *hIsp);
+void ISP_OutputMeta(ISP_HandleTypeDef *hIsp);
 
 #endif /* __ISP_API__H */

@@ -55,7 +55,6 @@ extern "C" {
   */
 
 
-
 /** @defgroup USBD_IOREQ_Exported_Macros
   * @{
   */

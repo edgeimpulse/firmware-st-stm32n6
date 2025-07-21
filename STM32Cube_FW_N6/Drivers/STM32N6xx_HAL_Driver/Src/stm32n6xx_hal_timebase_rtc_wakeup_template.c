@@ -92,7 +92,7 @@ static RTC_HandleTypeDef        hRTC_Handle;
 void RTC_IRQHandler(void);
 #if (USE_HAL_RTC_REGISTER_CALLBACKS == 1U)
 void TimeBase_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc);
-#endif
+#endif /* (USE_HAL_RTC_REGISTER_CALLBACKS == 1U) */
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -106,7 +106,6 @@ void TimeBase_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc);
   */
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
-  __IO uint32_t      counter = 0U;
   HAL_StatusTypeDef  Status;
 
   RCC_OscInitTypeDef        RCC_OscInitStruct = {0};
@@ -178,7 +177,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 
 #if (USE_HAL_RTC_REGISTER_CALLBACKS == 1U)
     HAL_RTC_RegisterCallback(&hRTC_Handle, HAL_RTC_WAKEUPTIMER_EVENT_CB_ID, TimeBase_RTCEx_WakeUpTimerEventCallback);
-#endif
+#endif /* (USE_HAL_RTC_REGISTER_CALLBACKS == 1U) */
   }
 
   if (Status == HAL_OK)
@@ -244,7 +243,7 @@ void HAL_ResumeTick(void)
 void TimeBase_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 #else
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
-#endif
+#endif /* (USE_HAL_RTC_REGISTER_CALLBACKS == 1U) */
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hrtc);

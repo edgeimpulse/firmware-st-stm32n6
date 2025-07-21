@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -46,11 +46,6 @@ typedef struct
 
   uint32_t         Mode;                   /*!< Indicates the chaining mode used for encryption. */
   /*!< This parameter is a value of @defgroup MCE_Ciphering_Algorithm */
-  uint32_t         AccessMode;             /*!< MCE region writes enabled or not */
-  /*!< This parameter is a value of @ref MCE_Region_Privilege. */
-
-  uint32_t         PrivilegedAccess;       /*!< MCE region privileged access or not */
-  /*!< This parameter is a value of @ref MCE_Region_Privilege. */
 
 } MCE_RegionConfigTypeDef;
 
@@ -61,6 +56,10 @@ typedef struct
   uint32_t         Version;               /*!< 16-bit long MCE context version */
 
   uint32_t         *pKey;                  /*!< Pointer at the key used for encryption/decryption */
+
+  uint32_t         KeySize;               /*!< This parameter can be MCE_AES_128 or MCE_AES_256 */
+
+  uint32_t         Cipher_Mode;           /*!< Authorized cipher mode  */
 
 } MCE_AESConfigTypeDef;
 
@@ -153,8 +152,6 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
   * @{
   */
 #define MCE_IT_ILLEGAL_ACCESS_ERROR        MCE_IAIER_IAEIE                   /*!< Illegal access error interrupt       */
-#define MCE_IT_CONFIGURATION_ACCESS_ERROR  MCE_IAIER_CAEIE                   /*!< Configuration access error interrupt */
-#define MCE_IT_ALL                        (MCE_IAIER_IAEIE|MCE_IAIER_CAEIE)  /*!< All interrupts                       */
 /**
   * @}
   */
@@ -162,11 +159,7 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
 /** @defgroup MCE_Illegal_Access_Flags    MCE Illegal Access Flags
   * @{
   */
-#define MCE_CONFIGURATION_ACCESS_ERROR     MCE_IASR_CAEF                      /*!< Configuration access error                                    */
 #define MCE_ILLEGAL_ACCESS_READ_NPRIV      MCE_IASR_IAEF                      /*!< Illegal unprivileged data read/instruction fetch access flag   */
-#define MCE_ILLEGAL_ACCESS_READ_PRIV       (MCE_IASR_IAEF | MCE_IAESR_IAPRIV) /*!< Illegal privileged data read/instruction fetch access flag     */
-#define MCE_ILLEGAL_ACCESS_WRITE_NPRIV     (MCE_IASR_IAEF | MCE_IAESR_IANRW)  /*!< Illegal unprivileged write access access flag                 */
-#define MCE_ILLEGAL_ACCESS_WRITE_PRIV      (MCE_IASR_IAEF | MCE_IAESR_IANRW | MCE_IAESR_IAPRIV) /*!< Illegal privileged write access access flag */
 /**
   * @}
   */
@@ -250,6 +243,7 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
   * @}
   */
 
+
 /** @defgroup MCE_CipherSelection MCE Cipher Selection
   * @{
   */
@@ -263,9 +257,9 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
 /** @defgroup MCE_ContextMode MCE Context Mode
   * @{
   */
-#define MCE_CONTEXT_STREAM_CIPHER         MCE_CCCFGR_MODE_0 /*!< Stream cipher is allowed with this cipher context     */
-#define MCE_CONTEXT_BLOCK_CIPHER          MCE_CCCFGR_MODE_1 /*!< Block cipher is allowed with this cipher context      */
-#define MCE_CONTEXT_FASTBLOCK_CIPHER      MCE_CCCFGR_MODE   /*!< Fast block cipher is allowed with this cipher context */
+#define MCE_CONTEXT_STREAM_CIPHER      MCE_CCCFGR_MODE_0  /*!< Stream cipher is allowed with this cipher context     */
+#define MCE_CONTEXT_BLOCK_CIPHER       MCE_CCCFGR_MODE_1  /*!< Block cipher is allowed with this cipher context      */
+#define MCE_CONTEXT_FASTBLOCK_CIPHER   MCE_CCCFGR_MODE    /*!< Fast block cipher is allowed with this cipher context */
 /**
   * @}
   */
@@ -304,8 +298,6 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
   * @param  __INTERRUPT__ mask on enabled interrupts
   *          This parameter can be one of the following values:
   *            @arg @ref MCE_IT_ILLEGAL_ACCESS_ERROR        MCE illegal access error interrupt
-  *            @arg @ref MCE_IT_CONFIGURATION_ACCESS_ERROR  MCE configuration access error interrupt
-  *            @arg @ref MCE_IT_ALL                         MCE all interrupts
   * @retval None
   */
 #define __HAL_MCE_ENABLE_IT(__HANDLE__, __INTERRUPT__)  SET_BIT(((__HANDLE__)->Instance->IAIER), (__INTERRUPT__))
@@ -317,8 +309,6 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
   * @param  __INTERRUPT__ mask on disabled interrupts
   *          This parameter can be one of the following values:
   *            @arg @ref MCE_IT_ILLEGAL_ACCESS_ERROR        MCE illegal access error interrupt
-  *            @arg @ref MCE_IT_CONFIGURATION_ACCESS_ERROR  MCE configuration access error interrupt
-  *            @arg @ref MCE_IT_ALL                         MCE all interrupts
   * @retval None
   */
 #define __HAL_MCE_DISABLE_IT(__HANDLE__, __INTERRUPT__)  CLEAR_BIT(((__HANDLE__)->Instance->IAIER), (__INTERRUPT__))
@@ -334,6 +324,7 @@ typedef  void (*pMCE_CallbackTypeDef)(MCE_HandleTypeDef *hmce); /*!< pointer to 
   * @retval 0 (not set) or 1 (set)
   */
 #define __HAL_MCE_GET_FLAG(__HANDLE__, __FLAG__)  READ_BIT((__HANDLE__)->Instance->IASR, MCE_IASR_IAEF)
+
 
 /**
   * @brief  Clear MCE peripheral illegal/configuration access flag
@@ -428,12 +419,14 @@ uint32_t HAL_MCE_KeyCRCComputation(const uint32_t *pKey);
   * @param __CONTEXT__ MCE region context
   * @retval SET (__CONTEXT__ is valid) or RESET (__CONTEXT__ is invalid)
   */
+
 #define IS_MCE_CONTEXT(__INSTANCE__, __CONTEXT__) (((__INSTANCE__) == (MCE1)) ?           \
                                                    (((__CONTEXT__) == MCE_NO_CONTEXT)   || \
                                                     ((__CONTEXT__) == MCE_CONTEXT1)     || \
                                                     ((__CONTEXT__) == MCE_CONTEXT2))     : \
-                                                   ((__CONTEXT__) == MCE_NO_CONTEXT))
-
+                                                   (((__CONTEXT__) == MCE_CONTEXT1)     || \
+                                                    ((__CONTEXT__) == MCE_CONTEXT2)     || \
+                                                    ((__CONTEXT__) == MCE_NO_CONTEXT)))
 /**
   * @brief Verify the MCE region algorithm.
   * @param __INSTANCE__ MCE instance
@@ -447,8 +440,8 @@ uint32_t HAL_MCE_KeyCRCComputation(const uint32_t *pKey);
                                                    ((__ALGO__) == MCE_FASTBLOCK_CIPHER))  : \
                                                   (((__ALGO__) == MCE_NO_CIPHER)         || \
                                                    ((__ALGO__) == MCE_BLOCK_CIPHER)      || \
+                                                   ((__ALGO__) == MCE_STREAM_CIPHER)     || \
                                                    ((__ALGO__) == MCE_FASTBLOCK_CIPHER)))
-
 
 #endif /* MCE1 */
 

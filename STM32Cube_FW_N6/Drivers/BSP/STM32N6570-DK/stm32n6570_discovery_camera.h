@@ -160,19 +160,11 @@ typedef struct
 #define CAMERA_NIGHT_MODE_SET           0x00U   /* Disable night mode         */
 #define CAMERA_NIGHT_MODE_RESET         0x01U   /* Enable night mode          */
 
-#if (STM32N6570_DK_REV >= STM32N6570_DK_B01)
 #define NRST_CAM_PIN                    GPIO_PIN_8
 #define NRST_CAM_PORT                   GPIOC
 
 #define EN_CAM_PIN                      GPIO_PIN_2
 #define EN_CAM_PORT                     GPIOD
-#else
-#define NRST_CAM_PIN                    GPIO_PIN_5
-#define NRST_CAM_PORT                   GPIOO
-
-#define EN_CAM_PIN                      GPIO_PIN_10
-#define EN_CAM_PORT                     GPIOD
-#endif
 
 #define CAMERA_IMX335_ADDRESS          0x34U
 
@@ -203,7 +195,11 @@ int32_t BSP_CAMERA_RegisterDefaultMspCallbacks(uint32_t Instance);
 int32_t BSP_CAMERA_RegisterMspCallbacks(uint32_t Instance, BSP_CAMERA_Cb_t *CallBacks);
 #endif /* (USE_HAL_DCMIPP_REGISTER_CALLBACKS > 0) */
 int32_t BSP_CAMERA_Start(uint32_t Instance, uint8_t *pbuff, uint32_t Mode);
+int32_t BSP_CAMERA_FullPlanarStart(uint32_t Instance, DCMIPP_FullPlanarDstAddressTypeDef *pbuff, uint32_t Mode);
+int32_t BSP_CAMERA_SemiPlanarStart(uint32_t Instance, DCMIPP_SemiPlanarDstAddressTypeDef *pbuff, uint32_t Mode);
 int32_t BSP_CAMERA_DoubleBufferStart(uint32_t Instance, uint8_t *pbuff1, uint8_t *pbuff2, uint32_t Mode);
+int32_t BSP_CAMERA_FullPlanarDoubleBufferStart(uint32_t Instance, DCMIPP_FullPlanarDstAddressTypeDef *pbuff1, DCMIPP_FullPlanarDstAddressTypeDef *pbuff2, uint32_t Mode);
+int32_t BSP_CAMERA_SemiPlanarDoubleBufferStart(uint32_t Instance, DCMIPP_SemiPlanarDstAddressTypeDef *pbuff1, DCMIPP_SemiPlanarDstAddressTypeDef *pbuff2, uint32_t Mode);
 int32_t BSP_CAMERA_Suspend(uint32_t Instance);
 int32_t BSP_CAMERA_Resume(uint32_t Instance);
 int32_t BSP_CAMERA_Stop(uint32_t Instance);

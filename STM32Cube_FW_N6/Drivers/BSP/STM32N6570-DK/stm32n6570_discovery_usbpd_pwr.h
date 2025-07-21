@@ -176,19 +176,11 @@ typedef void USBPD_PWR_VBUSDetectCallbackFunc(uint32_t PortNum,
 #define TCPP0203_PORT0_FLG_GPIO_CLK_ENABLE()        __HAL_RCC_GPIOD_CLK_ENABLE()
 #define TCPP0203_PORT0_FLG_GPIO_CLK_DISABLE()       __HAL_RCC_GPIOD_CLK_DISABLE()
 #define TCPP0203_PORT0_FLG_GPIO_PORT                GPIOD
-#if (STM32N6570_DK_REV >= STM32N6570_DK_B01)
 #define TCPP0203_PORT0_FLG_GPIO_PIN                 LL_GPIO_PIN_10
 #define TCPP0203_PORT0_FLG_SET_EXTI()               LL_EXTI_SetEXTISource(LL_EXTI_EXTI_PORTD, LL_EXTI_EXTI_LINE10)
 #define TCPP0203_PORT0_FLG_EXTI_LINE                LL_EXTI_LINE_10
 #define TCPP0203_PORT0_FLG_EXTI_IRQN                EXTI10_IRQn
 #define TCPP0203_PORT0_FLG_EXTI_IRQHANDLER          EXTI10_IRQHandler
-#else
-#define TCPP0203_PORT0_FLG_GPIO_PIN                 LL_GPIO_PIN_2
-#define TCPP0203_PORT0_FLG_SET_EXTI()               LL_EXTI_SetEXTISource(LL_EXTI_EXTI_PORTD, LL_EXTI_EXTI_LINE2)
-#define TCPP0203_PORT0_FLG_EXTI_LINE                LL_EXTI_LINE_2
-#define TCPP0203_PORT0_FLG_EXTI_IRQN                EXTI2_IRQn
-#define TCPP0203_PORT0_FLG_EXTI_IRQHANDLER          EXTI2_IRQHandler
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_B01) */
 #define TCPP0203_PORT0_FLG_GPIO_MODE                LL_GPIO_MODE_INPUT
 #define TCPP0203_PORT0_FLG_GPIO_PUPD                LL_GPIO_PULL_UP
 #define TCPP0203_PORT0_FLG_EXTI_ENABLE()                          \
@@ -211,7 +203,6 @@ typedef void USBPD_PWR_VBUSDetectCallbackFunc(uint32_t PortNum,
 #define TCPP0203_PORT0_FLG_IT_PRIORITY              (12U)
 #define TCPP0203_PORT0_FLG_GENERATE_IT()            LL_EXTI_GenerateSWI_0_31(TCPP0203_PORT0_FLG_EXTI_LINE);
 
-#if (STM32N6570_DK_REV >= STM32N6570_DK_B01)
 /**
   * @brief TCPP0203_PWRENn pin
   */
@@ -238,7 +229,6 @@ typedef void USBPD_PWR_VBUSDetectCallbackFunc(uint32_t PortNum,
   {                                                                                               \
     LL_GPIO_ResetOutputPin(TCPP0203_PORT0_ENABLE_GPIO_PORT, TCPP0203_PORT0_ENABLE_GPIO_PIN);      \
   } while(0);
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_B01) */
 
 /**
   * @brief TCPP0203_IANA pin

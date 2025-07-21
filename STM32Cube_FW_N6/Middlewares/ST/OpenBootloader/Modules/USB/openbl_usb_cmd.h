@@ -27,7 +27,7 @@ extern "C" {
 #include "openbl_core.h"
 
 uint16_t OPENBL_USB_EraseMemory(uint32_t Add);
-void OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t BlockNumber);
+uint32_t OPENBL_USB_Download(uint8_t *pSrc, uint32_t Alt, uint32_t Length, uint32_t BlockNumber);
 uint8_t *OPENBL_USB_ReadMemory(uint32_t Alt, uint8_t *pDest, uint32_t Length, uint32_t BlockNumber);
 void OPENBL_USB_Jump(uint32_t Address);
 void OPENBL_USB_WriteProtect(uint8_t *pBuffer, uint32_t Length);

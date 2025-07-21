@@ -160,9 +160,11 @@ const uint8_t* BSP_GetBoardID(void)
 
 /**
   * @brief  This method sets the external SMPS Voltage
-  * @note   This function is only useable from board revisions C01
-  * @param SMPS_VOLTAGE_NOMINAL : 0.810mV
-  *        SMPS_VOLTAGE_OVERDRIVE: 0.890mV
+  * @note   This function is only usable from board revisions C01
+  * @param Voltage configuration
+  *          This parameter can be one of the following values:
+  *            @arg  SMPS_VOLTAGE_NOMINAL
+  *            @arg  SMPS_VOLTAGE_OVERDRIVE
   */
 void BSP_SMPS_Init(SMPSVoltage_TypeDef Voltage){
   SMPS_GPIO_CLK_ENABLE();

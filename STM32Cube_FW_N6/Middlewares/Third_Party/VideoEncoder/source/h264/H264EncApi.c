@@ -58,6 +58,7 @@
 /*------------------------------------------------------------------------------
     1. Include headers
 ------------------------------------------------------------------------------*/
+#include <string.h>
 #include "h264encapi.h"
 #include "enccommon.h"
 #include "H264Instance.h"
@@ -78,7 +79,7 @@
 #include "vidstabcommon.h"
 #endif
 
-#include <string.h>
+
 /*------------------------------------------------------------------------------
     2. External compiler flags
 --------------------------------------------------------------------------------
@@ -139,8 +140,8 @@ static void H264SupplyPrefixForSvctMutiSlice(H264EncInst inst, const H264EncIn *
 
     Function name : H264EncGetApiVersion
     Description   : Return the API version info
-    
-    Return type   : H264EncApiVersion 
+
+    Return type   : H264EncApiVersion
     Argument      : void
 ------------------------------------------------------------------------------*/
 H264EncApiVersion H264EncGetApiVersion(void)
@@ -157,8 +158,8 @@ H264EncApiVersion H264EncGetApiVersion(void)
 /*------------------------------------------------------------------------------
     Function name : H264EncGetBuild
     Description   : Return the SW and HW build information
-    
-    Return type   : H264EncBuild 
+
+    Return type   : H264EncBuild
     Argument      : void
 ------------------------------------------------------------------------------*/
 H264EncBuild H264EncGetBuild(void)
@@ -176,8 +177,8 @@ H264EncBuild H264EncGetBuild(void)
 /*------------------------------------------------------------------------------
     Function name : H264EncInit
     Description   : Initialize an encoder instance and returns it to application
-    
-    Return type   : H264EncRet 
+
+    Return type   : H264EncRet
     Argument      : pEncCfg - initialization parameters
                     instAddr - where to save the created instance
 ------------------------------------------------------------------------------*/
@@ -252,8 +253,8 @@ H264EncRet H264EncInit(const H264EncConfig * pEncCfg, H264EncInst * instAddr)
 
     Function name : H264EncRelease
     Description   : Releases encoder instance and all associated resource
-    
-    Return type   : H264EncRet 
+
+    Return type   : H264EncRet
     Argument      : inst - the instance to be released
 ------------------------------------------------------------------------------*/
 H264EncRet H264EncRelease(H264EncInst inst)
@@ -290,8 +291,8 @@ H264EncRet H264EncRelease(H264EncInst inst)
 
     Function name : H264EncSetCodingCtrl
     Description   : Sets encoding parameters
-    
-    Return type   : H264EncRet 
+
+    Return type   : H264EncRet
     Argument      : inst - the instance in use
                     pCodeParams - user provided parameters
 ------------------------------------------------------------------------------*/
@@ -512,7 +513,7 @@ H264EncRet H264EncSetCodingCtrl(H264EncInst inst,
             return H264ENC_INVALID_ARGUMENT;
         }
     }
-    
+
 
     /* 8x8 mode: 2=enable, 1=adaptive (720p or bigger frame) */
     if ((pCodeParams->transform8x8Mode == 2) ||
@@ -636,14 +637,14 @@ H264EncRet H264EncSetCodingCtrl(H264EncInst inst,
             pEncInst->gdrDuration = pEncInst->gdrMBLeft;
         }
     }
-    
+
     /* Input Line buffer check */
     if (pCodeParams->inputLineBufEn)
     {
         /* check HW support */
         if (pEncInst->hwCfg.instantSupport==0)
             return ENCHW_NOK;
-      
+
         /* check zero depth */
         if ((pCodeParams->inputLineBufDepth == 0) &&
            (pCodeParams->inputLineBufLoopBackEn || pCodeParams->inputLineBufHwModeEn))
@@ -674,8 +675,8 @@ H264EncRet H264EncSetCodingCtrl(H264EncInst inst,
 
     Function name : H264EncGetCodingCtrl
     Description   : Returns current encoding parameters
-    
-    Return type   : H264EncRet 
+
+    Return type   : H264EncRet
     Argument      : inst - the instance in use
                     pCodeParams - palce where parameters are returned
 ------------------------------------------------------------------------------*/
@@ -772,8 +773,8 @@ H264EncRet H264EncGetCodingCtrl(H264EncInst inst,
 
     Function name : H264EncSetRateCtrl
     Description   : Sets rate control parameters
-    
-    Return type   : H264EncRet 
+
+    Return type   : H264EncRet
     Argument      : inst - the instance in use
                     pRateCtrl - user provided parameters
 ------------------------------------------------------------------------------*/
@@ -987,8 +988,8 @@ H264EncRet H264EncSetRateCtrl(H264EncInst inst,
 
     Function name : H264EncGetRateCtrl
     Description   : Return current rate control parameters
-    
-    Return type   : H264EncRet 
+
+    Return type   : H264EncRet
     Argument      : inst - the instance in use
                     pRateCtrl - place where parameters are returned
 ------------------------------------------------------------------------------*/
@@ -1039,8 +1040,8 @@ H264EncRet H264EncGetRateCtrl(H264EncInst inst, H264EncRateCtrl * pRateCtrl)
 
 /*------------------------------------------------------------------------------
     Function name   : VSCheckSize
-    Description     : 
-    Return type     : i32 
+    Description     :
+    Return type     : i32
     Argument        : u32 inputWidth
     Argument        : u32 inputHeight
     Argument        : u32 stabilizedWidth
@@ -1073,7 +1074,7 @@ i32 VSCheckSize(u32 inputWidth, u32 inputHeight, u32 stabilizedWidth,
 /*------------------------------------------------------------------------------
     Function name   : H264EncSetPreProcessing
     Description     : Sets the preprocessing parameters
-    Return type     : H264EncRet 
+    Return type     : H264EncRet
     Argument        : inst - encoder instance in use
     Argument        : pPreProcCfg - user provided parameters
 ------------------------------------------------------------------------------*/
@@ -1285,7 +1286,7 @@ H264EncRet H264EncSetPreProcessing(H264EncInst inst,
 /*------------------------------------------------------------------------------
     Function name   : H264EncGetPreProcessing
     Description     : Returns current preprocessing parameters
-    Return type     : H264EncRet 
+    Return type     : H264EncRet
     Argument        : inst - encoder instance
     Argument        : pPreProcCfg - place where the parameters are returned
 ------------------------------------------------------------------------------*/
@@ -1438,7 +1439,7 @@ H264EncRet H264EncSetSeiUserData(H264EncInst inst, const u8 * pUserData,
 
     Function name : H264EncStrmStart
     Description   : Starts a new stream
-    Return type   : H264EncRet 
+    Return type   : H264EncRet
     Argument      : inst - encoder instance
     Argument      : pEncIn - user provided input parameters
                     pEncOut - place where output info is returned
@@ -1579,13 +1580,13 @@ H264EncRet H264EncStrmStart(H264EncInst inst, const H264EncIn * pEncIn,
                 rc->hrd, rc->outRateNum, rc->outRateDenom);
 
     if (pEncInst->svc.level)
-    {   
+    {
         tmp = pEncInst->stream.byteCnt;
         H264SvcSeiNal(pEncInst);
         H264AddNaluSize(pEncOut, pEncInst->stream.byteCnt-tmp);
     }
     tmp = pEncInst->stream.byteCnt;
-    
+
     H264SeqParameterSet(&pEncInst->stream, &pEncInst->seqParameterSet, ENCHW_YES);
     H264AddNaluSize(pEncOut, pEncInst->stream.byteCnt-tmp);
     tmp = pEncInst->stream.byteCnt;
@@ -1658,7 +1659,7 @@ H264EncRet H264EncStrmStart(H264EncInst inst, const H264EncIn * pEncIn,
 
     Function name : H264EncStrmEncode
     Description   : Encodes a new picture
-    Return type   : H264EncRet 
+    Return type   : H264EncRet
     Argument      : inst - encoder instance
     Argument      : pEncIn - user provided input parameters
                     pEncOut - place where output info is returned
@@ -1888,7 +1889,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
             {
                 bottom_pos=pEncInst->mbPerCol - 1;
             }
-            
+
             regs->intraAreaTop = top_pos;
             regs->intraAreaLeft = 0;
             regs->intraAreaBottom = bottom_pos;
@@ -2023,7 +2024,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
             pSlice->frameNum = pSlice->prevFrameNum;
 
     }
-    
+
     /* Rate control, ISLICE begins a new GOP */
     H264BeforePicRc(&pEncInst->rateControl, pEncIn->timeIncrement, rcSliceType);
 
@@ -2135,29 +2136,29 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
             {
                 i32 numLeadingNalus = 2;
                 sei_s *sei = &pEncInst->rateControl.sei;
-    
+
                 if(sei->enabled == ENCHW_YES || sei->userDataEnabled == ENCHW_YES ||
                    sei->insertRecoveryPointMessage == ENCHW_YES)
                     numLeadingNalus++;
-    
+
                 if((pEncInst->numViews > 1) && ((pSlice->frameNum % 2) == 0))
                     numLeadingNalus++;
-    
+
                 if(pEncInst->picParameterSet.enableCabac == 2)
                     numLeadingNalus++;
 
                 if( pEncInst->svc.level || pEncInst->svc.enableSvctPrefix )   ////prefix
                     numLeadingNalus++;
-                
+
                 if(pEncInst->frameCnt && pEncIn->sendAUD)  ////aud
                     numLeadingNalus++;
-    
+
                 if(numLeadingNalus % 2)
                 {
                     pEncOut->pNaluSizeBuf++;
                     pEncInst->naluOffset++;
                 }
-    
+
             }
 
             if(pEncInst->frameCnt && pEncIn->sendAUD)
@@ -2168,13 +2169,13 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
                 tmp = pEncInst->stream.byteCnt;
                 pEncInst->numNalus++;
             }
-            
+
             tmp = pEncInst->stream.byteCnt;
             H264SeqParameterSet(&pEncInst->stream, &pEncInst->seqParameterSet, ENCHW_YES);
             H264AddNaluSize(pEncOut, pEncInst->stream.byteCnt-tmp);
             tmp = pEncInst->stream.byteCnt;
             pEncInst->numNalus++;
-    
+
             /* Subset SPS for MVC */
             if (pEncInst->numViews > 1)
             {
@@ -2183,12 +2184,12 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
                 tmp = pEncInst->stream.byteCnt;
                 pEncInst->numNalus++;
             }
-    
+
             H264PicParameterSet(&pEncInst->stream, &pEncInst->picParameterSet);
             H264AddNaluSize(pEncOut, pEncInst->stream.byteCnt-tmp);
             tmp = pEncInst->stream.byteCnt;
             pEncInst->numNalus++;
-    
+
             /* In CABAC mode 2 we need two PPS: one with CAVLC (ppsId=0 for intra) and
              * one with CABAC (ppsId=1 for inter) */
             if (pEncInst->picParameterSet.enableCabac == 2)
@@ -2218,7 +2219,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
                 numLeadingNalus++;
 
             //aud is added in H264EncStrmStrat
-            /*if(pEncInst->frameCnt && pEncInst->svc.level && pEncIn->sendAUD)  
+            /*if(pEncInst->frameCnt && pEncInst->svc.level && pEncIn->sendAUD)
                 numLeadingNalus++; */
 
             if(numLeadingNalus % 2)
@@ -2242,8 +2243,8 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
             if( pEncInst->svc.level || pEncInst->svc.enableSvctPrefix )   //prefix
                 numLeadingNalus++;
 
-            if(pEncInst->frameCnt && pEncIn->sendAUD) //aud 
-                numLeadingNalus++; 
+            if(pEncInst->frameCnt && pEncIn->sendAUD) //aud
+                numLeadingNalus++;
 
             if(numLeadingNalus % 2)
             {
@@ -2297,7 +2298,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
             pEncInst->numNalus++;
         }
     }
-    
+
     /* SEI message */
     {
         sei_s *sei = &pEncInst->rateControl.sei;
@@ -2399,7 +2400,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
             H264PictureBufferSetRefForSvct(picBuffer, &pEncInst->asic,
                     pSlice->frameNumBits);
         }
-        
+
         /* for SVCT, insert prefix NALU before each slice */
         //pEncOut->pNaluSizeBuf++;
         //pEncInst->naluOffset++;
@@ -2431,7 +2432,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
                 pEncInst->svc.gopIndex = -2;
             }
             APITRACE("svc.enableSVC");
-            
+
             i32 byteCnt = pEncInst->stream.byteCnt;
             /* for SVCT, insert prefix NALU before each slice */
             //pEncOut->pNaluSizeBuf++;
@@ -2471,6 +2472,10 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
         case H264ENCODE_HW_ERROR:
             APITRACE("H264EncStrmEncode: ERROR HW bus access error");
             to_user = H264ENC_HW_BUS_ERROR;
+            break;
+        case H264ENCODE_FUSE_ERROR:
+            APITRACE("H264EncStrmEncode: ERROR Fuse error");
+            to_user = H264ENC_FUSE_ERROR;
             break;
         case H264ENCODE_SYSTEM_ERROR:
         default:
@@ -2661,7 +2666,7 @@ H264EncRet H264EncStrmEncode(H264EncInst inst, const H264EncIn * pEncIn,
 
     Function name : H264EncStrmEnd
     Description   : Ends a stream
-    Return type   : H264EncRet 
+    Return type   : H264EncRet
     Argument      : inst - encoder instance
     Argument      : pEncIn - user provided input parameters
                     pEncOut - place where output info is returned
@@ -2751,7 +2756,7 @@ H264EncRet H264EncStrmEnd(H264EncInst inst, const H264EncIn * pEncIn,
     Function name : H264AddNaluSize
     Description   : Adds the size of a NAL unit into NAL size output buffer.
 
-    Return type   : void 
+    Return type   : void
     Argument      : pEncOut - encoder output structure
     Argument      : naluSizeBytes - size of the NALU in bytes
 ------------------------------------------------------------------------------*/
@@ -2782,7 +2787,7 @@ void H264PrefixNal(h264Instance_s *pEncInst, bool svcExtFlag)
             nalRefIdc = 0;
         }
     }
-    
+
     H264NalUnitHdr(&pEncInst->stream,    nalRefIdc, PREFIX,
                     pEncInst->seqParameterSet.byteStream);
 
@@ -2871,7 +2876,7 @@ H264EncRet H264EncSetTestId(H264EncInst inst, u32 testId)
 
 #ifdef INTERNAL_TEST
     pEncInst->testId = testId;
-    
+
     APITRACE("H264EncSetTestId# OK");
     return H264ENC_OK;
 #else
@@ -2968,7 +2973,7 @@ H264EncRet H264EncSetInputMbLines(H264EncInst inst, u32 lines)
 /*------------------------------------------------------------------------------
     Function name   : H264SupplyPrefixForSvctMutiSlice
     Description     : Supply prefix for svct muti-slice.
-    Return type     : void 
+    Return type     : void
     Argument        : inst - encoder instance
     Argument        : *pEncIn - user provided input parameters
     Argument        : *pEncOut - place where output info is returned
@@ -2977,7 +2982,7 @@ H264EncRet H264EncSetInputMbLines(H264EncInst inst, u32 lines)
 ------------------------------------------------------------------------------*/
 void H264SupplyPrefixForSvctMutiSlice(H264EncInst inst, const H264EncIn *pEncIn, H264EncOut *pEncOut,
                                                       u32 prefix_length, u8 *prefix_nalu_addr)
-{ 
+{
     h264Instance_s *pEncInst = (h264Instance_s *) inst;
     if (!pEncInst) {
         APITRACE("H264SupplyPrefixForSvctMutiSlice: ERROR Null argument");
@@ -3004,7 +3009,7 @@ void H264SupplyPrefixForSvctMutiSlice(H264EncInst inst, const H264EncIn *pEncIn,
     u8 *copy_src = data_addr_tail;
     u8 *copy_dst = data_addr_tail + prefix_length * num_prefix_to_supply;//spare n prefix_length
     u8 *prefix_data = prefix_nalu_addr;
-    
+
     /* 1.insert prefix data and move slice data. */
     for(j = 0; j < num_prefix_to_supply; j++)
     {
@@ -3018,7 +3023,7 @@ void H264SupplyPrefixForSvctMutiSlice(H264EncInst inst, const H264EncIn *pEncIn,
         {
             memcpy(copy_dst, copy_src, prefix_length);
             if(i == copy_times-1)
-            { 
+            {
                 copy_src -= data_left;
                 copy_dst -= data_left;
             }
@@ -3052,7 +3057,7 @@ void H264SupplyPrefixForSvctMutiSlice(H264EncInst inst, const H264EncIn *pEncIn,
 /*------------------------------------------------------------------------------
     Function name   : H264AccessUnitDelimiter
     Description     : Add AUD
-    Return type     : void 
+    Return type     : void
     Argument        : u32 byte_stream
     Argument        : u32 primary_pic_type - primary_pic_type
 ------------------------------------------------------------------------------*/

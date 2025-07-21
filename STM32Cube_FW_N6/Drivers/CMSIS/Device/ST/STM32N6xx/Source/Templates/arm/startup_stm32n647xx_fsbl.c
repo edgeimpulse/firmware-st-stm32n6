@@ -476,9 +476,6 @@ extern const VECTOR_TABLE_Type __VECTOR_TABLE[];
  *----------------------------------------------------------------------------*/
 __NO_RETURN void Reset_Handler(void)
 {
-#if defined(STM32N6XX_SI_CUT1_1)
-	__disable_irq();
-#endif /* STM32N6XX_SI_CUT1_1 */
 
   __set_MSPLIM((uint32_t)(&__STACK_LIMIT));
   __set_MSP((uint32_t)(&__INITIAL_SP));

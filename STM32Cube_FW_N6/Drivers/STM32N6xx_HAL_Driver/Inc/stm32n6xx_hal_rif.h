@@ -372,7 +372,7 @@ extern "C" {
 #define RISAF21_GRANULARITY                0x0200U
 #define RISAF22_GRANULARITY                0x0200U
 #define RISAF23_GRANULARITY                0x0200U
-#endif
+#endif /* !defined(NPU_PRESENT) */
 /**
   * @}
   */
@@ -413,7 +413,7 @@ extern "C" {
 #define RISAF21_LIMIT_ADDRESS_SPACE_SIZE        0x00001FFFU
 #define RISAF22_LIMIT_ADDRESS_SPACE_SIZE        0x00001FFFU
 #define RISAF23_LIMIT_ADDRESS_SPACE_SIZE        0x00000FFFU
-#endif
+#endif /* !defined(NPU_PRESENT) */
 /**
   * @}
   */
@@ -556,9 +556,8 @@ typedef struct
 /* Composition definition for Peripheral identifier parameter (PeriphId) used in
  * RIF RISC and IAC related functions.
  * Bitmap Definition
- *   bits[31:28] Field "register". Define the register index a peripheral belongs to.
- *   bits[4:0]   Field "bit position". Define the bit position within the
- *               register dedicated to the peripheral, value from 0 to 31.
+  *     bits[31:28] define the register index a peripheral belongs to, value from 0 to 5.
+  *     bits[4:0]   define the bit position within the register, value from 0 to 31.
  */
 #define RIF_PERIPH_REG_SHIFT               28U
 #define RIF_PERIPH_REG                     0xF0000000U
@@ -1301,7 +1300,7 @@ typedef struct
                                          ((__INSTANCE__) == RISAF21)  || \
                                          ((__INSTANCE__) == RISAF22)  || \
                                          ((__INSTANCE__) == RISAF23))
-#endif
+#endif /* !defined(NPU_PRESENT) */
 
 #define IS_RISAF_REGION(__REGION__)  (((__REGION__) == RISAF_REGION_1)  || \
                                       ((__REGION__) == RISAF_REGION_2)  || \
@@ -1352,7 +1351,7 @@ typedef struct
                                                           ((__INSTANCE__) == RISAF21) ? ((__REGION__) <= RISAF_REGION_7)  : \
                                                           ((__INSTANCE__) == RISAF22) ? ((__REGION__) <= RISAF_REGION_7)  : \
                                                           ((__REGION__) <= RISAF_REGION_3))
-#endif
+#endif /* !defined(NPU_PRESENT) */
 
 #if !defined(NPU_PRESENT)
 #define IS_RISAF_GRANULARITY(__INSTANCE__, __ADDRESS__)  ((((__INSTANCE__) == RISAF1)  ? ((__ADDRESS__) % RISAF1_GRANULARITY)  : \
@@ -1368,7 +1367,7 @@ typedef struct
                                                            ((__INSTANCE__) == RISAF14) ? ((__ADDRESS__) % RISAF14_GRANULARITY) : \
                                                            ((__INSTANCE__) == RISAF21) ? ((__ADDRESS__) % RISAF21_GRANULARITY) : \
                                                            ((__INSTANCE__) == RISAF22) ? ((__ADDRESS__) % RISAF22_GRANULARITY) : \
-                                                           ((__ADDRESS__) % RISAF23_GRANULARITY)) == 0)
+                                                           ((__ADDRESS__) % RISAF23_GRANULARITY)) == 0x00U)
 #else
 #define IS_RISAF_GRANULARITY(__INSTANCE__, __ADDRESS__)  ((((__INSTANCE__) == RISAF1)  ? ((__ADDRESS__) % RISAF1_GRANULARITY)  : \
                                                            ((__INSTANCE__) == RISAF2)  ? ((__ADDRESS__) % RISAF2_GRANULARITY)  : \
@@ -1386,8 +1385,8 @@ typedef struct
                                                            ((__INSTANCE__) == RISAF15) ? ((__ADDRESS__) % RISAF15_GRANULARITY) : \
                                                            ((__INSTANCE__) == RISAF21) ? ((__ADDRESS__) % RISAF21_GRANULARITY) : \
                                                            ((__INSTANCE__) == RISAF22) ? ((__ADDRESS__) % RISAF22_GRANULARITY) : \
-                                                           ((__ADDRESS__) % RISAF23_GRANULARITY)) == 0)
-#endif
+                                                           ((__ADDRESS__) % RISAF23_GRANULARITY)) == 0x00U)
+#endif /* !defined(NPU_PRESENT) */
 
 #if !defined(NPU_PRESENT)
 #define IS_RISAF_LIMIT_ADDRESS_SPACE_SIZE(__INSTANCE__, __ADDRESS__)   ((((__INSTANCE__) == RISAF1)  && ((__ADDRESS__) < (RISAF1_LIMIT_ADDRESS_SPACE_SIZE + 1U)))  || \
@@ -1422,7 +1421,7 @@ typedef struct
                                                                         (((__INSTANCE__) == RISAF21) && ((__ADDRESS__) < (RISAF21_LIMIT_ADDRESS_SPACE_SIZE + 1U))) || \
                                                                         (((__INSTANCE__) == RISAF22) && ((__ADDRESS__) < (RISAF22_LIMIT_ADDRESS_SPACE_SIZE + 1U))) || \
                                                                         (((__INSTANCE__) == RISAF23) && ((__ADDRESS__) < (RISAF23_LIMIT_ADDRESS_SPACE_SIZE + 1U))))
-#endif
+#endif /* !defined(NPU_PRESENT) */
 
 #define IS_RISAF_SUBREGION(__SUBREGION__)  (((__SUBREGION__) == RISAF_SUBREGION_A) || \
                                             ((__SUBREGION__) == RISAF_SUBREGION_B))

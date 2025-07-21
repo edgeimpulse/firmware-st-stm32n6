@@ -34,6 +34,10 @@ extern   "C" {
 #include "nx_api.h"
 #endif
 
+/* Include NetX Link Layer header file, if not already.  */
+#ifndef _NX_LINK_H_
+#include "nx_link.h"
+#endif
 
 /* Determine if the driver's source file is being compiled. The constants and typdefs are only valid within
    the driver's source file compilation.  */
@@ -43,12 +47,13 @@ extern   "C" {
 /****** DRIVER SPECIFIC ****** Start of part/vendor specific include area.  Include any such files here!  */
 #include "nx_stm32_eth_config.h"
 #ifdef MULTI_QUEUE_FEATURE
-#include "nx_link.h"
 #include "nx_shaper.h"
 #endif
+
 /****** DRIVER SPECIFIC ****** End of part/vendor specific include file area!  */
 
 #ifdef NX_DRIVER_ENABLE_PTP
+#include "nxd_ptp_client.h"
 typedef UINT (*TIMESTAMP_CALLBACK)(NX_PACKET *packet_ptr, UINT timestamp_type, NX_PTP_TIME* timestamp);
 UINT nx_driver_set_timestamp_callback(USHORT type, TIMESTAMP_CALLBACK callback);
 
@@ -79,10 +84,6 @@ UINT nx_driver_set_timestamp_callback(USHORT type, TIMESTAMP_CALLBACK callback);
 #define NX_DRIVER_STATE_INITIALIZE_FAILED       2
 #define NX_DRIVER_STATE_INITIALIZED             3
 #define NX_DRIVER_STATE_LINK_ENABLED            4
-
-#ifdef NX_DRIVER_INTERNAL_TRANSMIT_QUEUE
-#define NX_DRIVER_MAX_TRANSMIT_QUEUE_DEPTH      10
-#endif
 
 #define NX_DRIVER_ERROR                         90
 
@@ -160,6 +161,17 @@ __STATIC_FORCEINLINE void __clean_cache_by_addr(uint32_t start, uint32_t size)
 #define NX_DRIVER_RX_DESCRIPTORS   ETH_RX_DESC_CNT
 #endif
 
+/* Define the number of packets to be transmitted before they are released.
+* This value must be strictly below the number of packets in the smallest packet pool.
+* It must not exceed the number of available TX descriptors */
+#ifndef NX_DRIVER_TX_RELEASE_THRESHOLD
+#define NX_DRIVER_TX_RELEASE_THRESHOLD (1U)
+#endif
+
+#ifndef PHY_LINK_TIMEOUT
+#define PHY_LINK_TIMEOUT (5000U)
+#endif
+
 /****** DRIVER SPECIFIC ****** End of part/vendor specific constant area!  */
 #ifndef NX_DRIVER_ENABLE_PTP
 #define NX_DRIVER_CAPABILITY ( NX_INTERFACE_CAPABILITY_IPV4_TX_CHECKSUM   | \
@@ -186,12 +198,6 @@ __STATIC_FORCEINLINE void __clean_cache_by_addr(uint32_t start, uint32_t size)
                                NX_INTERFACE_CAPABILITY_PTP_TIMESTAMP)
 #endif /* NX_DRIVER_ENABLE_PTP */
 
-/* NX_DRIVER_ENABLE_TSN flag is activated once at least one TSN standard is enabled */
-#ifndef NX_DRIVER_ENABLE_TSN
-#if defined(NX_DRIVER_ENABLE_CBS) | defined(NX_DRIVER_ENABLE_TAS) | defined(NX_DRIVER_ENABLE_FPE)
-#define NX_DRIVER_ENABLE_TSN
-#endif
-#endif
 /* Define basic Ethernet driver information typedef. Note that this typedefs is designed to be used only
    in the driver's C file. */
 
@@ -224,7 +230,7 @@ typedef struct NX_DRIVER_INFORMATION_STRUCT
     UINT                nx_driver_information_transmit_release_index;
 
     /* Define the number of transmit buffers in use.  */
-#ifdef MULTI_QUEUE_FEATURE
+#ifdef ETH_MULTIQUEUE_SUPPORTED
     UINT                nx_driver_information_number_of_transmit_buffers_in_use[ETH_DMA_TX_CH_CNT];
 #else
     UINT                nx_driver_information_number_of_transmit_buffers_in_use;
@@ -237,17 +243,6 @@ typedef struct NX_DRIVER_INFORMATION_STRUCT
     ULONG               nx_driver_information_rx_buffer_size;
 
     ULONG               nx_driver_information_multicast_count;
-
-#ifdef NX_DRIVER_INTERNAL_TRANSMIT_QUEUE
-
-    /* Define the parameters in the internal driver transmit queue.  The queue is maintained as a singularly
-       linked-list with head and tail pointers.  The maximum number of packets on the queue is regulated by
-       the constant NX_DRIVER_MAX_TRANSMIT_QUEUE_DEPTH, which is defined above. When this number is reached,
-       the oldest packet is discarded after the new packet is queued.  */
-    ULONG               nx_driver_transmit_packets_queued;
-    NX_PACKET           nx_driver_transmit_queue_head;
-    NX_PACKET           nx_driver_transmit_queue_tail;
-#endif /* NX_DRIVER_INTERNAL_TRANSMIT_QUEUE */
 
 #ifdef NX_DRIVER_ENABLE_PTP
     NX_PTP_CLIENT     *nx_driver_ptp_ptr;
@@ -275,7 +270,7 @@ UINT  nx_driver_ptp_clock_callback(NX_PTP_CLIENT *client_ptr, UINT operation,
                                              VOID *callback_data);
 #endif /* NX_DRIVER_ENABLE_PTP */
 
-#ifdef NX_DRIVER_ENABLE_TSN
+#ifdef MULTI_QUEUE_FEATURE
 UINT nx_driver_shaper_config(NX_SHAPER_DRIVER_PARAMETER* parameter, UCHAR shaper_capability);
 #endif
 
@@ -294,10 +289,21 @@ void reconfig_fpe_gcl(NX_SHAPER_TAS_PARAMETER *parameter,UCHAR queue_bit);
 UINT nx_driver_shaper_tas_entry(NX_SHAPER_DRIVER_PARAMETER *parameter);
 #endif
 
-#if defined(NX_DRIVER_ENABLE_TAS) && !defined(NX_DRIVER_ENABLE_PTP)
-#error "PTP is required for TAS Feature, NX_DRIVER_ENABLE_PTP flag should be defined"
+#if (defined(MULTI_QUEUE_FEATURE) || defined(NX_DRIVER_ENABLE_PTP)) && !defined(NX_ENABLE_VLAN)
+#error "VLAN is required for MULTI-QUEUE and PTP Features, NX_ENABLE_VLAN flag should be defined in nx_user.h"
 #endif
 
+#if defined(NX_DRIVER_ENABLE_CBS) && !defined(MULTI_QUEUE_FEATURE)
+#error "MULTI_QUEUE_FEATURE is required for Credit Based Shaper, MULTI_QUEUE_FEATURE flag should be defined"
+#endif
+
+#if defined(NX_DRIVER_ENABLE_FPE) && !defined(MULTI_QUEUE_FEATURE)
+#error "MULTI_QUEUE_FEATURE is required for Frame Preemption Shaper, MULTI_QUEUE_FEATURE flag should be defined"
+#endif
+
+#if defined(NX_DRIVER_ENABLE_TAS) && !(defined(NX_DRIVER_ENABLE_PTP) && defined(MULTI_QUEUE_FEATURE))
+#error "MULTI-QUEUE and PTP Features are required for Time Aware Shaper, respective flags should be defined"
+#endif
 /****** DRIVER SPECIFIC ****** End of part/vendor specific external function prototypes.  */
 
 

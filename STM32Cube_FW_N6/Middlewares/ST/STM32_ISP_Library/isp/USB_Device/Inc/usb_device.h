@@ -24,10 +24,6 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#if defined(STM32MP257Fxx)
-#include "stm32mp2xx.h"
-#include "stm32mp2xx_hal.h"
-#endif
 #include "usbd_def.h"
 
 /* Private variables ---------------------------------------------------------*/

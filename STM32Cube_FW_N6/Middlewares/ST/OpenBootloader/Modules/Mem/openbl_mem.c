@@ -38,7 +38,7 @@ static OPENBL_MemoryTypeDef a_MemoriesTable[MEMORIES_SUPPORTED];
   * @param  *Memory A pointer to the memory handle.
   * @retval ErrorStatus Returns ERROR in case of no more space in the memories table else returns SUCCESS.
   */
-ErrorStatus OPENBL_MEM_RegisterMemory(OPENBL_MemoryTypeDef *Memory)
+ErrorStatus OPENBL_MEM_RegisterMemory(const OPENBL_MemoryTypeDef *Memory)
 {
   ErrorStatus status = SUCCESS;
 
@@ -114,11 +114,11 @@ uint32_t OPENBL_MEM_GetMemoryIndex(uint32_t Address)
 }
 
 /**
-  * @brief  This function is used to start initialize a given memory.
-  * @param  Address The address of the memory to be fully erased.
-  * @None
+  * @brief  This function is used to initialize a given memory.
+  * @param  Address The address of the memory to be initialized.
+  * @retval Returns 1 in case of success else returns 0.
  */
-void OPENBL_MEM_Init(uint32_t Address)
+uint32_t OPENBL_MEM_Init(uint32_t Address)
 {
   uint32_t memory_index;
 
@@ -129,10 +129,11 @@ void OPENBL_MEM_Init(uint32_t Address)
   {
     if (a_MemoriesTable[memory_index].Init != NULL)
     {
-      a_MemoriesTable[memory_index].Init(Address);
+      return a_MemoriesTable[memory_index].Init(Address);
     }
   }
 
+  return 0U;
 }
 
 /**
@@ -189,16 +190,15 @@ void OPENBL_MEM_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength)
 }
 
 /**
-  * @brief  Verify flash memory with RAM buffer and calculates checksum value of
-  * the programmed memory
-  * @param  Address The Flash address
-  * @param  DataAddr The RAM buffer addres
-  * @param  DataLength The Size (in WORD)
-  * @param  missalignement The Initial CRC value
-  * @retval R0: Operation failed (address of failure)
-  *         R1: Checksum value
+  * @brief  Verify flash memory with RAM buffer and calculates checksum value of the programmed memory
+  * @param  Address The Flash address.
+  * @param  DataAddr The RAM buffer address.
+  * @param  DataLength The Size (in WORD).
+  * @param  CrcInit The Initial CRC value.
+  * @retval R0: Operation failed (address of failure).
+  *         R1: Checksum value.
   */
-uint64_t OPENBL_MEM_Verify(uint32_t Address, uint32_t DataAddr, uint32_t DataLength, uint32_t missalignement)
+uint64_t OPENBL_MEM_Verify(uint32_t Address, uint32_t DataAddr, uint32_t DataLength, uint32_t CrcInit)
 {
   uint32_t index;
   uint64_t value;
@@ -210,7 +210,7 @@ uint64_t OPENBL_MEM_Verify(uint32_t Address, uint32_t DataAddr, uint32_t DataLen
   {
     if (a_MemoriesTable[index].Verify != NULL)
     {
-      value = a_MemoriesTable[index].Verify(Address, DataAddr, DataLength, missalignement);
+      value = a_MemoriesTable[index].Verify(Address, DataAddr, DataLength, CrcInit);
     }
     else
     {
@@ -233,27 +233,10 @@ uint64_t OPENBL_MEM_Verify(uint32_t Address, uint32_t DataAddr, uint32_t DataLen
   */
 void OPENBL_MEM_SetReadOutProtection(uint32_t Address, FunctionalState State)
 {
-#if 0 /* FIXME: Find a way to align with latest open bootloader version */
-  uint32_t index;
+  /* Nothing todo */
 
-  /* Get the memory index to know in which memory we will write */
-  index = OPENBL_MEM_GetMemoryIndex(Address);
-
-  if (index < NumberOfMemories)
-  {
-    if (a_MemoriesTable[index].SetReadoutProtect != NULL)
-    {
-      if (State == ENABLE)
-      {
-        a_MemoriesTable[index].SetReadoutProtect(RDP_LEVEL_1);
-      }
-      else
-      {
-        a_MemoriesTable[index].SetReadoutProtect(RDP_LEVEL_0);
-      }
-    }
-  }
-#endif
+  UNUSED(Address);
+  UNUSED(State);
 }
 
 /**
@@ -268,32 +251,16 @@ void OPENBL_MEM_SetReadOutProtection(uint32_t Address, FunctionalState State)
   *          - SUCCESS: Enable or disable of the write protection is done
   *          - ERROR:   Enable or disable of the write protection is not done
   */
-ErrorStatus OPENBL_MEM_SetWriteProtection(FunctionalState State, uint32_t Address, uint8_t *Buffer, uint32_t Length)
+ErrorStatus OPENBL_MEM_SetWriteProtection(FunctionalState State, uint32_t Address, const uint8_t *Buffer,
+                                          uint32_t Length)
 {
-#if 0 /* FIXME: Find a way to align with latest open bootloader version */
-  uint32_t index;
-#endif
   ErrorStatus status = SUCCESS;
-#if 0 /* FIXME: Find a way to align with latest open bootloader version */
-  /* Get the memory index to know in which memory we will write */
-  index = OPENBL_MEM_GetMemoryIndex(Address);
 
-  if (index < NumberOfMemories)
-  {
-    if (a_MemoriesTable[index].SetWriteProtect != NULL)
-    {
-      a_MemoriesTable[index].SetWriteProtect(State, Buffer, Length);
-    }
-    else
-    {
-      status = ERROR;
-    }
-  }
-  else
-  {
-    status = ERROR;
-  }
-#endif
+  UNUSED(State);
+  UNUSED(Address);
+  UNUSED(Buffer);
+  UNUSED(Length);
+
   return status;
 }
 
@@ -379,32 +346,14 @@ void OPENBL_MEM_SectorErase(uint32_t Address, uint32_t EraseStartAddress, uint32
   *          - SUCCESS: Erase operation done
   *          - ERROR:   Erase operation failed or one parameter is invalid
  */
-ErrorStatus OPENBL_MEM_Erase(uint32_t Address, uint8_t *p_Data, uint32_t DataLength)
+ErrorStatus OPENBL_MEM_Erase(uint32_t Address, const uint8_t *p_Data, uint32_t DataLength)
 {
-#if 0 /* FIXME: Find a way to align with latest open bootloader version */
-  uint32_t memory_index;
-#endif
   ErrorStatus status = ERROR;
-#if 0 /* FIXME: Find a way to align with latest open bootloader version */
-  /* Get the memory index to know from which memory interface we will used */
-  memory_index = OPENBL_MEM_GetMemoryIndex(Address);
 
-  if (memory_index < NumberOfMemories)
-  {
-    if (a_MemoriesTable[memory_index].Erase != NULL)
-    {
-      status = a_MemoriesTable[memory_index].Erase(p_Data, DataLength);
-    }
-    else
-    {
-      status = ERROR;
-    }
-  }
-  else
-  {
-    status = ERROR;
-  }
-#endif
+  UNUSED(Address);
+  UNUSED(p_Data);
+  UNUSED(DataLength);
+
   return status;
 }
 

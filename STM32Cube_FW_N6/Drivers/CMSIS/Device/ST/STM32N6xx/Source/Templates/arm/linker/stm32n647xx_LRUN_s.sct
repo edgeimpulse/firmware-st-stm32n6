@@ -93,7 +93,7 @@ LR_IROM1 0x34000400 0x00063C00  {    ; load region size_region
   }
  
   RW_NONCACHEABLEBUFFER +0 ALIGN 0x4 {  ; RW non-cacheable data
-   .ANY (.noncacheable_buffer)
+   .ANY (.noncacheable)
   }
   
  

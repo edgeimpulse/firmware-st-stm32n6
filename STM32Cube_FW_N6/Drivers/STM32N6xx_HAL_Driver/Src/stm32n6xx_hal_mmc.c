@@ -2131,7 +2131,7 @@ HAL_StatusTypeDef HAL_MMC_UnRegisterCallback(MMC_HandleTypeDef *hmmc, HAL_MMC_Ca
   *         contains all CID register parameters
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_MMC_GetCardCID(MMC_HandleTypeDef *hmmc, HAL_MMC_CardCIDTypeDef *pCID)
+HAL_StatusTypeDef HAL_MMC_GetCardCID(const MMC_HandleTypeDef *hmmc, HAL_MMC_CardCIDTypeDef *pCID)
 {
   pCID->ManufacturerID = (uint8_t)((hmmc->CID[0] & 0xFF000000U) >> 24U);
 
@@ -2282,7 +2282,7 @@ HAL_StatusTypeDef HAL_MMC_GetCardCSD(MMC_HandleTypeDef *hmmc, HAL_MMC_CardCSDTyp
   *         will contain the MMC card status information
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_MMC_GetCardInfo(MMC_HandleTypeDef *hmmc, HAL_MMC_CardInfoTypeDef *pCardInfo)
+HAL_StatusTypeDef HAL_MMC_GetCardInfo(const MMC_HandleTypeDef *hmmc, HAL_MMC_CardInfoTypeDef *pCardInfo)
 {
   pCardInfo->CardType     = (uint32_t)(hmmc->MmcCard.CardType);
   pCardInfo->Class        = (uint32_t)(hmmc->MmcCard.Class);
@@ -4330,7 +4330,6 @@ static uint32_t MMC_PwrClassUpdate(MMC_HandleTypeDef *hmmc, uint32_t Wide, uint3
   * @brief  Used to select the partition.
   * @param  hmmc: Pointer to MMC handle
   * @param  Partition: Partition type
-  * @param  Timeout: Specify timeout value
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_MMC_SwitchPartition(MMC_HandleTypeDef *hmmc, HAL_MMC_PartitionTypeDef Partition)
@@ -4711,7 +4710,7 @@ HAL_StatusTypeDef HAL_MMC_RPMB_ProgramAuthenticationKey(MMC_HandleTypeDef *hmmc,
 /**
   * @brief  Allows to get the value of write counter within the RPMB partition.
   * @param  hmmc: Pointer to MMC handle
-  * @param  Nonce: pointer to the value of nonce (16 bytes)
+  * @param  pNonce: pointer to the value of nonce (16 bytes)
   * @param  Timeout: Specify timeout value
   * @retval write counter value.
   */
@@ -5023,9 +5022,9 @@ HAL_StatusTypeDef HAL_MMC_RPMB_WriteBlocks(MMC_HandleTypeDef *hmmc, const uint8_
   uint8_t tail_pack[12] = {0};
   uint8_t zero_pack[4] = {0};
   uint8_t echo_nonce[16] = {0};
-  uint8_t local_nonce[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x00, 0x01, 0x02,
-                             0x03, 0x04, 0x00, 0x01, 0x02, 0x03, 0x04, 0x08
-                            };
+  const uint8_t local_nonce[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x00, 0x01, 0x02,
+                                   0x03, 0x04, 0x00, 0x01, 0x02, 0x03, 0x04, 0x08
+                                  };
   const uint8_t *rtempbuff;
   uint8_t  *tempbuff;
   uint32_t arg = 0x80000000U;

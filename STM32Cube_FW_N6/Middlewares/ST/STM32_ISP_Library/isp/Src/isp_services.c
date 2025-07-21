@@ -19,13 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "isp_core.h"
 #include "isp_services.h"
-
-/* Define ISP_MW_CONFIG_FROM_NVMEM compilation flag if you want to read the IQT
- * parameter from flash memory. Otherwise you want to define the IQT parameter in
- * isp_param_conf.h file (which is sensor dependent) defined in the application.
- */
-#if !defined(ISP_MW_CONFIG_FROM_NVMEM)
-#include "isp_param_conf.h"
+#ifdef ISP_MW_TUNING_TOOL_SUPPORT
+#include "isp_cmd_parser.h"
 #endif
 
 /* Private types -------------------------------------------------------------*/
@@ -80,8 +75,10 @@ static int32_t From_CConv_Reg(int16_t Reg);
 
 /* Private variables ---------------------------------------------------------*/
 static uint32_t ISP_ManualWBRefColorTemp = 0;
+static ISP_DecimationTypeDef ISP_DecimationValue = {ISP_DECIM_FACTOR_1};
 static ISP_IQParamTypeDef ISP_IQParamCache;
 static ISP_SVC_StatEngineTypeDef ISP_SVC_StatEngine;
+static bool ISP_SensorDelayMeasureRun;
 
 static const uint32_t avgRGBUp[] = {
     DCMIPP_STAT_EXT_SOURCE_PRE_BLKLVL_R, DCMIPP_STAT_EXT_SOURCE_PRE_BLKLVL_G, DCMIPP_STAT_EXT_SOURCE_PRE_BLKLVL_B
@@ -140,11 +137,12 @@ static const DCMIPP_StatisticExtractionConfTypeDef statConfDownBins_9_11 = {
 };
 
 /* Exported variables --------------------------------------------------------*/
+extern ISP_MetaTypeDef Meta;
 
 /* Private functions ---------------------------------------------------------*/
 static void To_Shift_Multiplier(uint32_t Factor, uint8_t *pShift, uint8_t *pMultiplier)
 {
-  /* Convert Factor (Unit = 100000000 for "x1.0") to Mutliplier (where 128 means "x1.0") */
+  /* Convert Factor (Unit = 100000000 for "x1.0") to Multiplier (where 128 means "x1.0") */
   uint64_t Val = Factor;
   Val = (Val * 128) / ISP_GAIN_PRECISION_FACTOR;
 
@@ -189,14 +187,11 @@ static int32_t From_CConv_Reg(int16_t Reg)
 
 static uint8_t GetAvgStats(ISP_HandleTypeDef *hIsp, ISP_SVC_StatLocation location, ISP_SVC_Component component, uint32_t accu)
 {
-  ISP_IQParamTypeDef *IQParamConfig;
   uint32_t nb_comp_pix, comp_divider;
-
-  IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
 
   /* Number of pixels computed from Stat Area and considering decimation */
   nb_comp_pix = hIsp->statArea.XSize * hIsp->statArea.YSize;
-  nb_comp_pix /= IQParamConfig->decimation.factor * IQParamConfig->decimation.factor;
+  nb_comp_pix /= ISP_DecimationValue.factor * ISP_DecimationValue.factor;
 
   if (location == ISP_STAT_LOC_DOWN)
   {
@@ -214,6 +209,11 @@ static uint8_t GetAvgStats(ISP_HandleTypeDef *hIsp, ISP_SVC_StatLocation locatio
   nb_comp_pix /= comp_divider;
 
   /* Compute average (rounding to closest integer) */
+  if (nb_comp_pix == 0)
+  {
+    return 0;
+  }
+
   return ((accu * 256) + (nb_comp_pix / 2)) / nb_comp_pix;
 }
 
@@ -427,7 +427,14 @@ static ISP_SVC_StatEngineStage GetStatCycleEnd(ISP_SVC_StatLocation location)
 uint8_t LuminanceFromRGB(uint8_t r, uint8_t g, uint8_t b)
 {
   /* Compute luminance from RGB components (BT.601) */
-  return r * 0.299 + g * 0.587 + b * 0.114;
+  return (uint8_t) (r * 0.299 + g * 0.587 + b * 0.114);
+}
+
+uint8_t LuminanceFromRGBMono(uint8_t r, uint8_t g, uint8_t b)
+{
+  /* Compute luminance from RGB components
+   * by adding together R, G, B components for monochrome sensor */
+  return r + g + b;
 }
 
 /* Exported functions --------------------------------------------------------*/
@@ -450,7 +457,8 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetDemosaicing(ISP_HandleTypeDef *hIsp, ISP_Demosa
     return ISP_ERR_DEMOSAICING_EINVAL;
   }
 
-  if (pConfig->enable == 0)
+  /* Do not enable demosaicing if the camera sensor is a monochrome sensor */
+  if ((pConfig->enable == 0) || (pConfig->type == ISP_DEMOS_TYPE_MONO))
   {
     halStatus = HAL_DCMIPP_PIPE_DisableISPRawBayer2RGB(hIsp->hDcmipp, DCMIPP_PIPE1);
   }
@@ -458,13 +466,16 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetDemosaicing(ISP_HandleTypeDef *hIsp, ISP_Demosa
   {
     switch(pConfig->type)
     {
-      case 1:
+      case ISP_DEMOS_TYPE_RGGB:
+        rawBayerCfg.RawBayerType = DCMIPP_RAWBAYER_RGGB;
+        break;
+      case ISP_DEMOS_TYPE_GRBG:
         rawBayerCfg.RawBayerType = DCMIPP_RAWBAYER_GRBG;
         break;
-      case 2:
+      case ISP_DEMOS_TYPE_GBRG:
         rawBayerCfg.RawBayerType = DCMIPP_RAWBAYER_GBRG;
         break;
-      case 3:
+      case ISP_DEMOS_TYPE_BGGR:
         rawBayerCfg.RawBayerType = DCMIPP_RAWBAYER_BGGR;
         break;
       default:
@@ -585,13 +596,24 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetDecimation(ISP_HandleTypeDef *hIsp, ISP_Decimat
     return ISP_ERR_DECIMATION_HAL;
   }
 
-  /* If defined, call the application callback */
-  if (hIsp->appliCB.DecimationUpdated != NULL)
-  {
-    ret = hIsp->appliCB.DecimationUpdated(pConfig->factor);
-  }
+  /* Save decimation value */
+  ISP_DecimationValue.factor = pConfig->factor;
 
   return ret;
+}
+
+/**
+  * @brief  ISP_SVC_ISP_GetDecimation
+  *         Get the ISP Decimation configuration
+  * @param  hIsp: ISP device handle
+  * @param  pConfig: Pointer to the decimation configuration
+  * @retval operation result
+  */
+ISP_StatusTypeDef ISP_SVC_ISP_GetDecimation(ISP_HandleTypeDef *hIsp, ISP_DecimationTypeDef *pConfig)
+{
+  pConfig->factor = ISP_DecimationValue.factor;
+
+  return ISP_OK;
 }
 
 /**
@@ -653,31 +675,32 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetContrast(ISP_HandleTypeDef *hIsp, ISP_ContrastT
   *         Set the ISP Statistic area
   * @param  hIsp: ISP device handle
   * @param  pConfig: Pointer to statistic area used by the IQ algorithms
-  * @param  pDecimation: Pointer to the decimation configuration
   * @retval operation result
   */
-ISP_StatusTypeDef ISP_SVC_ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pConfig, ISP_DecimationTypeDef *pDecimation)
+ISP_StatusTypeDef ISP_SVC_ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pConfig)
 {
   HAL_StatusTypeDef halStatus;
   DCMIPP_StatisticExtractionAreaConfTypeDef currentStatAreaCfg;
   ISP_StatusTypeDef ret = ISP_OK;
 
-  if ((hIsp == NULL) || (pConfig == NULL) || (pDecimation == NULL) ||
+  if ((hIsp == NULL) || (pConfig == NULL) ||
       (pConfig->X0 > ISP_STATWINDOW_MAX) ||
       (pConfig->Y0 > ISP_STATWINDOW_MAX) ||
       (pConfig->XSize > ISP_STATWINDOW_MAX) ||
       (pConfig->YSize > ISP_STATWINDOW_MAX) ||
       (pConfig->XSize < ISP_STATWINDOW_MIN) ||
-      (pConfig->YSize < ISP_STATWINDOW_MIN))
+      (pConfig->YSize < ISP_STATWINDOW_MIN) ||
+      (pConfig->X0 + pConfig->XSize > hIsp->sensorInfo.width) ||
+      (pConfig->Y0 + pConfig->YSize > hIsp->sensorInfo.height))
   {
     return ISP_ERR_STATAREA_EINVAL;
   }
 
   /* Set coordinates in the 'decimated' referential */
-  currentStatAreaCfg.HStart = pConfig->X0 / pDecimation->factor;
-  currentStatAreaCfg.VStart = pConfig->Y0 / pDecimation->factor;
-  currentStatAreaCfg.HSize = pConfig->XSize / pDecimation->factor;
-  currentStatAreaCfg.VSize = pConfig->YSize / pDecimation->factor;
+  currentStatAreaCfg.HStart = pConfig->X0 / ISP_DecimationValue.factor;
+  currentStatAreaCfg.VStart = pConfig->Y0 / ISP_DecimationValue.factor;
+  currentStatAreaCfg.HSize = pConfig->XSize / ISP_DecimationValue.factor;
+  currentStatAreaCfg.VSize = pConfig->YSize / ISP_DecimationValue.factor;
 
   if (HAL_DCMIPP_PIPE_SetISPAreaStatisticExtractionConfig(hIsp->hDcmipp, DCMIPP_PIPE1,
                                                           &currentStatAreaCfg) != HAL_OK)
@@ -694,11 +717,8 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaT
     return ISP_ERR_STATAREA_HAL;
   }
 
-  /* If defined, call the application callback */
-  if (hIsp->appliCB.StatAreaUpdated != NULL)
-  {
-    ret = hIsp->appliCB.StatAreaUpdated(*pConfig);
-  }
+  /* Update internal state */
+  hIsp->statArea = *pConfig;
 
   return ret;
 }
@@ -712,7 +732,6 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaT
   */
 ISP_StatusTypeDef ISP_SVC_ISP_GetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pConfig)
 {
-  ISP_IQParamTypeDef *IQParamConfig;
   DCMIPP_StatisticExtractionAreaConfTypeDef currentStatAreaCfg;
 
   /* Check handles validity */
@@ -720,8 +739,6 @@ ISP_StatusTypeDef ISP_SVC_ISP_GetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaT
   {
     return ISP_ERR_STATAREA_EINVAL;
   }
-
-  IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
 
   if (HAL_DCMIPP_PIPE_IsEnabledISPAreaStatisticExtraction(hIsp->hDcmipp, DCMIPP_PIPE1) == 0)
   {
@@ -736,10 +753,10 @@ ISP_StatusTypeDef ISP_SVC_ISP_GetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaT
                                                         &currentStatAreaCfg);
 
     /* Consider decimation */
-    pConfig->X0 = currentStatAreaCfg.HStart * IQParamConfig->decimation.factor;
-    pConfig->Y0 = currentStatAreaCfg.VStart * IQParamConfig->decimation.factor;
-    pConfig->XSize = currentStatAreaCfg.HSize * IQParamConfig->decimation.factor;
-    pConfig->YSize = currentStatAreaCfg.VSize * IQParamConfig->decimation.factor;
+    pConfig->X0 = currentStatAreaCfg.HStart * ISP_DecimationValue.factor;
+    pConfig->Y0 = currentStatAreaCfg.VStart * ISP_DecimationValue.factor;
+    pConfig->XSize = currentStatAreaCfg.HSize * ISP_DecimationValue.factor;
+    pConfig->YSize = currentStatAreaCfg.VSize * ISP_DecimationValue.factor;
   }
 
   return ISP_OK;
@@ -966,8 +983,10 @@ ISP_StatusTypeDef ISP_SVC_ISP_GetGain(ISP_HandleTypeDef *hIsp, ISP_ISPGainTypeDe
 ISP_StatusTypeDef ISP_SVC_ISP_SetColorConv(ISP_HandleTypeDef *hIsp, ISP_ColorConvTypeDef *pConfig)
 {
   HAL_StatusTypeDef halStatus;
-  DCMIPP_ColorConversionConfTypeDef colorConvConfig = {0};
+  DCMIPP_ColorConversionConfTypeDef colorConvConfig;
   uint32_t i, j;
+
+  memset(&colorConvConfig, 0, sizeof(colorConvConfig));
 
   /* Check handle validity */
   if ((hIsp == NULL) || (pConfig == NULL))
@@ -1100,6 +1119,8 @@ ISP_StatusTypeDef ISP_SVC_Sensor_SetGain(ISP_HandleTypeDef *hIsp, ISP_SensorGain
     }
   }
 
+  Meta.gain = pConfig->gain;
+
   return ISP_OK;
 }
 
@@ -1151,6 +1172,8 @@ ISP_StatusTypeDef ISP_SVC_Sensor_SetExposure(ISP_HandleTypeDef *hIsp, ISP_Sensor
       return ISP_ERR_SENSOREXPOSURE;
     }
   }
+
+  Meta.exposure = pConfig->exposure;
 
   return ISP_OK;
 }
@@ -1211,7 +1234,7 @@ ISP_StatusTypeDef ISP_SVC_Sensor_SetTestPattern(ISP_HandleTypeDef *hIsp, ISP_Sen
 
 /**
   * @brief  ISP_SVC_Misc_GetDCMIPPVersion
-  *         Get tthe DCMIPP IP version
+  *         Get the DCMIPP IP version
   * @param  hIsp: ISP device handle
   * @param  pMajRev: Pointer to major revision of DCMIPP
   * @param  pMinRev: Pointer to minor revision of DCMIPP
@@ -1225,9 +1248,9 @@ ISP_StatusTypeDef ISP_SVC_Misc_GetDCMIPPVersion(ISP_HandleTypeDef *hIsp, uint32_
     return ISP_ERR_EINVAL;
   }
 
-  /* TODO: Use new DCMIPP HAL function to get the IP version */
-  *pMajRev = DCMIPP_MAJ_REV;
-  *pMinRev = DCMIPP_MIN_REV;
+  DCMIPP_HandleTypeDef *hDcmipp = hIsp->hDcmipp;
+  *pMajRev = (hDcmipp->Instance->VERR & DCMIPP_VERR_MAJREV) >> DCMIPP_VERR_MAJREV_Pos;
+  *pMinRev = (hDcmipp->Instance->VERR & DCMIPP_VERR_MINREV) >> DCMIPP_VERR_MINREV_Pos;
 
   return ISP_OK;
 }
@@ -1350,6 +1373,55 @@ ISP_StatusTypeDef ISP_SVC_Misc_GetWBRefMode(ISP_HandleTypeDef *hIsp, uint32_t *p
   *pRefColorTemp = ISP_ManualWBRefColorTemp;
 
   return ISP_OK;
+}
+
+/**
+  * @brief  ISP_SVC_Misc_SensorDelayMeasureStart
+  *         Start the sensor delay measure
+  * @param  None
+  * @retval None
+  */
+void ISP_SVC_Misc_SensorDelayMeasureStart()
+{
+  ISP_SensorDelayMeasureRun = true;
+}
+
+/**
+  * @brief  ISP_SVC_Misc_SensorDelayMeasureStop
+  *         Stop the sensor delay measure
+  * @param  None
+  * @retval None
+  */
+void ISP_SVC_Misc_SensorDelayMeasureStop()
+{
+  ISP_SensorDelayMeasureRun = false;
+}
+
+/**
+  * @brief  ISP_SVC_Misc_SensorDelayMeasureIsRunning
+  *         Return the sensor delay measure status
+  * @param  None
+  * @retval true if the sensor delay measure is running
+  */
+bool ISP_SVC_Misc_SensorDelayMeasureIsRunning()
+{
+  return ISP_SensorDelayMeasureRun;
+}
+
+/**
+  * @brief  ISP_SVC_Misc_SendSensorDelayMeasure
+  *         Send the answer to the Get SensorDelay measure command
+  * @param  hIsp: ISP device handle
+  * @param  pSensorDelay: Pointer to the measured Sensor Delay
+  * @retval operation result
+  */
+ISP_StatusTypeDef ISP_SVC_Misc_SendSensorDelayMeasure(ISP_HandleTypeDef *hIsp, ISP_SensorDelayTypeDef *pSensorDelay)
+{
+#ifdef ISP_MW_TUNING_TOOL_SUPPORT
+  return ISP_CmdParser_SendSensorDelayMeasure(hIsp, pSensorDelay);
+#else
+  return ISP_OK;
+#endif
 }
 
 /**
@@ -1481,21 +1553,12 @@ ISP_StatusTypeDef ISP_SVC_ISP_SetGamma(ISP_HandleTypeDef *hIsp, ISP_GammaTypeDef
   * @param  hIsp: ISP device handle
   * @param  pBuffer: pointer to the address of the dumped buffer
   * @param  pMeta: buffer meta data
+  * @param  DumpConfig: Type of dump configuration requested
   * @retval ISP_OK if DCMIPP is running, ISP_FAIL otherwise
   */
-ISP_StatusTypeDef ISP_SVC_Dump_GetFrame(ISP_HandleTypeDef *hIsp, uint32_t **pBuffer, ISP_DumpFrameMetaTypeDef *pMeta)
+ISP_StatusTypeDef ISP_SVC_Dump_GetFrame(ISP_HandleTypeDef *hIsp, uint32_t **pBuffer, ISP_DumpCfgTypeDef DumpConfig, ISP_DumpFrameMetaTypeDef *pMeta)
 {
-  ISP_IQParamTypeDef *IQParamConfig;
-  ISP_DumpCfgTypeDef DumpConfig;
   uint32_t DumpPipe;
-  uint8_t StatRemoval_Enable;
-  uint8_t BadPixel_Enable;
-  uint8_t Decimation_Enable;
-  uint8_t BlackLevel_Enable;
-  uint8_t Exposure_Enable;
-  uint8_t Demos_Enable;
-  uint8_t ColorConv_Enable;
-  uint8_t Contrast_Enable;
 
   /* Check handle validity */
   if ((hIsp == NULL) || (pBuffer == NULL) || (pMeta == NULL))
@@ -1503,80 +1566,23 @@ ISP_StatusTypeDef ISP_SVC_Dump_GetFrame(ISP_HandleTypeDef *hIsp, uint32_t **pBuf
     return ISP_ERR_EINVAL;
   }
 
-  IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
-
   if (hIsp->appliHelpers.DumpFrame == NULL)
   {
     return ISP_ERR_APP_HELPER_UNDEFINED;
   }
 
-  /* Check preview status.
-     Here, the preview was stopped by the remote IQ tuning tool: this is a hint that
-     we are asked to dump the frame at its original size (i.e. without downsize).
-     If all the ISP blocks are disabled, this is a hint that we are asked to dump
-     the frame on pipe0 in its native RAW format. Otherwise the dump is done on pipe2"
-  */
-  if (HAL_DCMIPP_PIPE_GetState(hIsp->hDcmipp, DCMIPP_PIPE1) == HAL_DCMIPP_PIPE_STATE_READY)
-  {
-    ISP_BadPixelTypeDef BadPixelConfig;
-    ISP_BlackLevelTypeDef BlackLevelConfig;
-    ISP_ISPGainTypeDef ISPGainConfig;
-    ISP_ColorConvTypeDef ColorConvConfig;
-    ISP_StatusTypeDef ret;
 
-    /* Get the status of all the ISP blocks */
-    StatRemoval_Enable = IQParamConfig->statRemoval.enable;
-    Decimation_Enable = IQParamConfig->decimation.factor != ISP_DECIM_FACTOR_1;
-    Demos_Enable = IQParamConfig->demosaicing.enable;
-    Contrast_Enable = IQParamConfig->contrast.enable;
-
-    ret = ISP_SVC_ISP_GetBadPixel(hIsp, &BadPixelConfig);
-    if (ret != ISP_OK)
-    {
-      return ret;
-    }
-    BadPixel_Enable = BadPixelConfig.enable;
-
-    ret = ISP_SVC_ISP_GetBlackLevel(hIsp, &BlackLevelConfig);
-    if (ret != ISP_OK)
-    {
-      return ret;
-    }
-    BlackLevel_Enable = BlackLevelConfig.enable;
-
-    ret = ISP_SVC_ISP_GetGain(hIsp, &ISPGainConfig);
-    if (ret != ISP_OK)
-    {
-      return ret;
-    }
-    Exposure_Enable = ISPGainConfig.enable;
-
-    ret = ISP_SVC_ISP_GetColorConv(hIsp, &ColorConvConfig);
-    if (ret != ISP_OK)
-    {
-      return ret;
-    }
-    ColorConv_Enable = ColorConvConfig.enable;
-
-    if (StatRemoval_Enable | BadPixel_Enable | BlackLevel_Enable | Exposure_Enable | Demos_Enable | ColorConv_Enable | Contrast_Enable | Decimation_Enable)
-    {
-      /* At least one ISP block is enabled, this is a hint that we are asked to dump the frame on pipe2. */
-      DumpPipe = DCMIPP_PIPE2;
-      DumpConfig = Demos_Enable ? ISP_DUMP_CFG_FULLSIZE_RGB888 : ISP_DUMP_CFG_FULLSIZE_RAW8;
-    }
-    else
-    {
-      /* All the ISP blocks are disabled, this is a hint that we are asked to dump
-      the frame on pipe0 in its native RAW format. */
-      DumpPipe = DCMIPP_PIPE0;
-      DumpConfig = ISP_DUMP_CFG_DUMP_PIPE_SENSOR;
-    }
+  if (DumpConfig == ISP_DUMP_CFG_DUMP_PIPE_SENSOR) {
+    /* Dump the frame on pipe0 in its native RAW format */
+    DumpPipe = DCMIPP_PIPE0;
   }
-  else
-  {
+  else if (DumpConfig == ISP_DUMP_CFG_FULLSIZE_RGB888) {
+    /* Dump the full frame on pipe2 */
+    DumpPipe = DCMIPP_PIPE2;
+  }
+  else {
     /* Live Streaming dump on pipe2 in its default configuration */
     DumpPipe = DCMIPP_PIPE2;
-    DumpConfig = ISP_DUMP_CFG_DEFAULT;
   }
 
   /* Call the DumpFrame application function */
@@ -1589,32 +1595,12 @@ ISP_StatusTypeDef ISP_SVC_Dump_GetFrame(ISP_HandleTypeDef *hIsp, uint32_t **pBuf
   * @param  hIsp: ISP device handle
   * @retval ISP status
   */
-ISP_StatusTypeDef ISP_SVC_IQParam_Init(ISP_HandleTypeDef *hIsp)
+ISP_StatusTypeDef ISP_SVC_IQParam_Init(ISP_HandleTypeDef *hIsp, const ISP_IQParamTypeDef *ISP_IQParamCacheInit)
 {
   (void)hIsp; /* unused */
 
-#if !defined(ISP_MW_CONFIG_FROM_NVMEM)
-  ISP_IQParamCache = ISP_IQParamCacheInit;
+  ISP_IQParamCache = *ISP_IQParamCacheInit;
   return ISP_OK;
-#else
-  /* TODO: add read from non-volatile memory */
-  return ISP_ERR_IQPARAM_MISSING;
-#endif
-}
-
-/**
-  * @brief  ISP_SVC_IQParam_Flush
-  *         Flush the IQ parameters cache to the non volatile memory
-  * @param  hIsp: ISP device handle
-  * @retval ISP status
-  */
-ISP_StatusTypeDef ISP_SVC_IQParam_Flush(ISP_HandleTypeDef *hIsp)
-{
-  (void)hIsp; /* unused */
-
-  /* TODO: to replace with write access to non-volatile memory */
-
-  return ISP_ERR_IQPARAM_HAL;
 }
 
 /**
@@ -1631,6 +1617,17 @@ ISP_IQParamTypeDef *ISP_SVC_IQParam_Get(ISP_HandleTypeDef *hIsp)
 }
 
 /**
+  * @brief  ISP_SVC_Stats_Init
+  *         Initialize the statistic engine
+  * @param  hIsp: ISP device handle
+  * @retval None
+  */
+void ISP_SVC_Stats_Init(ISP_HandleTypeDef *hIsp)
+{
+  memset(&ISP_SVC_StatEngine, 0, sizeof(ISP_SVC_StatEngineTypeDef));
+}
+
+/**
   * @brief  ISP_SVC_Stats_Gather
   *         Gather statistics
   * @param  hIsp: ISP device handle
@@ -1640,6 +1637,7 @@ void ISP_SVC_Stats_Gather(ISP_HandleTypeDef *hIsp)
 {
   static ISP_SVC_StatEngineStage stagePrevious1 = ISP_STAT_CFG_LAST, stagePrevious2 = ISP_STAT_CFG_LAST;
   DCMIPP_StatisticExtractionConfTypeDef statConf[3];
+  ISP_IQParamTypeDef *IQParamConfig;
   ISP_SVC_StatStateTypeDef *ongoing;
   uint32_t i, avgR, avgG, avgB, frameId;
 
@@ -1647,6 +1645,14 @@ void ISP_SVC_Stats_Gather(ISP_HandleTypeDef *hIsp)
   if (hIsp == NULL)
   {
     printf("ERROR: ISP handle is NULL\r\n");
+    return;
+  }
+
+  if (hIsp->hDcmipp == NULL)
+  {
+    /* ISP is not initialized
+     * This situation happens when the ISP is de-initialized and interrupts still activated.
+     */
     return;
   }
 
@@ -1691,8 +1697,15 @@ void ISP_SVC_Stats_Gather(ISP_HandleTypeDef *hIsp)
     ongoing->down.averageR = GetAvgStats(hIsp, ISP_STAT_LOC_DOWN, ISP_RED, avgR);
     ongoing->down.averageG = GetAvgStats(hIsp, ISP_STAT_LOC_DOWN, ISP_GREEN, avgG);
     ongoing->down.averageB = GetAvgStats(hIsp, ISP_STAT_LOC_DOWN, ISP_BLUE, avgB);
-    ongoing->down.averageL = LuminanceFromRGB(ongoing->down.averageR, ongoing->down.averageG, ongoing->down.averageB);
-
+    IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+    if ((hIsp->sensorInfo.bayer_pattern == ISP_DEMOS_TYPE_MONO) || (!IQParamConfig->demosaicing.enable))
+    {
+      ongoing->down.averageL = LuminanceFromRGBMono(ongoing->down.averageR, ongoing->down.averageG, ongoing->down.averageB);
+    }
+    else
+    {
+      ongoing->down.averageL = LuminanceFromRGB(ongoing->down.averageR, ongoing->down.averageG, ongoing->down.averageB);
+    }
     break;
 
   case ISP_STAT_CFG_DOWN_BINS_0_2:

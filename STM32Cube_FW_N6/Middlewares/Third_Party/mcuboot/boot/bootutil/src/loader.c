@@ -71,6 +71,26 @@ void boot_status_reset(struct boot_status *bs);
 #define IMAGES_ITER(x)
 #endif
 
+#ifndef MCUBOOT_PRIMARY_ONLY
+#if defined(MCUBOOT_OVERWRITE_ONLY) || defined(MCUBOOT_BOOTSTRAP)
+/**
+ * @brief  Erase the secondary slot
+ * @param  image_index     image index of the secondary slot to erase
+ * @return void
+ */
+static void
+boot_erase_secondary_slot(int image_index)
+{
+    const struct flash_area *fap_secondary_slot;
+
+    BOOT_LOG_DBG("erasing secondary slot");
+    (void) flash_area_open(FLASH_AREA_IMAGE_SECONDARY(image_index), &fap_secondary_slot);
+    (void) flash_area_erase(fap_secondary_slot, 0, fap_secondary_slot->fa_size);
+    flash_area_close(fap_secondary_slot);
+}
+#endif /* defined(MCUBOOT_OVERWRITE_ONLY) || defined(MCUBOOT_BOOTSTRAP) */
+#endif /* !MCUBOOT_PRIMARY_ONLY */
+
 /*
  * This macro allows some control on the allocation of local variables.
  * When running natively on a target, we don't want to allocated huge
@@ -442,6 +462,9 @@ boot_image_check(struct boot_loader_state *state, struct image_header *hdr,
 #endif
     }
 #endif
+#ifdef MCUBOOT_LOG_VERSION
+    BOOT_LOG_INF("Image version %d : %02x%02x%04x", image_index, hdr->ih_ver.iv_major, hdr->ih_ver.iv_minor, hdr->ih_ver.iv_revision);
+#endif /* MCUBOOT_LOG_VERSION */
     FIH_CALL(bootutil_img_validate, fih_rc, BOOT_CURR_ENC(state), image_index,
              hdr, fap, tmpbuf, BOOT_TMPBUF_SZ, NULL, 0, NULL);
 
@@ -1097,14 +1120,6 @@ boot_copy_image(struct boot_loader_state *state, struct boot_status *bs)
     }
 #endif
 
-#if !defined(MCUBOOT_OVERWRITE_ONLY)
-    /* Confirm image after copy, as no revert possible */
-    rc = swap_set_image_ok(BOOT_CURR_IMG(state));
-    if (rc != 0) {
-      return rc;
-    }
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) */
-
     BOOT_LOG_INF("Copying the secondary slot to the primary slot: 0x%x bytes",
                  size);
     rc = boot_copy_region(state, fap_secondary_slot, fap_primary_slot, 0, 0, size);
@@ -1135,12 +1150,10 @@ boot_copy_image(struct boot_loader_state *state, struct boot_status *bs)
 #endif /* MCUBOOT_HW_ROLLBACK_PROT */
 
     /*
-     * Erases complete secondary slot. A new image download can be performed
-     * without remaining data from previously installed image.
+     * Set install status after installation is complete.
+     * This status will trigger an erase of the secondary slot after the primary slot verification
      */
-    BOOT_LOG_DBG("erasing secondary slot");
-    rc = flash_area_erase(fap_secondary_slot, 0, fap_secondary_slot->fa_size);
-    assert(rc == 0);
+    BOOT_SET_INSTALL_STATUS(state, image_index);
 
     flash_area_close(fap_primary_slot);
     flash_area_close(fap_secondary_slot);
@@ -2128,6 +2141,21 @@ context_boot_go(struct boot_loader_state *state, struct boot_rsp *rsp)
         }
 #endif /* OTFDEC_EXTERNAL_FLASH_ENABLE */
 
+#ifndef MCUBOOT_PRIMARY_ONLY
+#if defined(MCUBOOT_OVERWRITE_ONLY) || defined(MCUBOOT_BOOTSTRAP)
+        /*
+         * Erase secondary slot if image has just been installed in primary slot.
+         * This avoids to install again the image at next boot.
+         */
+        image_index = BOOT_CURR_IMG(state);
+
+        if (BOOT_IS_INSTALL_STATUS(state, image_index) == true)
+        {
+          boot_erase_secondary_slot(image_index);
+        }
+#endif /* defined(MCUBOOT_OVERWRITE_ONLY) || defined(MCUBOOT_BOOTSTRAP) */
+#endif /* !MCUBOOT_PRIMARY_ONLY */
+
 #if defined(MCUBOOT_HW_ROLLBACK_PROT) && defined(MCUBOOT_OVERWRITE_ONLY)
         /* Update the stored security counter with the active image's security
          * counter value. It will only be updated if the new security counter is
@@ -2171,11 +2199,6 @@ context_boot_go(struct boot_loader_state *state, struct boot_rsp *rsp)
     BOOT_CURR_IMG(state) = 0;
 #endif
 
-    rsp->br_flash_dev_id = BOOT_IMG_AREA(state, BOOT_PRIMARY_SLOT)->fa_device_id;
-    rsp->br_image_off = boot_img_slot_off(state, BOOT_PRIMARY_SLOT);
-    rsp->br_hdr = boot_img_hdr(state, BOOT_PRIMARY_SLOT);
-
-
     /*
      * Since the boot_status struct stores plaintext encryption keys, reset
      * them here to avoid the possibility of jumping into an image that could
@@ -2188,7 +2211,7 @@ context_boot_go(struct boot_loader_state *state, struct boot_rsp *rsp)
     rsp->br_hdr = boot_img_hdr(state, BOOT_PRIMARY_SLOT);
 
     fih_rc = FIH_SUCCESS;
-
+out:
     IMAGES_ITER(BOOT_CURR_IMG(state)) {
 #if MCUBOOT_SWAP_USING_SCRATCH
         flash_area_close(BOOT_SCRATCH_AREA(state));
@@ -2197,7 +2220,7 @@ context_boot_go(struct boot_loader_state *state, struct boot_rsp *rsp)
             flash_area_close(BOOT_IMG_AREA(state, BOOT_NUM_SLOTS - 1 - slot));
         }
     }
-out:
+
     if (rc) {
         fih_rc = fih_int_encode(rc);
     }

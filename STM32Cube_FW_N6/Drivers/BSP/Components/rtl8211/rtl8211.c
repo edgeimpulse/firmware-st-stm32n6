@@ -40,7 +40,9 @@
  * @{
  */
 
+#ifndef RTL8211_INIT_TO
 #define RTL8211_INIT_TO        ((uint32_t)5000U)
+#endif
 #define RTL8211_SW_RESET_TO    ((uint32_t)500U)
 #define RTL8211_MAX_DEV_ADDR   ((uint32_t)31U)
 
@@ -116,7 +118,7 @@ int32_t RTL8211_Init(rtl8211_Object_t *pObj)
         {
           tickstart = pObj->IO.GetTick();
 
-          /* wait until software reset is done or timeout occured  */
+          /* wait until software reset is done or timeout occurred  */
           while(regvalue & RTL8211_BMCR_RESET)
           {
             if((pObj->IO.GetTick() - tickstart) <= RTL8211_SW_RESET_TO)
@@ -314,37 +316,40 @@ int32_t RTL8211_GetLinkState(rtl8211_Object_t *pObj)
   else /* Auto Nego enabled */
   {
 
-    if(pObj->IO.ReadReg(pObj->DevAddr, RTL8211_GBCR, &readval) < 0)
+    if(pObj->IO.ReadReg(pObj->DevAddr, RTL8211_PHYSR1_PA43, &readval) < 0)
     {
       return RTL8211_STATUS_READ_ERROR;
     }
 
-    if((readval & RTL8211_GBCR_1000BT_FD) == RTL8211_GBCR_1000BT_FD)
+    if((readval & RTL8211_PHYSR1_DUPLEX) == RTL8211_PHYSR1_DUPLEX)
     {
-      return RTL8211_STATUS_1000MBITS_FULLDUPLEX;
-    }
-
-
-    if(pObj->IO.ReadReg(pObj->DevAddr, RTL8211_ANAR, &readval) < 0)
-    {
-      return RTL8211_STATUS_READ_ERROR;
-    }
-
-    if((readval & RTL8211_ANAR_100BTX_FD) == RTL8211_ANAR_100BTX_FD)
-    {
-      return RTL8211_STATUS_100MBITS_FULLDUPLEX;
-    }
-    else if ((readval & RTL8211_ANAR_100BTX_HD) == RTL8211_ANAR_100BTX_HD)
-    {
-      return RTL8211_STATUS_100MBITS_HALFDUPLEX;
-    }
-    else if ((readval & RTL8211_ANAR_10BT_FD) == RTL8211_ANAR_10BT_FD)
-    {
-      return RTL8211_STATUS_10MBITS_FULLDUPLEX;
+      if((readval & RTL8211_PHYSR1_SPEED_1000M) == RTL8211_PHYSR1_SPEED_1000M)
+      {
+        return RTL8211_STATUS_1000MBITS_FULLDUPLEX;
+      }
+      else if ((readval & RTL8211_PHYSR1_SPEED_100M) == RTL8211_PHYSR1_SPEED_100M)
+      {
+        return RTL8211_STATUS_100MBITS_FULLDUPLEX;
+      }
+      else
+      {
+        return RTL8211_STATUS_10MBITS_FULLDUPLEX;
+      }
     }
     else
     {
-      return RTL8211_STATUS_10MBITS_HALFDUPLEX;
+      if((readval & RTL8211_PHYSR1_SPEED_1000M) == RTL8211_PHYSR1_SPEED_1000M)
+      {
+        return RTL8211_STATUS_1000MBITS_HALFDUPLEX;
+      }
+      else if ((readval & RTL8211_PHYSR1_SPEED_100M) == RTL8211_PHYSR1_SPEED_100M)
+      {
+        return RTL8211_STATUS_100MBITS_HALFDUPLEX;
+      }
+      else
+      {
+        return RTL8211_STATUS_10MBITS_HALFDUPLEX;
+      }
     }
   }
 }

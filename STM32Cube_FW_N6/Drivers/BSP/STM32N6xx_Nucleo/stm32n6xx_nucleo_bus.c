@@ -386,7 +386,7 @@ int32_t BSP_I2C2_ReadReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_
 int32_t BSP_I2C2_WriteReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
 {
   int32_t ret;
- #if defined(BSP_USE_CMSIS_OS)
+#if defined(BSP_USE_CMSIS_OS)
   /* Get semaphore to prevent multiple I2C access */
   osSemaphoreWait(BspI2cSemaphore, osWaitForever);
 #endif /* BSP_USE_CMSIS_OS */

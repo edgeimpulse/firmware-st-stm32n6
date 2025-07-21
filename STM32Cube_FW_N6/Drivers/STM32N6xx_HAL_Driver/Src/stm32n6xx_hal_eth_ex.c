@@ -63,7 +63,7 @@
 #define ETH_MTLOMR_MASK               0x00000366U
 #define ETH_MTLTXQxOMR_MASK           0x000F007FU
 #define ETH_MTLRXQxOMR_MASK           0x00F1C7FBU
-#define ETH_MACRXQC2R_PSRQ_MASK       0x000000FFU
+#define ETH_MACRXQC2R_PSRQ_MASK       0x0000FFFFU
 #define ETH_MAC_TMRQR_MASK            0x0017FFFFU
 #define ETH_MAC_IACR_MASK             0x0000FF03U
 
@@ -754,17 +754,6 @@ uint32_t HAL_ETHEx_GetTxMTLQNumber(const ETH_HandleTypeDef *heth)
 }
 
 /**
-  * @brief  Returns the ETH MTL error code
-  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
-  *         the configuration information for ETHERNET module
-  * @retval ETH MTL Error Code
-  */
-uint32_t HAL_ETHEx_GetMTLError(const ETH_HandleTypeDef *heth)
-{
-  return heth->MTLErrorCode;
-}
-
-/**
   * @brief  Get the configuration of the MTL.
   * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
   *         the configuration information for ETHERNET module
@@ -868,13 +857,20 @@ HAL_StatusTypeDef HAL_ETHEx_GetMACMTLMappingConfig(const ETH_HandleTypeDef *heth
   macmtlconf->PTPPacketsQueue = READ_BIT(heth->Instance->MACRXQC1R, ETH_MACRXQC1R_PTPQ);
   macmtlconf->AVUntaggedControlPacketsQueue = READ_BIT(heth->Instance->MACRXQC1R, ETH_MACRXQC1R_AVCPQ);
 
-  HAL_ETHEx_GetUserTagPriorityQueue(heth, &(macmtlconf->PrioritiesSelectedRxQ0), ETH_RX_QUEUE0);
-  HAL_ETHEx_GetUserTagPriorityQueue(heth, &(macmtlconf->PrioritiesSelectedRxQ1), ETH_RX_QUEUE1);
+  if (HAL_ETHEx_GetUserTagPriorityQueue(heth, &(macmtlconf->PrioritiesSelectedRxQ0), ETH_RX_QUEUE0) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
+
+  if (HAL_ETHEx_GetUserTagPriorityQueue(heth, &(macmtlconf->PrioritiesSelectedRxQ1), ETH_RX_QUEUE1) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   return HAL_OK;
 }
 
-void ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappingTypeDef *macmtlconf)
+HAL_StatusTypeDef ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappingTypeDef *macmtlconf)
 {
   uint32_t macmtlregval;
 
@@ -895,8 +891,15 @@ void ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappi
 
   /*------------------------ MACRXQC2R Configuration --------------------*/
   /* Write to MACRXQC2R */
-  HAL_ETHEx_SetUserTagPriorityQueue(heth, macmtlconf->PrioritiesSelectedRxQ0, ETH_RX_QUEUE0);
-  HAL_ETHEx_SetUserTagPriorityQueue(heth, macmtlconf->PrioritiesSelectedRxQ1, ETH_RX_QUEUE1);
+  if (HAL_ETHEx_SetUserTagPriorityQueue(heth, macmtlconf->PrioritiesSelectedRxQ0, ETH_RX_QUEUE0) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
+
+  if (HAL_ETHEx_SetUserTagPriorityQueue(heth, macmtlconf->PrioritiesSelectedRxQ1, ETH_RX_QUEUE1) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   /*------------------------ MACRXQCR Configuration --------------------*/
   macmtlregval = (((uint32_t)((macmtlconf->UnicastAddrFilterFailPacketsQueuingEnable == DISABLE) ? 0U : 1U)) |
@@ -908,6 +911,8 @@ void ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappi
 
   /* Write to MACRXQCR */
   MODIFY_REG(heth->Instance->MACRXQCR, ETH_MACRXQCR_MASK, macmtlregval);
+
+  return HAL_OK;
 }
 
 /**
@@ -927,7 +932,10 @@ HAL_StatusTypeDef HAL_ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, cons
 
   if (heth->gState == HAL_ETH_STATE_READY)
   {
-    ETHEx_SetMACMTLMappingConfig(heth, macmtlconf);
+    if (ETHEx_SetMACMTLMappingConfig(heth, macmtlconf) != HAL_OK)
+    {
+      return HAL_ERROR;
+    }
 
     return HAL_OK;
   }
@@ -1024,67 +1032,73 @@ HAL_StatusTypeDef HAL_ETHEx_SetMTLConfig(ETH_HandleTypeDef *heth,  ETH_MTLConfig
 }
 
 /**
-  * @brief  Set the User Tag Priority Queueing.
+  * @brief  Get the User Tag Priority Queueing.
   * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
   *         the configuration information for ETHERNET module
-  * @param  mtlconf: pointer to a ETH_MTLConfigTypeDef structure that contains the configuration of the MAC.
-  * @retval HAL status
+  * @param  psrq: user priority
+  * @param  queue: queue index
+  * @retval None
   */
-HAL_StatusTypeDef HAL_ETHEx_GetUserTagPriorityQueue(const ETH_HandleTypeDef *heth, ETH_PSRTypeDef *psrq, uint32_t queue)
+HAL_StatusTypeDef HAL_ETHEx_GetUserTagPriorityQueue(const ETH_HandleTypeDef *heth, uint32_t *psrq, uint32_t queue)
 {
-  switch (queue)
+  if (psrq == NULL)
   {
-    case 0 :
-      *psrq = (ETH_PSRTypeDef)READ_BIT(heth->Instance->MACRXQC2R, ETH_MACRXQC2R_PSRQ0_Msk);
-      break;
-
-    case 1 :
-      *psrq = (ETH_PSRTypeDef)(READ_BIT(heth->Instance->MACRXQC2R, ETH_MACRXQC2R_PSRQ1_Msk) >> 8);
-      break;
-
-    default :
-      /* Return error status */
-      return HAL_ERROR;
+    return HAL_ERROR;
   }
-  /* Return function status */
-  return HAL_OK;
+
+  if (queue == ETH_RX_QUEUE0)
+  {
+    *psrq = (uint32_t)(READ_BIT(heth->Instance->MACRXQC2R, ETH_MACRXQC2R_PSRQ0) >> ETH_MACRXQC2R_PSRQ0_Pos);
+    return HAL_OK;
+  }
+
+  if (queue == ETH_RX_QUEUE1)
+  {
+    *psrq = (uint32_t)(READ_BIT(heth->Instance->MACRXQC2R, ETH_MACRXQC2R_PSRQ1) >> ETH_MACRXQC2R_PSRQ1_Pos);
+    return HAL_OK;
+  }
+
+  return HAL_ERROR;
 }
 
 /**
   * @brief  Set the User Tag Priority Queueing.
   * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
   *         the configuration information for ETHERNET module
-  * @param  mtlconf: pointer to a ETH_MTLConfigTypeDef structure that contains
-  *         the configuration of the MAC.
-  * @retval HAL status
+  * @param  psrq: user priority
+  * @param  queue: queue index
+  * @retval None
   */
-HAL_StatusTypeDef HAL_ETHEx_SetUserTagPriorityQueue(ETH_HandleTypeDef *heth, ETH_PSRTypeDef psrq, uint32_t queue)
+HAL_StatusTypeDef HAL_ETHEx_SetUserTagPriorityQueue(ETH_HandleTypeDef *heth, uint32_t psrq, uint32_t queue)
 {
   uint32_t idx;
+  uint32_t tmppsrq;
+  uint32_t pos;
 
   for (idx = 0; idx < ETH_MTL_RX_Q_CNT; idx++)
   {
-    if (psrq == READ_BIT(heth->Instance->MACRXQC2R, (ETH_MACRXQC2R_PSRQ_MASK >> (idx * 8))))
+    pos = idx * 8U;
+
+    if (idx != queue)
     {
-      return HAL_ERROR;
+      /* Ensure that the same priority PSR is not mapped to multiple Rx queues. */
+      if (HAL_ETHEx_GetUserTagPriorityQueue(heth, &tmppsrq, idx) != HAL_OK)
+      {
+        return HAL_ERROR;
+      }
+
+      if ((tmppsrq & psrq) != 0U)
+      {
+        CLEAR_BIT(heth->Instance->MACRXQC2R, (psrq << (queue * 8U)));
+        /* PSR is already mapped to another queue */
+        return HAL_ERROR;
+      }
+    }
+    else
+    {
+      MODIFY_REG(heth->Instance->MACRXQC2R, (psrq << pos), (uint32_t)(psrq << pos));
     }
   }
-
-  switch (queue)
-  {
-    case 0 :
-      MODIFY_REG(heth->Instance->MACRXQC2R, psrq, psrq);
-      break;
-
-    case 1 :
-      MODIFY_REG(heth->Instance->MACRXQC2R, psrq, psrq << 8);
-      break;
-
-    default :
-      /* Return error status */
-      return HAL_ERROR;
-  }
-  /* Return function status */
   return HAL_OK;
 }
 
@@ -1096,15 +1110,24 @@ HAL_StatusTypeDef HAL_ETHEx_SetUserTagPriorityQueue(ETH_HandleTypeDef *heth, ETH
   *         the configuration of the MAC.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_ETHEx_SetPacketTypeQueue(ETH_HandleTypeDef *heth, ETH_PacketTypeQueueConfigTypeDef *typequeueconf)
+HAL_StatusTypeDef HAL_ETHEx_SetPacketTypeQueue(ETH_HandleTypeDef *heth,
+                                               const ETH_PacketTypeQueueConfigTypeDef *typequeueconf)
 {
-  uint32_t cmd = ETH_WRITE_OPERATION | ETH_MACIACR_OB | (typequeueconf->Address << 8);
-  uint32_t config = typequeueconf->Preemption | (typequeueconf->Queue << 16) | typequeueconf->Type;
+  uint32_t cmd;
+  uint32_t config;
+
+  if (typequeueconf == NULL)
+  {
+    return HAL_ERROR;
+  }
 
   if (heth->gState != HAL_ETH_STATE_STARTED)
   {
     return HAL_ERROR;
   }
+
+  cmd = ETH_WRITE_OPERATION | ETH_MACIACR_OB | ((uint32_t)(typequeueconf->Address) << 8);
+  config = typequeueconf->Preemption | (typequeueconf->Queue << 16) | typequeueconf->Type;
 
   /* Enable Type field based Rx queuing */
   SET_BIT(heth->Instance->MACRXQC1R, ETH_MACRXQC1R_TBRQE);
@@ -1119,9 +1142,9 @@ HAL_StatusTypeDef HAL_ETHEx_SetPacketTypeQueue(ETH_HandleTypeDef *heth, ETH_Pack
   uint32_t tickstart = HAL_GetTick();
 
   /* wait until the Operation reset is done */
-  while (READ_BIT(heth->Instance->MACIACR, ETH_MACIACR_OB) != RESET)
+  while (READ_BIT(heth->Instance->MACIACR, ETH_MACIACR_OB) != (uint32_t)RESET)
   {
-    if (((HAL_GetTick() - tickstart) > ETH_OP_BUSY_TIMEOUT))
+    if ((HAL_GetTick() - tickstart) > ETH_OP_BUSY_TIMEOUT)
     {
       /* Set Error Code */
       heth->MACErrorCode = HAL_ETH_ERROR_TIMEOUT;
@@ -1146,12 +1169,19 @@ HAL_StatusTypeDef HAL_ETHEx_SetPacketTypeQueue(ETH_HandleTypeDef *heth, ETH_Pack
   */
 HAL_StatusTypeDef HAL_ETHEx_GetPacketTypeQueue(ETH_HandleTypeDef *heth, ETH_PacketTypeQueueConfigTypeDef *typequeueconf)
 {
-  uint32_t cmd = ETH_READ_OPERATION | ETH_MACIACR_OB | (typequeueconf->Address << 8);
+  uint32_t cmd;
 
   if (heth->gState != HAL_ETH_STATE_STARTED)
   {
     return HAL_ERROR;
   }
+
+  if (typequeueconf == NULL)
+  {
+    return HAL_ERROR;
+  }
+
+  cmd = ETH_READ_OPERATION | ETH_MACIACR_OB | ((uint32_t)(typequeueconf->Address) << 8);
 
   /* Set command to MACIACR */
   MODIFY_REG(heth->Instance->MACIACR, ETH_MAC_IACR_MASK, cmd);
@@ -1160,9 +1190,9 @@ HAL_StatusTypeDef HAL_ETHEx_GetPacketTypeQueue(ETH_HandleTypeDef *heth, ETH_Pack
   uint32_t tickstart = HAL_GetTick();
 
   /* wait until the Operation reset is done */
-  while (READ_BIT(heth->Instance->MACIACR, ETH_MACIACR_OB) != RESET)
+  while (READ_BIT(heth->Instance->MACIACR, ETH_MACIACR_OB) != (uint32_t)RESET)
   {
-    if (((HAL_GetTick() - tickstart) > ETH_OP_BUSY_TIMEOUT))
+    if ((HAL_GetTick() - tickstart) > ETH_OP_BUSY_TIMEOUT)
     {
       /* Set Error Code */
       heth->MACErrorCode = HAL_ETH_ERROR_TIMEOUT;
@@ -1263,7 +1293,8 @@ HAL_StatusTypeDef HAL_ETHEx_SetCBSConfig(ETH_HandleTypeDef *heth,  ETH_CBSConfig
   *         the configuration of the CBS Algorithm.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_ETHEx_GetCBSConfig(ETH_HandleTypeDef *heth, ETH_CBSConfigTypeDef *pCBSConfig, uint8_t queueIndex)
+HAL_StatusTypeDef HAL_ETHEx_GetCBSConfig(const ETH_HandleTypeDef *heth, ETH_CBSConfigTypeDef *pCBSConfig,
+                                         uint8_t queueIndex)
 {
   if (pCBSConfig == NULL)
   {
@@ -1331,7 +1362,7 @@ HAL_StatusTypeDef HAL_ETHEx_DisableEST(ETH_HandleTypeDef *heth)
   *         the configuration information for ETHERNET module
   * @retval Depth of the Gate Control List
   */
-uint32_t HAL_ETHEx_GetGCLDepth(ETH_HandleTypeDef *heth)
+uint32_t HAL_ETHEx_GetGCLDepth(const ETH_HandleTypeDef *heth)
 {
   uint32_t gcldepth;
 
@@ -1361,7 +1392,7 @@ uint32_t HAL_ETHEx_GetGCLDepth(ETH_HandleTypeDef *heth)
   *         the configuration information for ETHERNET module
   * @retval Width of the Time Interval field in the Gate Control List
   */
-uint32_t HAL_ETHEx_GetGCLWidthTimeInterval(ETH_HandleTypeDef *heth)
+uint32_t HAL_ETHEx_GetGCLWidthTimeInterval(const ETH_HandleTypeDef *heth)
 {
   uint32_t gclwidth;
 
@@ -1390,12 +1421,10 @@ static HAL_StatusTypeDef ETHEx_ESTHWCompletionCheck(ETH_HandleTypeDef *heth)
   uint32_t tickstart = HAL_GetTick();
 
   /* wait until the reset is done by Hardware */
-  while (READ_BIT(heth->Instance->MTLESTGCLCR, ETH_MTLESTGCLCR_SRWO) != RESET)
+  while (READ_BIT(heth->Instance->MTLESTGCLCR, ETH_MTLESTGCLCR_SRWO) != (uint32_t)RESET)
   {
-    if (((HAL_GetTick() - tickstart) > ETH_HWRESET_TIMEOUT))
+    if ((HAL_GetTick() - tickstart) > ETH_HWRESET_TIMEOUT)
     {
-      /* Set Error Code */
-      heth->MTLErrorCode = HAL_ETH_ERROR_TIMEOUT;
       /* Set State as Error */
       heth->gState = HAL_ETH_STATE_ERROR;
       /* Return Error */
@@ -1485,7 +1514,7 @@ HAL_StatusTypeDef HAL_ETHEx_GetGCLRegisters(ETH_HandleTypeDef *heth, ETH_GCLConf
 /**
   * @brief  HAL ETH Set GCL Registers values
   */
-HAL_StatusTypeDef HAL_ETHEx_SetGCLRegisters(ETH_HandleTypeDef *heth, ETH_GCLConfigTypeDef *gclconf)
+HAL_StatusTypeDef HAL_ETHEx_SetGCLRegisters(ETH_HandleTypeDef *heth, const ETH_GCLConfigTypeDef *gclconf)
 {
   uint32_t mtlestgclctrl = ETH_MTLESTGCLCR_GCRR | ETH_MTLESTGCLCR_SRWO;
   uint32_t mtlestgclctrl_mask = ETH_MTLESTGCLCR_ADDR_Msk | ETH_MTLESTGCLCR_GCRR_Msk | ETH_MTLESTGCLCR_SRWO_Msk;
@@ -1589,7 +1618,10 @@ HAL_StatusTypeDef HAL_ETHEx_SetGCLConfig(ETH_HandleTypeDef *heth, ETH_GCLConfigT
     (gclconf->opList)++;
   }
 
-  HAL_ETHEx_SetGCLRegisters(heth, gclconf);
+  if (HAL_ETHEx_SetGCLRegisters(heth, gclconf) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   return HAL_OK;
 }
@@ -1612,13 +1644,16 @@ static HAL_StatusTypeDef ETHEx_SetESTConfig(ETH_HandleTypeDef *heth, ETH_ESTConf
     return HAL_ERROR;
   }
   /* Check on completion of switch to the S/W owned list */
-  if (READ_BIT(heth->Instance->MTLESTCR, ETH_MTLESTCR_SSWL) != RESET)
+  if (READ_BIT(heth->Instance->MTLESTCR, ETH_MTLESTCR_SSWL) != (uint32_t)RESET)
   {
     return HAL_ERROR;
   }
 
   /* Programming the GCL and GCL-linked registers */
-  HAL_ETHEx_SetGCLConfig(heth, &estconf->GCLRegisters);
+  if (HAL_ETHEx_SetGCLConfig(heth, &estconf->GCLRegisters) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   /* Set EST Configuration */
   estregval = ((estconf->SwitchToSWOL << 1) |
@@ -1627,7 +1662,7 @@ static HAL_StatusTypeDef ETHEx_SetESTConfig(ETH_HandleTypeDef *heth, ETH_ESTConf
                (estconf->LoopCountSchedulingError) |
                (estconf->TimeIntervalLeftShift << 8) |
                (estconf->CurrentTimeOffset << 12) |
-               (((1000000000U / estconf->PTPTimeOffset) * 6) << 24));
+               (((uint32_t)(1000000000U / estconf->PTPTimeOffset) * 6U) << 24));
 
   /* Write to MTLESTCR */
   MODIFY_REG(heth->Instance->MTLESTCR, ETH_MTLESTCR_MASK, estregval);
@@ -1639,7 +1674,10 @@ static HAL_StatusTypeDef ETHEx_SetESTConfig(ETH_HandleTypeDef *heth, ETH_ESTConf
   MODIFY_REG(heth->Instance->MTLESTECR, ETH_MTLESTECR_OVHD_Msk, estregval);
 
   /* Enable Enhancement Scheduling Traffic feature */
-  HAL_ETHEx_EnableEST(heth);
+  if (HAL_ETHEx_EnableEST(heth) != HAL_OK)
+  {
+    return HAL_ERROR;
+  }
 
   return HAL_OK;
 }
@@ -1661,7 +1699,10 @@ HAL_StatusTypeDef HAL_ETHEx_SetESTConfig(ETH_HandleTypeDef *heth,  ETH_ESTConfig
 
   if (heth->gState == HAL_ETH_STATE_STARTED)
   {
-    ETHEx_SetESTConfig(heth, estconf);
+    if (ETHEx_SetESTConfig(heth, estconf) != HAL_OK)
+    {
+      return HAL_ERROR;
+    }
   }
   else
   {

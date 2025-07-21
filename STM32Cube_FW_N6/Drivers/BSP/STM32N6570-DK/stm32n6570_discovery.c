@@ -50,9 +50,6 @@ typedef void (* BSP_EXTI_LineCallback) (void);
   * @{
   */
 static void BUTTON_USER1_EXTI_Callback(void);
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-static void BUTTON_USER2_EXTI_Callback(void);
-#endif /* (STM32N6570_DK_REV < STM32N6570_DK_C01) */
 static void BUTTON_TAMP_EXTI_Callback(void);
 
 #if (USE_BSP_COM_FEATURE > 0)
@@ -99,27 +96,18 @@ static const  uint32_t LED_PIN[LEDn] =
 static GPIO_TypeDef* BUTTON_PORT[BUTTONn] =
 {
   BUTTON_USER1_GPIO_PORT,
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-  BUTTON_USER2_GPIO_PORT,
-#endif /* (STM32N6570_DK_REV < STM32N6570_DK_C01) */
   BUTTON_TAMP_GPIO_PORT
 };
 
 static const uint16_t BUTTON_PIN[BUTTONn] =
 {
   BUTTON_USER1_PIN,
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-  BUTTON_USER2_PIN,
-#endif /* (STM32N6570_DK_REV < STM32N6570_DK_C01) */
   BUTTON_TAMP_PIN
 };
 
 static const IRQn_Type BUTTON_IRQn[BUTTONn] =
 {
   BUTTON_USER1_EXTI_IRQn,
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-  BUTTON_USER2_EXTI_IRQn,
-#endif /* (STM32N6570_DK_REV < STM32N6570_DK_C01) */
   BUTTON_TAMP_EXTI_IRQn,
 };
 
@@ -179,11 +167,12 @@ const uint8_t* BSP_GetBoardID(void)
   return (const uint8_t*)STM32N6570_DK_BSP_BOARD_ID;
 }
 
-#if (STM32N6570_DK_REV >= STM32N6570_DK_C01)
 /**
   * @brief  This method sets the external SMPS Voltage
-  * @param SMPS_VOLTAGE_NOMINAL : 0.810mV
-  *        SMPS_VOLTAGE_OVERDRIVE: 0.890mV
+  * @param Voltage configuration
+  *          This parameter can be one of the following values:
+  *            @arg  SMPS_VOLTAGE_NOMINAL
+  *            @arg  SMPS_VOLTAGE_OVERDRIVE
   */
 void BSP_SMPS_Init(SMPSVoltage_TypeDef Voltage){
   SMPS_GPIO_CLK_ENABLE();
@@ -197,7 +186,6 @@ void BSP_SMPS_Init(SMPSVoltage_TypeDef Voltage){
 
   HAL_GPIO_WritePin(SMPS_GPIO_PORT, SMPS_GPIO_PIN, (GPIO_PinState) Voltage);
 }
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_C01) */
 
 /**
   * @brief  Configures LED on GPIO.
@@ -361,36 +349,18 @@ uint32_t BSP_LED_GetState (Led_TypeDef Led)
 int32_t BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef ButtonMode)
 {
   GPIO_InitTypeDef             gpio_init_structure       = {0};
-#if (STM32N6570_DK_REV >= STM32N6570_DK_C01)
   static BSP_EXTI_LineCallback ButtonCallback[BUTTONn]   = {BUTTON_USER1_EXTI_Callback,
                                                             BUTTON_TAMP_EXTI_Callback};
   static uint32_t              BSP_BUTTON_PRIO [BUTTONn] = {BSP_BUTTON_USER1_IT_PRIORITY,
                                                             BSP_BUTTON_TAMP_IT_PRIORITY};
   static const uint32_t        BUTTON_EXTI_LINE[BUTTONn] = {BUTTON_USER1_EXTI_LINE,
                                                             BUTTON_TAMP_EXTI_LINE};
-#else
-  static BSP_EXTI_LineCallback ButtonCallback[BUTTONn]   = {BUTTON_USER1_EXTI_Callback,
-                                                            BUTTON_USER2_EXTI_Callback,
-                                                            BUTTON_TAMP_EXTI_Callback};
-  static uint32_t              BSP_BUTTON_PRIO [BUTTONn] = {BSP_BUTTON_USER1_IT_PRIORITY,
-                                                            BSP_BUTTON_USER2_IT_PRIORITY,
-                                                            BSP_BUTTON_TAMP_IT_PRIORITY};
-  static const uint32_t        BUTTON_EXTI_LINE[BUTTONn] = {BUTTON_USER1_EXTI_LINE,
-                                                            BUTTON_USER2_EXTI_LINE,
-                                                            BUTTON_TAMP_EXTI_LINE};
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_C01) */
+
   /* Enable the BUTTON clock */
   if (Button == BUTTON_USER1)
   {
     BUTTON_USER1_GPIO_CLK_ENABLE();
   }
-
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-  else if (Button == BUTTON_USER2)
-  {
-    BUTTON_USER2_GPIO_CLK_ENABLE();
-  }
-#endif /* (STM32N6570_DK_REV < STM32N6570_DK_C01) */
   else /* BUTTON_TAMP */
   {
     BUTTON_TAMP_GPIO_CLK_ENABLE();
@@ -484,16 +454,6 @@ static void BUTTON_USER1_EXTI_Callback(void)
   BSP_PB_Callback(BUTTON_USER1);
 }
 
-#if (STM32N6570_DK_REV < STM32N6570_DK_C01)
-/**
-  * @brief  Button User 2 (B3) EXTI line detection callbacks.
-  * @retval None
-  */
-static void BUTTON_USER2_EXTI_Callback(void)
-{
-  BSP_PB_Callback(BUTTON_USER2);
-}
-#endif /* (STM32N6570_DK_REV < STM32N6570_DK_C01) */
 /**
   * @brief  Button TAMP (B4) EXTI line detection callbacks.
   * @retval None

@@ -476,7 +476,7 @@ void HAL_PWR_DisableWakeUpPin(uint32_t WakeUpPinx)
   *            @arg PWR_WAKEUP_FLAG1    : Get wakeup event received from PA0.
   *            @arg PWR_WAKEUP_FLAG2    : Get wakeup event received from PA2.
   *            @arg PWR_WAKEUP_FLAG3    : Get wakeup event received from PC13.
-  *            @arg PWR_WAKEUP_FLAG4    : Get wakeup event received from PC1.
+  *            @arg PWR_WAKEUP_FLAG4    : Get wakeup event received from PD2.
   *            @arg PWR_WAKEUP_FLAG_ALL : Get Wakeup event received from all
   *                                       wake up pins.
   * @retval The Wake-Up pin flag.
@@ -497,7 +497,7 @@ uint32_t HAL_PWR_GetWakeupFlag(uint32_t WakeUpFlag)
   *            @arg PWR_WAKEUP_FLAG1    : Clear the wakeup event received from PA0.
   *            @arg PWR_WAKEUP_FLAG2    : Clear the wakeup event received from PA2.
   *            @arg PWR_WAKEUP_FLAG3    : Clear the wakeup event received from PC13.
-  *            @arg PWR_WAKEUP_FLAG4    : Clear the wakeup event received from PC1.
+  *            @arg PWR_WAKEUP_FLAG4    : Clear the wakeup event received from PD2.
   *            @arg PWR_WAKEUP_FLAG_ALL : Clear the wakeup events received from all
   *                                       wake up pins.
   * @retval HAL status.

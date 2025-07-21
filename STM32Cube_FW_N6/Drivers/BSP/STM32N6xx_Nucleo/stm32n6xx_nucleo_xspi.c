@@ -282,7 +282,7 @@ __weak HAL_StatusTypeDef MX_XSPI_NOR_Init(XSPI_HandleTypeDef *hxspi, MX_XSPI_Ini
   hxspi->Init.ChipSelectBoundary      = 0;
 #if defined (OCTOSPI_DCR1_DLYBYP)
   hxspi->Init.DelayBlockBypass           = HAL_XSPI_DELAY_BLOCK_BYPASS;
-#endif
+#endif /* OCTOSPI_DCR1_DLYBYP */
 
   if (Init->TransferRate == (uint32_t) BSP_XSPI_NOR_DTR_TRANSFER)
   {

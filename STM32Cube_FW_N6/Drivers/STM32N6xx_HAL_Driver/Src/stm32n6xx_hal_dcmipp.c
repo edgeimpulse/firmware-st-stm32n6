@@ -256,7 +256,6 @@ Regardless of the interface type, the pipe configuration is necessary:
   * @{
   */
 
-/* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /** @defgroup DCMIPP_Private_Constants DCMIPP Private Constants
   * @{
@@ -271,6 +270,10 @@ Regardless of the interface type, the pipe configuration is necessary:
 /**
   * @}
   */
+/* Private typedef -----------------------------------------------------------*/
+/** @defgroup DCMIPP_Private_TypeDef DCMIPP Private TypeDef
+  * @{
+  */
 /*
  * Table of hsfreqrange & osc_freq_target for the Synopsis D-PHY
  */
@@ -279,6 +282,9 @@ typedef struct
   uint32_t hsfreqrange;
   uint32_t osc_freq_target;
 } SNPS_FreqsTypeDef;
+/**
+  * @}
+  */
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -293,7 +299,7 @@ static void DCMIPP_EnableCapture(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe);
 static HAL_StatusTypeDef DCMIPP_Stop(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe);
 static void DCMIPP_CSI_WritePHYReg(CSI_TypeDef *hcsi, uint32_t reg_msb, uint32_t reg_lsb, uint32_t val);
 static HAL_StatusTypeDef DCMIPP_CSI_SetVCConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, uint32_t VirtualChannel);
-static HAL_StatusTypeDef DCMIPP_CSI_VCStop(DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel);
+static HAL_StatusTypeDef DCMIPP_CSI_VCStop(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel);
 /**
   * @}
   */
@@ -562,7 +568,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PARALLEL_SetConfig(DCMIPP_HandleTypeDef *hdcmipp,
   *                     configuration information for DCMIPP.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetConfig(DCMIPP_HandleTypeDef *hdcmipp, const DCMIPP_CSI_ConfTypeDef *pCSI_Config)
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetConfig(const DCMIPP_HandleTypeDef *hdcmipp,
+                                           const DCMIPP_CSI_ConfTypeDef *pCSI_Config)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -861,7 +868,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_SetConfig(DCMIPP_HandleTypeDef *hdcmipp, u
   *                            the Virtual Channel Filtering configuration information.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCFilteringConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCFilteringConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
                                                       const DCMIPP_CSI_VCFilteringConfTypeDef *pVCFilteringConfig)
 {
   CSI_TypeDef *csi_instance;
@@ -952,7 +959,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCFilteringConfig(DCMIPP_HandleTypeDef *hdcm
   * @param  DataTypeFormat Specifies the Data Type Format, can be a value from @ref DCMIPP_CSI_DataTypeFormat.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
                                              uint32_t DataTypeFormat)
 {
   CSI_TypeDef *csi_instance;
@@ -1023,6 +1030,11 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SetConfig(DCMIPP_HandleTypeDef *hdcmipp, uint3
   {
     assert_param(IS_DCMIPP_PIXEL_PACKER_FORMAT(pPipeConfig->PixelPackerFormat));
     assert_param(IS_DCMIPP_PIXEL_PIPE_PITCH(pPipeConfig->PixelPipePitch));
+  }
+
+  if ((Pipe == DCMIPP_PIPE2) && ((pPipeConfig->PixelPackerFormat) > DCMIPP_PIXEL_PACKER_FORMAT_YUV422_1))
+  {
+    return HAL_ERROR;
   }
   /* Get Pipe State */
   pipe_state = hdcmipp->PipeState[Pipe];
@@ -1113,7 +1125,7 @@ HAL_StatusTypeDef HAL_DCMIPP_SetIPPlugConfig(DCMIPP_HandleTypeDef *hdcmipp,
       hdcmipp->Instance->IPC1R1 = (pIPPlugConfig->Traffic |
                                    (pIPPlugConfig->MaxOutstandingTransactions << DCMIPP_IPC1R1_OTR_Pos));
 
-      /* Set End word and Start Word of the FIFO of the Clientx */
+      /* Set Ratio arbitration */
       hdcmipp->Instance->IPC1R2 = (pIPPlugConfig->WLRURatio << DCMIPP_IPC1R2_WLRU_Pos);
 
       /* Set End word and Start Word of the FIFO of the Clientx */
@@ -1127,7 +1139,7 @@ HAL_StatusTypeDef HAL_DCMIPP_SetIPPlugConfig(DCMIPP_HandleTypeDef *hdcmipp,
       hdcmipp->Instance->IPC2R1 = (pIPPlugConfig->Traffic |
                                    (pIPPlugConfig->MaxOutstandingTransactions << DCMIPP_IPC2R1_OTR_Pos));
 
-      /* Set End word and Start Word of the FIFO of the Clientx */
+      /* Set Ratio arbitration */
       hdcmipp->Instance->IPC2R2 = (pIPPlugConfig->WLRURatio << DCMIPP_IPC2R2_WLRU_Pos);
 
       /* Set End word and Start Word of the FIFO of the Clientx */
@@ -1141,7 +1153,7 @@ HAL_StatusTypeDef HAL_DCMIPP_SetIPPlugConfig(DCMIPP_HandleTypeDef *hdcmipp,
       hdcmipp->Instance->IPC3R1 = (pIPPlugConfig->Traffic |
                                    (pIPPlugConfig->MaxOutstandingTransactions << DCMIPP_IPC3R1_OTR_Pos));
 
-      /* Set End word and Start Word of the FIFO of the Clientx */
+      /* Set Ratio arbitration */
       hdcmipp->Instance->IPC3R2 = (pIPPlugConfig->WLRURatio << DCMIPP_IPC3R2_WLRU_Pos);
 
       /* Set End word and Start Word of the FIFO of the Clientx */
@@ -1155,7 +1167,7 @@ HAL_StatusTypeDef HAL_DCMIPP_SetIPPlugConfig(DCMIPP_HandleTypeDef *hdcmipp,
       hdcmipp->Instance->IPC4R1 = (pIPPlugConfig->Traffic |
                                    (pIPPlugConfig->MaxOutstandingTransactions << DCMIPP_IPC4R1_OTR_Pos));
 
-      /* Set End word and Start Word of the FIFO of the Clientx */
+      /* Set Ratio arbitration */
       hdcmipp->Instance->IPC4R2 = (pIPPlugConfig->WLRURatio << DCMIPP_IPC4R2_WLRU_Pos);
 
       /* Set End word and Start Word of the FIFO of the Clientx */
@@ -1169,7 +1181,7 @@ HAL_StatusTypeDef HAL_DCMIPP_SetIPPlugConfig(DCMIPP_HandleTypeDef *hdcmipp,
       hdcmipp->Instance->IPC5R1 = (pIPPlugConfig->Traffic |
                                    (pIPPlugConfig->MaxOutstandingTransactions << DCMIPP_IPC5R1_OTR_Pos));
 
-      /* Set End word and Start Word of the FIFO of the Clientx */
+      /* Set Ratio arbitration */
       hdcmipp->Instance->IPC5R2 = (pIPPlugConfig->WLRURatio << DCMIPP_IPC5R2_WLRU_Pos);
 
       /* Set End word and Start Word of the FIFO of the Clientx */
@@ -1209,6 +1221,7 @@ HAL_StatusTypeDef HAL_DCMIPP_SetIPPlugConfig(DCMIPP_HandleTypeDef *hdcmipp,
 HAL_StatusTypeDef HAL_DCMIPP_PIPE_Start(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, uint32_t DstAddress,
                                         uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
@@ -1218,9 +1231,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_Start(DCMIPP_HandleTypeDef *hdcmipp, uint32_t 
     return HAL_ERROR;
   }
 
-  /* Check DCMIPP pipe state */
-  if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-      ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_PARALLEL_MODE))
+  mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+  if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_PARALLEL_MODE))
   {
     return HAL_ERROR;
   }
@@ -1246,6 +1258,7 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_Start(DCMIPP_HandleTypeDef *hdcmipp, uint32_t 
 HAL_StatusTypeDef HAL_DCMIPP_PIPE_DoubleBufferStart(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, uint32_t DstAddress0,
                                                     uint32_t DstAddress1, uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
@@ -1255,9 +1268,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_DoubleBufferStart(DCMIPP_HandleTypeDef *hdcmip
     return HAL_ERROR;
   }
 
-  /* Check DCMIPP pipe state */
-  if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-      ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_PARALLEL_MODE))
+  mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+  if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_PARALLEL_MODE))
   {
     return HAL_ERROR;
   }
@@ -1329,6 +1341,7 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SemiPlanarStart(DCMIPP_HandleTypeDef *hdcmipp,
                                                   DCMIPP_SemiPlanarDstAddressTypeDef *pSemiPlanarDstAddress,
                                                   uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
@@ -1341,9 +1354,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SemiPlanarStart(DCMIPP_HandleTypeDef *hdcmipp,
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_PARALLEL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_PARALLEL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1381,13 +1393,13 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SemiPlanarDoubleBufferStart(DCMIPP_HandleTypeD
                                                               *pSemiPlanarDstAddress1,
                                                               uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
   /* Check pointer validity */
   if ((hdcmipp == NULL) || ((pSemiPlanarDstAddress0->YAddress & 0xFU)  != 0U) ||
-      ((pSemiPlanarDstAddress0->UVAddress & 0xFU) != 0U) ||
-      ((pSemiPlanarDstAddress1->YAddress & 0xFU)  != 0U) ||
+      ((pSemiPlanarDstAddress0->UVAddress & 0xFU) != 0U) || ((pSemiPlanarDstAddress1->YAddress & 0xFU)  != 0U) ||
       ((pSemiPlanarDstAddress1->UVAddress & 0xFU) != 0U))
   {
     return HAL_ERROR;
@@ -1395,9 +1407,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SemiPlanarDoubleBufferStart(DCMIPP_HandleTypeD
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_PARALLEL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_PARALLEL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1431,22 +1442,21 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_FullPlanarStart(DCMIPP_HandleTypeDef *hdcmipp,
                                                   DCMIPP_FullPlanarDstAddressTypeDef *pFullPlanarDstAddress,
                                                   uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
   /* Check pointer validity */
   if ((hdcmipp == NULL) || ((pFullPlanarDstAddress->YAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress->UAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress->VAddress & 0xFU) != 0U))
+      ((pFullPlanarDstAddress->UAddress & 0xFU) != 0U) || ((pFullPlanarDstAddress->VAddress & 0xFU) != 0U))
   {
     return HAL_ERROR;
   }
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_PARALLEL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_PARALLEL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1474,8 +1484,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_FullPlanarStart(DCMIPP_HandleTypeDef *hdcmipp,
   * @brief  Start the DCMIPP capture on the specified pipe with double buffering Mode
   * @param  hdcmipp     Pointer to DCMIPP handle
   * @param  Pipe        Specifies the DCMIPP pipe, can be a value from @ref DCMIPP_Pipes
-  * @param  FullPlanarDstAddress0 Pointer to the first destination addresses
-  * @param  FullPlanarDstAddress1 Pointer to the second destination addresses
+  * @param  pFullPlanarDstAddress0 Pointer to the first destination addresses
+  * @param  pFullPlanarDstAddress1 Pointer to the second destination addresses
   * @param  CaptureMode DCMIPP capture mode for the pipe can be a value from @ref DCMIPP_Capture_Mode.
   * @note   Only DCMIPP_PIPE1 allows Full-planar buffer
   * @retval HAL status
@@ -1486,15 +1496,14 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_FullPlanarDoubleBufferStart(DCMIPP_HandleTypeD
                                                               DCMIPP_FullPlanarDstAddressTypeDef
                                                               *pFullPlanarDstAddress1, uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
   /* Check pointer validity */
   if ((hdcmipp == NULL) || ((pFullPlanarDstAddress0->YAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress0->UAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress0->VAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress1->YAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress1->UAddress & 0xFU) != 0U) ||
+      ((pFullPlanarDstAddress0->UAddress & 0xFU) != 0U) || ((pFullPlanarDstAddress0->VAddress & 0xFU) != 0U) ||
+      ((pFullPlanarDstAddress1->YAddress & 0xFU) != 0U) || ((pFullPlanarDstAddress1->UAddress & 0xFU) != 0U) ||
       ((pFullPlanarDstAddress1->VAddress & 0xFU) != 0U))
   {
     return HAL_ERROR;
@@ -1502,9 +1511,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_FullPlanarDoubleBufferStart(DCMIPP_HandleTypeD
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_PARALLEL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_PARALLEL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1540,6 +1548,7 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_FullPlanarDoubleBufferStart(DCMIPP_HandleTypeD
 HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_Start(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, uint32_t VirtualChannel,
                                             uint32_t DstAddress, uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_VCID(VirtualChannel));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
@@ -1550,9 +1559,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_Start(DCMIPP_HandleTypeDef *hdcmipp, uint3
     return HAL_ERROR;
   }
 
-  /* Check DCMIPP pipe state */
-  if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-      ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_SERIAL_MODE))
+  mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+  if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_SERIAL_MODE))
   {
     return HAL_ERROR;
   }
@@ -1577,7 +1585,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_Start(DCMIPP_HandleTypeDef *hdcmipp, uint3
   * @param  hdcmipp        Pointer to DCMIPP handle
   * @param  Pipe           Specifies the DCMIPP pipe, can be a value from @ref DCMIPP_Pipes
   * @param  VirtualChannel Virtual Channel to be started can be a value from @ref DCMIPP_Virtual_Channel
-  * @param  DstAddress     the destination address
+  * @param  DstAddress0    1st destination address
+  * @param  DstAddress1    2nd destination address
   * @param  CaptureMode    DCMIPP capture mode for the pipe can be a value from @ref DCMIPP_Capture_Mode.
   * @retval HAL status
   */
@@ -1585,6 +1594,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_DoubleBufferStart(DCMIPP_HandleTypeDef *hd
                                                         uint32_t VirtualChannel, uint32_t DstAddress0,
                                                         uint32_t DstAddress1, uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_VCID(VirtualChannel));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
@@ -1595,9 +1605,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_DoubleBufferStart(DCMIPP_HandleTypeDef *hd
     return HAL_ERROR;
   }
 
-  /* Check DCMIPP pipe state */
-  if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-      ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_SERIAL_MODE))
+  mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+  if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_SERIAL_MODE))
   {
     return HAL_ERROR;
   }
@@ -1683,6 +1692,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_SemiPlanarStart(DCMIPP_HandleTypeDef *hdcm
                                                       DCMIPP_SemiPlanarDstAddressTypeDef *pSemiPlanarDstAddress,
                                                       uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_VCID(VirtualChannel));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
@@ -1696,9 +1706,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_SemiPlanarStart(DCMIPP_HandleTypeDef *hdcm
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_SERIAL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_SERIAL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1744,6 +1753,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_SemiPlanarDoubleBufferStart(DCMIPP_HandleT
                                                                   DCMIPP_SemiPlanarDstAddressTypeDef
                                                                   *pSemiPlanarDstAddress1, uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_VCID(VirtualChannel));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
@@ -1759,9 +1769,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_SemiPlanarDoubleBufferStart(DCMIPP_HandleT
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_SERIAL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_SERIAL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1803,6 +1812,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_FullPlanarStart(DCMIPP_HandleTypeDef *hdcm
                                                       DCMIPP_FullPlanarDstAddressTypeDef *pFullPlanarDstAddress,
                                                       uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_VCID(VirtualChannel));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
@@ -1817,9 +1827,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_FullPlanarStart(DCMIPP_HandleTypeDef *hdcm
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_SERIAL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_SERIAL_MODE))
     {
       return HAL_ERROR;
     }
@@ -1854,8 +1863,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_FullPlanarStart(DCMIPP_HandleTypeDef *hdcm
   * @param  hdcmipp               Pointer to DCMIPP handle
   * @param  Pipe                  Specifies the DCMIPP pipe, can be a value from @ref DCMIPP_Pipes
   * @param  VirtualChannel        Virtual Channel to be started can be a value from @ref DCMIPP_Virtual_Channel
-  * @param  FullPlanarDstAddress0 Pointer to the first destination addresses
-  * @param  FullPlanarDstAddress1 Pointer to the second destination addresses
+  * @param  pFullPlanarDstAddress0 Pointer to the first destination addresses
+  * @param  pFullPlanarDstAddress1 Pointer to the second destination addresses
   * @param  CaptureMode           capture mode for the pipe can be a value from @ref DCMIPP_Capture_Mode.
   * @note   Only DCMIPP_PIPE1 allows Full-planar buffer
   * @retval HAL status
@@ -1867,16 +1876,15 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_FullPlanarDoubleBufferStart(DCMIPP_HandleT
                                                                   DCMIPP_FullPlanarDstAddressTypeDef
                                                                   *pFullPlanarDstAddress1, uint32_t CaptureMode)
 {
+  uint32_t mode;
   assert_param(IS_DCMIPP_PIPE(Pipe));
   assert_param(IS_DCMIPP_VCID(VirtualChannel));
   assert_param(IS_DCMIPP_CAPTURE_MODE(CaptureMode));
 
   /* Check pointer validity */
   if ((hdcmipp == NULL) || ((pFullPlanarDstAddress0->YAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress0->UAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress0->VAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress1->YAddress & 0xFU) != 0U) ||
-      ((pFullPlanarDstAddress1->UAddress & 0xFU) != 0U) ||
+      ((pFullPlanarDstAddress0->UAddress & 0xFU) != 0U) || ((pFullPlanarDstAddress0->VAddress & 0xFU) != 0U) ||
+      ((pFullPlanarDstAddress1->YAddress & 0xFU) != 0U) || ((pFullPlanarDstAddress1->UAddress & 0xFU) != 0U) ||
       ((pFullPlanarDstAddress1->VAddress & 0xFU) != 0U))
   {
     return HAL_ERROR;
@@ -1884,9 +1892,8 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_FullPlanarDoubleBufferStart(DCMIPP_HandleT
 
   if (Pipe == DCMIPP_PIPE1)
   {
-    /* Check DCMIPP pipe state */
-    if ((hdcmipp->PipeState[Pipe]  != HAL_DCMIPP_PIPE_STATE_READY) ||
-        ((hdcmipp->Instance->CMCR & DCMIPP_CMCR_INSEL) != DCMIPP_SERIAL_MODE))
+    mode = READ_BIT(hdcmipp->Instance->CMCR, DCMIPP_CMCR_INSEL);
+    if ((hdcmipp->PipeState[Pipe] != HAL_DCMIPP_PIPE_STATE_READY) || (mode != DCMIPP_SERIAL_MODE))
     {
       return HAL_ERROR;
     }
@@ -4412,9 +4419,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SetDownsizeConfig(DCMIPP_HandleTypeDef *hdcmip
                   (pDownsizeConfig->VDivFactor << DCMIPP_P1DSCR_VDIV_Pos)));
 
       /* Set Vertical and Horizontal Ratio */
-      MODIFY_REG(hdcmipp->Instance->P1DSRTIOR, DCMIPP_P1DSRTIOR_HRATIO | DCMIPP_P1DSRTIOR_VRATIO,
-                 (pDownsizeConfig->HRatio << DCMIPP_P1DSRTIOR_HRATIO_Pos) | \
-                 (pDownsizeConfig->VRatio << DCMIPP_P1DSRTIOR_VRATIO_Pos));
+      WRITE_REG(hdcmipp->Instance->P1DSRTIOR, (pDownsizeConfig->HRatio << DCMIPP_P1DSRTIOR_HRATIO_Pos) | \
+                (pDownsizeConfig->VRatio << DCMIPP_P1DSRTIOR_VRATIO_Pos));
 
       /* Set Downsize Destination size */
       MODIFY_REG(hdcmipp->Instance->P1DSSZR, DCMIPP_P1DSSZR_HSIZE | DCMIPP_P1DSSZR_VSIZE,
@@ -4429,9 +4435,8 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_SetDownsizeConfig(DCMIPP_HandleTypeDef *hdcmip
                  (pDownsizeConfig->VDivFactor << DCMIPP_P2DSCR_VDIV_Pos));
 
       /* Set Vertical and Horizontal Ratio */
-      MODIFY_REG(hdcmipp->Instance->P2DSRTIOR, DCMIPP_P2DSRTIOR_HRATIO | DCMIPP_P2DSRTIOR_VRATIO,
-                 (pDownsizeConfig->HRatio << DCMIPP_P2DSRTIOR_HRATIO_Pos) | \
-                 (pDownsizeConfig->VRatio << DCMIPP_P2DSRTIOR_VRATIO_Pos));
+      WRITE_REG(hdcmipp->Instance->P2DSRTIOR, (pDownsizeConfig->HRatio << DCMIPP_P2DSRTIOR_HRATIO_Pos) | \
+                (pDownsizeConfig->VRatio << DCMIPP_P2DSRTIOR_VRATIO_Pos));
 
       /* Set Downsize Destination size */
       MODIFY_REG(hdcmipp->Instance->P2DSSZR, DCMIPP_P2DSSZR_HSIZE | DCMIPP_P2DSSZR_VSIZE,
@@ -5582,7 +5587,7 @@ uint32_t HAL_DCMIPP_PIPE_IsEnabledISPBlackLevelCalibration(const DCMIPP_HandleTy
   * @param  hdcmipp                           Pointer to DCMIPP handle
   * @param  Pipe                              Specifies the DCMIPP pipe, can be a value from @ref DCMIPP_Pipes
   * @param  ModuleID                          Specifies the Module ID, can be a value from
-  *                                           DCMIPP_Statistics_Extraction_Module_ID.
+  *                                           @ref DCMIPP_Statistics_Extraction_Module_ID.
   * @param  pStatisticExtractionConfig Pointer to DCMIPP_StatisticExtractionConfTypeDef structure
                                               that contains statistic extraction information
   * @retval HAL status
@@ -7202,7 +7207,9 @@ uint32_t HAL_DCMIPP_GetMode(const DCMIPP_HandleTypeDef *hdcmipp)
 }
 /**
   * @brief  Get the destination address of the last captured frame
-  * @param  hdcmipp  Pointer to DCMIPP handle
+  * @param  hdcmipp        Pointer to DCMIPP handle
+  * @param  Pipe           Specifies the DCMIPP pipe, can be a value from @ref DCMIPP_Pipes
+  * @param  MemoryAddress  Specifies the memory address to be retrieved , can be a value from @ref DCMIPP_Memory
   * @retval Returns  the last destination address.
   */
 uint32_t HAL_DCMIPP_PIPE_GetMemoryAddress(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, uint32_t MemoryAddress)
@@ -7453,8 +7460,8 @@ void HAL_DCMIPP_PIPE_GetISPColorConversionConfig(const DCMIPP_HandleTypeDef *hdc
 
     UNUSED(tmp);
 
-    pColorConversionConfig->ClampOutputSamples = (FunctionalState)(uint8_t)((tmp & DCMIPP_P1CCCR_CLAMP) >>
-                                                                            DCMIPP_P1YUVCR_CLAMP_Pos);
+    pColorConversionConfig->ClampOutputSamples = (((tmp & DCMIPP_P1CCCR_CLAMP) >> DCMIPP_P1YUVCR_CLAMP_Pos) != 0U)
+                                                 ? ENABLE : DISABLE;
     pColorConversionConfig->OutputSamplesType  = (uint8_t)(tmp & DCMIPP_P1CCCR_TYPE);
 
     /* Get Coefficient row 1 columns 1 2 3 and the added column of the matrix */
@@ -7652,6 +7659,8 @@ uint32_t HAL_DCMIPP_PIPE_IsEnabledISPCtrlContrast(const DCMIPP_HandleTypeDef *hd
   * @brief  Check if ISP Statistic Extraction Module is enabled or not
   * @param  hdcmipp  Pointer to DCMIPP handle
   * @param  Pipe     Specifies the DCMIPP pipe, can be a value from @ref DCMIPP_Pipes
+  * @param  ModuleID                          Specifies the Module ID, can be a value from
+  *                                           @ref DCMIPP_Statistics_Extraction_Module_ID.
   * @retval State of bit (1 or 0).
   */
 uint32_t HAL_DCMIPP_PIPE_IsEnabledISPStatisticExtraction(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe,
@@ -7725,7 +7734,7 @@ uint32_t HAL_DCMIPP_PIPE_IsEnabledISPAreaStatisticExtraction(const DCMIPP_Handle
   *                         configuration information for CSI.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetLineByteCounterConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetLineByteCounterConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter,
                                                           const DCMIPP_CSI_LineByteCounterConfTypeDef *pLineByteConfig)
 {
   CSI_TypeDef *csi_instance;
@@ -7778,7 +7787,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_SetLineByteCounterConfig(DCMIPP_HandleTypeDef *
   * @param  Counter         Specifies the counter, can be a value from @ref DCMIPP_CSI_Counter
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableLineByteCounter(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter)
+HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableLineByteCounter(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -7805,7 +7814,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableLineByteCounter(DCMIPP_HandleTypeDef *hdc
   * @param  Counter         Specifies the counter, can be a value from @ref DCMIPP_CSI_Counter
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableLineByteCounter(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter)
+HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableLineByteCounter(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -7818,10 +7827,10 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableLineByteCounter(DCMIPP_HandleTypeDef *hd
     return HAL_ERROR;
   }
 
-  /* Enable the Line/Byte Counter IT */
+  /* Disable the Line/Byte Counter IT */
   __HAL_DCMIPP_CSI_DISABLE_IT(csi_instance, DCMIPP_CSI_IT_LB0 << Counter);
 
-  /* Enable the selected counter */
+  /* Disable the selected counter */
   CLEAR_BIT(csi_instance->PRGITR, CSI_PRGITR_LB0EN << (Counter * 4U));
 
   return HAL_OK;
@@ -7834,7 +7843,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableLineByteCounter(DCMIPP_HandleTypeDef *hd
   *                     configuration information for CSI.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetTimerConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetTimerConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer,
                                                 const DCMIPP_CSI_TimerConfTypeDef *TimerConfig)
 {
   CSI_TypeDef *csi_instance;
@@ -7887,7 +7896,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_SetTimerConfig(DCMIPP_HandleTypeDef *hdcmipp, u
   * @param  Timer       Specifies the Timer, can be a value from @ref DCMIPP_CSI_Timer
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableTimer(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer)
+HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableTimer(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -7914,7 +7923,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableTimer(DCMIPP_HandleTypeDef *hdcmipp, uint
   * @param  Timer       Specifies the Timer, can be a value from @ref DCMIPP_CSI_Timer
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableTimer(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer)
+HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableTimer(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -7927,10 +7936,10 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableTimer(DCMIPP_HandleTypeDef *hdcmipp, uin
     return HAL_ERROR;
   }
 
-  /* Enable the Line/Byte Counter IT */
+  /* Disable the Line/Byte Counter IT */
   __HAL_DCMIPP_CSI_DISABLE_IT(csi_instance, DCMIPP_CSI_IT_TIM0 << Timer);
 
-  /* Enable the selected counter */
+  /* Disable the selected counter */
   CLEAR_BIT(csi_instance->PRGITR, CSI_PRGITR_TIM0EN << (Timer * 4U));
 
   return HAL_OK;
@@ -7941,7 +7950,7 @@ HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableTimer(DCMIPP_HandleTypeDef *hdcmipp, uin
   * @param  Counter  Specifies the watchdog counter value
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetWatchdogCounterConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter)
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetWatchdogCounterConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -8037,6 +8046,22 @@ static void Pipe_Config(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, const DCMI
     /* Configure Pixel Pipe Pitch */
     MODIFY_REG(hdcmipp->Instance->P1PPM0PR, DCMIPP_P1PPM0PR_PITCH,
                pPipeConfig->PixelPipePitch << DCMIPP_P1PPM0PR_PITCH_Pos);
+
+    if ((pPipeConfig->PixelPackerFormat == DCMIPP_PIXEL_PACKER_FORMAT_YUV422_2) ||
+        (pPipeConfig->PixelPackerFormat == DCMIPP_PIXEL_PACKER_FORMAT_YUV420_2))
+    {
+      MODIFY_REG(hdcmipp->Instance->P1PPM1PR, DCMIPP_P1PPM1PR_PITCH,
+                 pPipeConfig->PixelPipePitch << DCMIPP_P1PPM1PR_PITCH_Pos);
+    }
+    else if (pPipeConfig->PixelPackerFormat == DCMIPP_PIXEL_PACKER_FORMAT_YUV420_3)
+    {
+      MODIFY_REG(hdcmipp->Instance->P1PPM1PR, DCMIPP_P1PPM1PR_PITCH,
+                 ((pPipeConfig->PixelPipePitch) / 2U) << DCMIPP_P1PPM1PR_PITCH_Pos);
+    }
+    else
+    {
+      /* Nothing to do */
+    }
   }
   else
   {
@@ -8053,8 +8078,11 @@ static void Pipe_Config(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe, const DCMI
   }
 }
 /**
-  * @brief  Write register into the D-PHY via the Test registers
-  * @param  hcsi  Pointer to CSI_TypeDef instance registers structure
+  * @brief  Write   register into the D-PHY via the Test registers
+  * @param  hcsi    Pointer to CSI_TypeDef instance registers structure
+  * @param  reg_msb specifies the test code MSB in testdin (PHY Control Interface)
+  * @param  reg_lsb specifies the testcode LSB in testdin
+  * @param  val     specifies the page offset in testdin
   * @retval None
   */
 static void DCMIPP_CSI_WritePHYReg(CSI_TypeDef *hcsi, uint32_t reg_msb, uint32_t reg_lsb, uint32_t val)
@@ -8391,11 +8419,11 @@ static HAL_StatusTypeDef DCMIPP_CSI_SetVCConfig(DCMIPP_HandleTypeDef *hdcmipp, u
   /* Set Virtual Channel ID for the selected Pipe */
   if (Pipe == DCMIPP_PIPE0)
   {
-    MODIFY_REG(hdcmipp->Instance->P0FSCR, DCMIPP_P0FSCR_VC, VirtualChannel);
+    MODIFY_REG(hdcmipp->Instance->P0FSCR, DCMIPP_P0FSCR_VC, VirtualChannel << DCMIPP_P0FSCR_VC_Pos);
   }
   else if (Pipe == DCMIPP_PIPE1)
   {
-    MODIFY_REG(hdcmipp->Instance->P1FSCR, DCMIPP_P1FSCR_VC, VirtualChannel);
+    MODIFY_REG(hdcmipp->Instance->P1FSCR, DCMIPP_P1FSCR_VC, VirtualChannel << DCMIPP_P1FSCR_VC_Pos);
   }
   else
   {
@@ -8403,7 +8431,7 @@ static HAL_StatusTypeDef DCMIPP_CSI_SetVCConfig(DCMIPP_HandleTypeDef *hdcmipp, u
     if ((hdcmipp->Instance->P1FSCR & DCMIPP_P1FSCR_PIPEDIFF) == DCMIPP_P1FSCR_PIPEDIFF)
     {
       /* Set Virtual Channel ID and DTIDA for Pipe2 */
-      MODIFY_REG(hdcmipp->Instance->P2FSCR, DCMIPP_P2FSCR_VC, VirtualChannel);
+      MODIFY_REG(hdcmipp->Instance->P2FSCR, DCMIPP_P2FSCR_VC, VirtualChannel << DCMIPP_P2FSCR_VC_Pos);
     }
   }
 
@@ -8445,7 +8473,7 @@ static HAL_StatusTypeDef DCMIPP_CSI_SetVCConfig(DCMIPP_HandleTypeDef *hdcmipp, u
   * @param  hdcmipp         Pointer to DCMIPP handle
   * @param  VirtualChannel  Specifies the virtual channel, can be a value from @ref DCMIPP_Virtual_Channel
   */
-static HAL_StatusTypeDef DCMIPP_CSI_VCStop(DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel)
+static HAL_StatusTypeDef DCMIPP_CSI_VCStop(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel)
 {
   CSI_TypeDef *csi_instance;
   csi_instance = CSI;
@@ -8491,6 +8519,9 @@ static HAL_StatusTypeDef DCMIPP_CSI_VCStop(DCMIPP_HandleTypeDef *hdcmipp, uint32
   * @}
   */
 
+/**
+  * @}
+  */
 /**
   * @}
   */

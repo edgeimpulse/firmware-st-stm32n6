@@ -85,24 +85,27 @@ extern "C" {
   * @param  __HANDLE__ CRC handle
   * @retval None
   */
-#define  __HAL_CRC_OUTPUTREVERSAL_BIT_ENABLE(__HANDLE__) MODIFY_REG(((__HANDLE__)->Instance->CR), (CRC_CR_RTYPE_OUT |\
-                                                                    CRC_CR_REV_OUT), CRC_CR_REV_OUT_0);
+#define  __HAL_CRC_OUTPUTREVERSAL_BIT_ENABLE(__HANDLE__) MODIFY_REG(((__HANDLE__)->Instance->CR),\
+                                                                    (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT),\
+                                                                    CRC_CR_REV_OUT_0);
 
 /**
   * @brief  Set CRC output halfword-reversal
   * @param  __HANDLE__ CRC handle
   * @retval None
   */
-#define  __HAL_CRC_OUTPUTREVERSAL_HALFWORD_ENABLE(__HANDLE__) MODIFY_REG(((__HANDLE__)->Instance->CR), (CRC_CR_RTYPE_OUT |\
-                                                                         CRC_CR_REV_OUT), (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT_0));
+#define  __HAL_CRC_OUTPUTREVERSAL_HALFWORD_ENABLE(__HANDLE__) MODIFY_REG(((__HANDLE__)->Instance->CR),\
+                                                                         (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT),\
+                                                                         (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT_0));
 
 /**
   * @brief  Set CRC output byte-reversal
   * @param  __HANDLE__ CRC handle
   * @retval None
   */
-#define  __HAL_CRC_OUTPUTREVERSAL_BYTE_ENABLE(__HANDLE__) MODIFY_REG(((__HANDLE__)->Instance->CR), (CRC_CR_RTYPE_OUT |\
-                                                                     CRC_CR_REV_OUT), (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT_1));
+#define  __HAL_CRC_OUTPUTREVERSAL_BYTE_ENABLE(__HANDLE__) MODIFY_REG(((__HANDLE__)->Instance->CR), \
+                                                                     (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT), \
+                                                                     (CRC_CR_RTYPE_OUT | CRC_CR_REV_OUT_1));
 
 /* Definition for compatibility with legacy code */
 #define  __HAL_CRC_OUTPUTREVERSAL_ENABLE(__HANDLE__)    __HAL_CRC_OUTPUTREVERSAL_BIT_ENABLE(__HANDLE__)

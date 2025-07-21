@@ -23,8 +23,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static uint32_t PartitionListSize = 0U;
-
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
@@ -37,12 +35,14 @@ OPENBL_Flashlayout_TypeDef FlashlayoutStruct;
   * @param  size Size of the flash layout to be parsed.
   * @retval Status PARSE_OK if success otherwise PARSE_ERROR.
   */
-int OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
+int32_t OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
 {
   /* STM32CubeProgrammer sends the flash layout info with TAB (ASCII 0x9)
    * between columns and Carriage Return ('\n') between each line.
    * Each line contains 6 columns: opt, id, name, type, ip and offset.
    */
+  static uint32_t partition_list_size = 0U;
+
   char *start;
   char *last;
   char *p;
@@ -52,9 +52,9 @@ int OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
   char type[33];
   char ip[33];
   char offset[33];
+  uint32_t i         = 0U;
   uint32_t tab_count = 0U;
   bool is_partition  = true;
-  uint32_t i         = 0U;
 
   start = (char *)address;
   last  = start + size;
@@ -103,7 +103,7 @@ int OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
       }
     }
 
-    /* if TAB */
+    /* If TAB */
     if (*p == 0x9U)
     {
       tab_count++;
@@ -112,37 +112,37 @@ int OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
 
       i = 0U;
     }
-    else if (*p == '\n') /* if new line */
+    else if (*p == '\n') /* If new line */
     {
-      PartitionListSize++;
+      partition_list_size++;
       is_partition = true;
 
       if (++p < last && *p == '#')
       {
-        PartitionListSize--;
+        partition_list_size--;
         is_partition = false;
       }
-      if (OPENBL_Flashlayout_Parse_Option(opt, PartitionListSize - 1U) == PARSE_ERROR)
+      if (OPENBL_Flashlayout_Parse_Option(opt, partition_list_size - 1U) == PARSE_ERROR)
       {
         return PARSE_ERROR;
       }
-      if (OPENBL_Flashlayout_Parse_ID(id, PartitionListSize - 1U) == PARSE_ERROR)
+      if (OPENBL_Flashlayout_Parse_ID(id, partition_list_size - 1U) == PARSE_ERROR)
       {
         return PARSE_ERROR;
       }
-      if (OPENBL_Flashlayout_Parse_Name(name, PartitionListSize - 1U) == PARSE_ERROR)
+      if (OPENBL_Flashlayout_Parse_Name(name, partition_list_size - 1U) == PARSE_ERROR)
       {
         return PARSE_ERROR;
       }
-      if (OPENBL_Flashlayout_Parse_Type(type, PartitionListSize - 1U) == PARSE_ERROR)
+      if (OPENBL_Flashlayout_Parse_Type(type, partition_list_size - 1U) == PARSE_ERROR)
       {
         return PARSE_ERROR;
       }
-      if (OPENBL_Flashlayout_Parse_IP(ip, PartitionListSize - 1U) == PARSE_ERROR)
+      if (OPENBL_Flashlayout_Parse_IP(ip, partition_list_size - 1U) == PARSE_ERROR)
       {
         return PARSE_ERROR;
       }
-      if (OPENBL_Flashlayout_Parse_Offset(offset, PartitionListSize - 1U) == PARSE_ERROR)
+      if (OPENBL_Flashlayout_Parse_Offset(offset, partition_list_size - 1U) == PARSE_ERROR)
       {
         return PARSE_ERROR;
       }
@@ -152,12 +152,12 @@ int OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
     }
   }
 
-  if (PartitionListSize > PHASE_LAST_USER)
+  if (partition_list_size > PHASE_LAST_USER)
   {
     return PARSE_ERROR;
   }
 
-  FlashlayoutStruct.partsize = PartitionListSize;
+  FlashlayoutStruct.partsize = partition_list_size;
 
   return PARSE_OK;
 }
@@ -168,10 +168,10 @@ int OPENBL_FlashLayout_Parse_Layout(uint32_t address, uint32_t size)
   * @param  idx Index of the flash layout in the flash layout structure.
   * @retval Returns PARSE_OK in case of success or returns PARSE_ERROR.
   */
-int OPENBL_Flashlayout_Parse_ID(char *p_string_id, uint32_t idx)
+int32_t OPENBL_Flashlayout_Parse_ID(char *p_string_id, uint32_t idx)
 {
   uint32_t id;
-  errno = 0;
+  errno         = 0;
   char *end_ptr = 0;
 
   id = strtoul(p_string_id, &end_ptr, 0);
@@ -179,8 +179,8 @@ int OPENBL_Flashlayout_Parse_ID(char *p_string_id, uint32_t idx)
   /* Check if string to number conversion is OK */
   if (end_ptr != p_string_id)
   {
-    /* if the number is not valid */
-    if ((id == 0 || id == ULONG_MAX) && errno == ERANGE)
+    /* If the number is not valid */
+    if ((id == 0U || id == ULONG_MAX) && (errno == ERANGE))
     {
       return PARSE_ERROR;
     }
@@ -203,11 +203,11 @@ int OPENBL_Flashlayout_Parse_ID(char *p_string_id, uint32_t idx)
   * @param  idx Index of the flash layout in the flash layout structure.
   * @retval Returns PARSE_OK in case of success or returns PARSE_ERROR.
   */
-int OPENBL_Flashlayout_Parse_Offset(char *p_string_offset, uint32_t idx)
+int32_t OPENBL_Flashlayout_Parse_Offset(char *p_string_offset, uint32_t idx)
 {
   uint32_t offset;
-  errno = 0;
   char *end_ptr = 0;
+  errno         = 0;
 
   offset = strtoul(p_string_offset, &end_ptr, 0);
 
@@ -215,7 +215,7 @@ int OPENBL_Flashlayout_Parse_Offset(char *p_string_offset, uint32_t idx)
   if (end_ptr != p_string_offset)
   {
     /* If the number is not valid */
-    if ((offset == 0 || offset == ULONG_MAX) && errno == ERANGE)
+    if ((offset == 0 || offset == ULONG_MAX) && (errno == ERANGE))
     {
       return PARSE_ERROR;
     }
@@ -238,7 +238,7 @@ int OPENBL_Flashlayout_Parse_Offset(char *p_string_offset, uint32_t idx)
   * @param  idx Index of the flash layout in the flash layout structure.
   * @retval Always returns PARSE_OK.
   */
-int OPENBL_Flashlayout_Parse_Name(char *p_string_name, uint32_t idx)
+int32_t OPENBL_Flashlayout_Parse_Name(char *p_string_name, uint32_t idx)
 {
   size_t size = strlen(p_string_name) + 1;
 
@@ -255,7 +255,7 @@ int OPENBL_Flashlayout_Parse_Name(char *p_string_name, uint32_t idx)
   * @param  idx Index of the flash layout in the flash layout structure.
   * @retval Always returns PARSE_OK.
   */
-int OPENBL_Flashlayout_Parse_Type(char *p_string_type, uint32_t idx)
+int32_t OPENBL_Flashlayout_Parse_Type(char *p_string_type, uint32_t idx)
 {
   size_t size = strlen(p_string_type) + 1;
 
@@ -272,7 +272,7 @@ int OPENBL_Flashlayout_Parse_Type(char *p_string_type, uint32_t idx)
   * @param  idx Index of the flash layout in the flash layout structure.
   * @retval Always returns PARSE_OK.
   */
-int OPENBL_Flashlayout_Parse_IP(char *p_string_ip, uint32_t idx)
+int32_t OPENBL_Flashlayout_Parse_IP(char *p_string_ip, uint32_t idx)
 {
   size_t size = strlen(p_string_ip) + 1;
 
@@ -289,7 +289,7 @@ int OPENBL_Flashlayout_Parse_IP(char *p_string_ip, uint32_t idx)
   * @param  idx Index of the flash layout in the flash layout structure.
   * @retval Always returns PARSE_OK.
   */
-int OPENBL_Flashlayout_Parse_Option(char *p_string_option, uint32_t idx)
+int32_t OPENBL_Flashlayout_Parse_Option(char *p_string_option, uint32_t idx)
 {
   size_t size = strlen(p_string_option) + 1;
 

@@ -31,19 +31,19 @@ extern "C" {
 
 #ifndef USE_NOR_MEMORY_MX66UW1G45G
 #define USE_NOR_MEMORY_MX66UW1G45G           1
-#endif
+#endif /* USE_NOR_MEMORY_MX66UW1G45G */
 
 #ifndef USE_RAM_MEMORY_APS256XX
 #define USE_RAM_MEMORY_APS256XX              1
-#endif
+#endif /* USE_RAM_MEMORY_APS256XX */
 
 #if (USE_NOR_MEMORY_MX66UW1G45G == 1)
 #include "../Components/mx66uw1g45g/mx66uw1g45g.h"
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 #include "../Components/aps256xx/aps256xx.h"
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /** @addtogroup BSP
   * @{
@@ -111,7 +111,7 @@ typedef struct
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @defgroup STM32N6570_DK_XSPI_RAM_Exported_Types XSPI_RAM Exported Types
@@ -142,7 +142,7 @@ typedef struct
 /**
   * @}
   */
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /* Exported constants --------------------------------------------------------*/
 /** @defgroup STM32N6570_DK_XSPI_Exported_Constants XSPI Exported Constants
@@ -216,7 +216,7 @@ typedef struct
 #define XSPI_NOR_D7_PIN                       GPIO_PIN_11
 #define XSPI_NOR_D7_GPIO_PORT                 GPION
 #define XSPI_NOR_D7_PIN_AF                    GPIO_AF9_XSPIM_P2
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /* Definition for XSPI RAM power resources */
@@ -322,7 +322,7 @@ typedef struct
 #define XSPI_RAM_D15_PIN                      GPIO_PIN_15
 #define XSPI_RAM_D15_GPIO_PORT                GPIOP
 #define XSPI_RAM_D15_PIN_AF                   GPIO_AF9_XSPIM_P1
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 /**
   * @}
   */
@@ -352,7 +352,7 @@ typedef struct
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @defgroup STM32N6570_DK_XSPI_RAM_Exported_Constants XSPI_RAM Exported Constants
@@ -368,7 +368,7 @@ typedef struct
 /**
   * @}
   */
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /* Exported variables --------------------------------------------------------*/
 
@@ -381,7 +381,7 @@ extern XSPI_NOR_Ctx_t Ospi_Nor_Ctx[XSPI_NOR_INSTANCES_NUMBER];
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @defgroup STM32N6570_DK_XSPI_RAM_Exported_Variables XSPI_RAM Exported Variables
@@ -392,7 +392,7 @@ extern XSPI_RAM_Ctx_t Ospi_Ram_Ctx[XSPI_RAM_INSTANCES_NUMBER];
 /**
   * @}
   */
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /* Exported functions --------------------------------------------------------*/
 
@@ -407,7 +407,7 @@ int32_t BSP_XSPI_NOR_RegisterMspCallbacks(uint32_t Instance, BSP_XSPI_Cb_t *Call
 int32_t BSP_XSPI_NOR_RegisterDefaultMspCallbacks(uint32_t Instance);
 #endif /* (USE_HAL_XSPI_REGISTER_CALLBACKS == 1) */
 int32_t BSP_XSPI_NOR_Read(uint32_t Instance, uint8_t *pData, uint32_t ReadAddr, uint32_t Size);
-int32_t BSP_XSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr, uint32_t Size);
+int32_t BSP_XSPI_NOR_Write(uint32_t Instance, const uint8_t *pData, uint32_t WriteAddr, uint32_t Size);
 int32_t BSP_XSPI_NOR_Erase_Block(uint32_t Instance, uint32_t BlockAddress, BSP_XSPI_NOR_Erase_t BlockSize);
 int32_t BSP_XSPI_NOR_Erase_Chip(uint32_t Instance);
 int32_t BSP_XSPI_NOR_GetStatus(uint32_t Instance);
@@ -424,7 +424,7 @@ int32_t BSP_XSPI_NOR_LeaveDeepPowerDown(uint32_t Instance);
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @defgroup STM32N6570_DK_XSPI_RAM_Exported_Functions XSPI_RAM Exported Functions
@@ -444,7 +444,7 @@ int32_t BSP_XSPI_RAM_ReadID(uint32_t Instance, uint8_t *Id);
 /**
   * @}
   */
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 
 /** @defgroup STM32N6570_DK_XSPI_Exported_Init_Functions XSPI_Init Exported Functions
@@ -456,11 +456,11 @@ int32_t BSP_XSPI_RAM_ReadID(uint32_t Instance, uint8_t *Id);
 
 #if (USE_NOR_MEMORY_MX66UW1G45G == 1)
 HAL_StatusTypeDef MX_XSPI_NOR_Init(XSPI_HandleTypeDef *hxspi, MX_XSPI_InitTypeDef *Init);
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 HAL_StatusTypeDef MX_XSPI_RAM_Init(XSPI_HandleTypeDef *hxspi, MX_XSPI_InitTypeDef *Init);
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /**
   * @}

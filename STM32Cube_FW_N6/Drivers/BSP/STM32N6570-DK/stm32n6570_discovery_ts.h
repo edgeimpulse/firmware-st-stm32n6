@@ -46,14 +46,14 @@
    */
 #ifndef USE_TS_MULTI_TOUCH
 #define USE_TS_MULTI_TOUCH          1U
-#endif
+#endif /* USE_TS_MULTI_TOUCH */
 #ifndef USE_TS_GESTURE
 #define USE_TS_GESTURE              1U
-#endif
+#endif /* USE_TS_GESTURE */
 
 #ifndef TS_TOUCH_NBR
 #define TS_TOUCH_NBR                5U
-#endif
+#endif /* TS_TOUCH_NBR */
 
 #define TS_INSTANCES_NBR            1U
 
@@ -80,6 +80,12 @@
 #define TS_INT_GPIO_CLK_DISABLE()    __HAL_RCC_GPIOQ_CLK_DISABLE()
 #define TS_INT_EXTI_IRQn             EXTI4_IRQn
 #define TS_EXTI_LINE                 EXTI_LINE_4
+
+/* LCD/TS Reset pin (active low) */
+#define TS_NRST_PIN                    GPIO_PIN_1
+#define TS_NRST_GPIO_PORT              GPIOE
+#define TS_NRST_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOE_CLK_ENABLE()
+#define TS_NRST_GPIO_CLK_DISABLE()     __HAL_RCC_GPIOE_CLK_DISABLE()
 
 /**
   * @}

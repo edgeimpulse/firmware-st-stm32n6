@@ -251,6 +251,7 @@ HAL_StatusTypeDef HAL_MCE_ConfigNoekeon(MCE_HandleTypeDef *hmce, const MCE_Noeke
     /* Take Lock */
     __HAL_LOCK(hmce);
 
+    MODIFY_REG(hmce->Instance->CR, MCE_CR_CIPHERSEL, MCE_NOEKEON);
     /* master keys are used for encryption */
     if (pConfig->KeyType == MCE_USE_MASTERKEYS)
     {
@@ -347,8 +348,9 @@ HAL_StatusTypeDef HAL_MCE_ConfigAESContext(MCE_HandleTypeDef *hmce, const MCE_AE
     address = (__IO uint32_t)((uint32_t)hmce->Instance + 0x240UL + \
                               (0x30UL * ((ContextIndex - MCE_CONTEXT1) >> MCE_REGCR_CTXID_Pos)));
     p_context = (MCE_Context_TypeDef *)address;
+    MODIFY_REG(hmce->Instance->CR, MCE_CR_CIPHERSEL, AESConfig->KeySize);
     /* Check cipher context is not locked */
-    if (((p_context->CCCFGR & MCE_CCCFGR_CCLOCK) != MCE_CCCFGR_CCLOCK))
+    if ((p_context->CCCFGR & MCE_CCCFGR_CCLOCK) != MCE_CCCFGR_CCLOCK)
     {
       if ((p_context->CCCFGR & MCE_CCCFGR_KEYLOCK) != MCE_CCCFGR_KEYLOCK)
       {
@@ -375,6 +377,7 @@ HAL_StatusTypeDef HAL_MCE_ConfigAESContext(MCE_HandleTypeDef *hmce, const MCE_AE
         /* Write version */
         MODIFY_REG(p_context->CCCFGR, MCE_CCCFGR_VERSION, ((uint32_t) AESConfig->Version) << MCE_CCCFGR_VERSION_Pos);
 
+        MODIFY_REG(p_context->CCCFGR, MCE_CCCFGR_MODE, (uint32_t) AESConfig->Cipher_Mode);
         ret = HAL_OK;
 
         /* Release Lock */

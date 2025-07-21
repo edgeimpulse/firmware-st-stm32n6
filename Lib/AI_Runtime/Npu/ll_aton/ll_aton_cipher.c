@@ -18,6 +18,46 @@
 
 #include "ll_aton_cipher.h"
 #include "ll_aton.h"
+#include "ll_aton_platform.h"
+
+#if !defined(DEFAULT_WEIGHT_ENCRYPTION_ID)
+#define DEFAULT_WEIGHT_ENCRYPTION_ID 0
+#endif
+#if !defined(DEFAULT_WEIGHT_ENCRYPTION_ROUNDS)
+#define STRENG_WEIGHT_ENCRYPTION_ROUNDS_12 0
+#define STRENG_WEIGHT_ENCRYPTION_ROUNDS_9  1
+#define DEFAULT_WEIGHT_ENCRYPTION_ROUNDS   STRENG_WEIGHT_ENCRYPTION_ROUNDS_12
+#endif
+#if !defined(DEFAULT_WEIGHT_KEY_SEL)
+#define DEFAULT_WEIGHT_KEY_SEL 0
+#endif
+
+#if (LL_ATON_PLATFORM == LL_ATON_PLAT_EC_TRACE)
+
+/**
+ * @brief Construct the patch identifier given Stream Engine index and the information about the register (ENCR_LSB /
+ * ENCR_MSB) that must be patched.
+ * @param patch_id array containing the patch identifier (that must be already allocated and large enought); this array
+ * will be filled by this function
+ * @param streng_idx Streaming engine index [0..ATON_STRENG_NUM-1]
+ * @param lsb_sb is \e true if the ENCR_LSB register must be patched, \e false if the ENCR_MSB register must be patched
+ * grouped
+ */
+void construct_patch_id_streng(char *patch_id, int streng_idx, bool lsb_msb)
+{
+  patch_id[0] = 'S';
+  patch_id[1] = 'E';
+  patch_id[2] = '_';
+  patch_id[3] = '0' + (streng_idx / 10);
+  patch_id[4] = '0' + (streng_idx % 10);
+  patch_id[5] = '_';
+  patch_id[6] = (lsb_msb ? 'L' : 'M');
+  patch_id[7] = 'S';
+  patch_id[8] = 'B';
+  patch_id[9] = '\0';
+}
+
+#endif // #if (LL_ATON_PLATFORM == LL_ATON_PLAT_EC_TRACE)
 
 #if (ATON_STRENG_VERSION_ENCR_DT == 1)
 /**
@@ -30,12 +70,24 @@
  */
 int LL_Streng_EncryptionInit(int id, LL_Streng_EncryptionTypedef *LL_Streng_EncryptionStruct)
 {
+#if (LL_ATON_PLATFORM == LL_ATON_PLAT_EC_TRACE)
+  char patch_id[32];
+#endif
+
   uint32_t t;
 
   if (id >= ATON_STRENG_NUM)
     return LL_ATON_INVALID_ID;
 
-  ATON_STRENG_ENCR_LSB_SET(id, LL_Streng_EncryptionStruct->encryption_id & 0xffffffff);
+  t = LL_Streng_EncryptionStruct->encryption_id & 0xffffffff;
+
+#if (LL_ATON_PLATFORM == LL_ATON_PLAT_EC_TRACE)
+  construct_patch_id_streng(patch_id, id, true);
+
+  ec_trace_set_patch_params(patch_id, 0xffffffff);
+#endif
+
+  ATON_STRENG_ENCR_LSB_SET(id, t);
 
   t = ATON_STRENG_ENCR_MSB_DT;
   t = ATON_STRENG_ENCR_MSB_SET_ID_MSB(t, (LL_Streng_EncryptionStruct->encryption_id >> 32) & 0x7ff);
@@ -43,9 +95,29 @@ int LL_Streng_EncryptionInit(int id, LL_Streng_EncryptionTypedef *LL_Streng_Encr
   t = ATON_STRENG_ENCR_MSB_SET_ROUNDS(t, LL_Streng_EncryptionStruct->rounds);
   t = ATON_STRENG_ENCR_MSB_SET_KEY_SEL(t, LL_Streng_EncryptionStruct->key_sel);
   t = ATON_STRENG_ENCR_MSB_SET_INC(t, LL_Streng_EncryptionStruct->increment);
+
+#if (LL_ATON_PLATFORM == LL_ATON_PLAT_EC_TRACE)
+  construct_patch_id_streng(patch_id, id, false);
+
+  ec_trace_set_patch_params(patch_id, ATON_STRENG_ENCR_MSB_ID_MSB_MASK | ATON_STRENG_ENCR_MSB_ROUNDS_MASK |
+                                          ATON_STRENG_ENCR_MSB_KEY_SEL_MASK);
+#endif
+
   ATON_STRENG_ENCR_MSB_SET(id, t);
 
   return 0;
+}
+
+int LL_Streng_WeightEncryptionInit(int id)
+{
+  LL_Streng_EncryptionTypedef LL_Streng_EncryptionStruct = {
+      .enable = 1,
+      .encryption_id = DEFAULT_WEIGHT_ENCRYPTION_ID,
+      .rounds = DEFAULT_WEIGHT_ENCRYPTION_ROUNDS,
+      .key_sel = DEFAULT_WEIGHT_KEY_SEL,
+      .increment = 0,
+  };
+  return LL_Streng_EncryptionInit(id, &LL_Streng_EncryptionStruct);
 }
 
 /**
@@ -57,6 +129,10 @@ int LL_Streng_EncryptionInit(int id, LL_Streng_EncryptionTypedef *LL_Streng_Encr
  */
 int LL_Busif_SetKeys(int id, int key, uint64_t key_low, uint64_t key_hi)
 {
+#if (LL_ATON_PLATFORM == LL_ATON_PLAT_EC_TRACE)
+  char patch_id[32];
+#endif
+
   if (id >= ATON_BUSIF_NUM)
     return LL_ATON_INVALID_ID;
 
@@ -98,7 +174,8 @@ int LL_EpochCtrl_EncryptionInit(int id, LL_Streng_EncryptionTypedef *conf)
   if (id >= ATON_EPOCHCTRL_NUM)
     return LL_ATON_INVALID_ID;
 
-  ATON_EPOCHCTRL_ENCR_LSB_SET(id, conf->encryption_id & 0xffffffff);
+  t = conf->encryption_id & 0xffffffff;
+  ATON_EPOCHCTRL_ENCR_LSB_SET(id, t);
 
   t = ATON_EPOCHCTRL_ENCR_MSB_DT;
   t = ATON_EPOCHCTRL_ENCR_MSB_SET_ID_MSB(t, (conf->encryption_id >> 32) & 0x7ff);
@@ -114,26 +191,33 @@ int LL_EpochCtrl_EncryptionInit(int id, LL_Streng_EncryptionTypedef *conf)
  * @brief  Handles Dma/Cypher data transfer
  * @param  cypherInfo: transfer parameters (addresses, keys, ... )
  * @retval Error code (0: og - -1: ko)
+ * @note   WARNING: this is an utility function and its usage is not compatible with the ATON runtime
  * @note   The function uses stream engines 0 and 1
  * @note   It uses default (0) values for encryption id and round (12)
  */
-
 int LL_DmaCypherInit(LL_Cypher_InitTypeDef *cypherInfo)
 {
+  uint32_t limit;
+  uint32_t lastAdd;
+
   if (cypherInfo->cypherCacheMask != 0 && cypherInfo->len > CYPHER_CACHE_SIZE)
   {
     return (-1);
-  } /* endif */
+  }
 
   LL_ATON_Init();
 
   /* Use stream engine 0 as source channel */
 
+  lastAdd = cypherInfo->srcAdd + cypherInfo->len;
+  limit = (uint32_t)cypherInfo->len + (8 - (lastAdd & 7));
+  limit += (8 - (limit & 7));
+
   LL_Streng_TensorInitTypeDef dma_in = {.dir = 0,
                                         .addr_base.i = (uint32_t)cypherInfo->srcAdd,
                                         .offset_start = 0,
                                         .offset_end = (uint32_t)cypherInfo->len,
-                                        .offset_limit = (uint32_t)cypherInfo->len,
+                                        .offset_limit = limit,
                                         .raw = 1,
                                         .frame_tot_cnt = 1,
                                         .nbits_in = 8,
@@ -142,11 +226,15 @@ int LL_DmaCypherInit(LL_Cypher_InitTypeDef *cypherInfo)
 
   /* Use stream engine 0 as destination channel */
 
+  lastAdd = cypherInfo->dstAdd + cypherInfo->len;
+  limit = (uint32_t)cypherInfo->len + (8 - (lastAdd & 7));
+  limit += (8 - (limit & 7));
+
   LL_Streng_TensorInitTypeDef dma_out = {.dir = 1,
                                          .addr_base.i = (uint32_t)cypherInfo->dstAdd,
                                          .offset_start = 0,
                                          .offset_end = (uint32_t)cypherInfo->len,
-                                         .offset_limit = (uint32_t)cypherInfo->len,
+                                         .offset_limit = limit,
                                          .raw = 1,
                                          .frame_tot_cnt = 1,
                                          .nbits_in = 8,
@@ -162,7 +250,7 @@ int LL_DmaCypherInit(LL_Cypher_InitTypeDef *cypherInfo)
   {
     dma_in.cacheable = 0;
     dma_in.cache_allocate = 0;
-  } /* endif */
+  }
 
   if (0 != (cypherInfo->cypherCacheMask & CYPHER_CACHE_DST))
   {
@@ -173,7 +261,7 @@ int LL_DmaCypherInit(LL_Cypher_InitTypeDef *cypherInfo)
   {
     dma_out.cacheable = 0;
     dma_out.cache_allocate = 0;
-  } /* endif */
+  }
 
   /* Configure stream switch */
 
@@ -201,13 +289,12 @@ int LL_DmaCypherInit(LL_Cypher_InitTypeDef *cypherInfo)
     else
     {
       return (-1);
-    } /* endif */
+    }
 
     /* Set encryption keys into Bus Interafce */
 
     LL_Busif_SetKeys(0, 0, cypherInfo->busIfKeyLsb, cypherInfo->busIfKeyMsb);
-
-  } /* endif */
+  }
 
   LL_Streng_TensorInit(CYPHER_SRC_STRENG_ID, &dma_in, 1);
   LL_Streng_TensorInit(CYPHER_DST_STRENG_ID, &dma_out, 1);

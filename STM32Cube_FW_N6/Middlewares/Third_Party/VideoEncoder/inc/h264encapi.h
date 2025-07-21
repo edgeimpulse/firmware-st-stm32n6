@@ -55,18 +55,18 @@ extern "C"
 
 /**
  * \mainpage Introduction
- * This document presents the Application Programming Interface (API) of the Hantro VC8000NanoE 
+ * This document presents the Application Programming Interface (API) of the Hantro VC8000NanoE
  * H.264 hardware based encoder. The encoder is able to encode H.264 standard [1] baseline, main
  * or high profile video streams.
- * 
- * The encoder conforms to the H.264 Baseline, Main and High profiles and can encode streams up 
- * to a maximum picture size of 4080x4080. The maximum bitrate and frame rate depends on the 
+ *
+ * The encoder conforms to the H.264 Baseline, Main and High profiles and can encode streams up
+ * to a maximum picture size of 4080x4080. The maximum bitrate and frame rate depends on the
  * number of HW cores, core clock frequency and the DRAM latency.
- * 
- * This document assumes that the reader understands the fundamentals of C-language and the 
+ *
+ * This document assumes that the reader understands the fundamentals of C-language and the
  * H.264 standard.
  */
- 
+
 /*------------------------------------------------------------------------------
     1. Type definition for encoder instance
 ------------------------------------------------------------------------------*/
@@ -98,7 +98,8 @@ extern "C"
         H264ENC_SYSTEM_ERROR = -13,
         H264ENC_INSTANCE_ERROR = -14,
         H264ENC_HRD_ERROR = -15,
-        H264ENC_HW_RESET = -16
+        H264ENC_HW_RESET = -16,
+        H264ENC_FUSE_ERROR = -17,
     } H264EncRet;
 
 /* Stream type for initialization */
@@ -217,7 +218,7 @@ extern "C"
 
 /**
  * Configuration info for initialization
- * 
+ *
  * Width and height are picture dimensions after rotation
  * Width and height are restricted by level limitations
  * Stream Profile will be automatically decided based on parameters:
@@ -356,7 +357,7 @@ extern "C"
         u32 pictureSkip;     /**< Allow rate control to skip pictures, [0,1] */
         i32 qpHdr;           /**< QP for next encoded picture, [-1..51]
                               * -1 = Let rate control calculate initial QP
-                              * This QP is used for all pictures if 
+                              * This QP is used for all pictures if
                               * HRD and pictureRc and mbRc are disabled
                               * If HRD is enabled it may override this QP
                               */
@@ -403,7 +404,7 @@ extern "C"
     {
         ptr_t busLuma;         /**< Bus address for input picture
                               * planar format: luminance component
-                              * semiplanar format: luminance component 
+                              * semiplanar format: luminance component
                               * interleaved format: whole picture
                               */
         ptr_t busChromaU;      /**< Bus address for input chrominance
@@ -423,7 +424,7 @@ extern "C"
         u32 *pOutBuf;        /**< Pointer to output stream buffer */
         size_t busOutBuf;       /**< Bus address of output stream buffer */
         u32 outBufSize;      /**< Size of output stream buffer in bytes */
-        H264EncPictureCodingType codingType;    /**< Proposed picture coding type, 
+        H264EncPictureCodingType codingType;    /**< Proposed picture coding type,
                                                  * INTRA/PREDICTED
                                                  */
         size_t busLumaStab;     /**< bus address of next picture to stabilize (luminance) */

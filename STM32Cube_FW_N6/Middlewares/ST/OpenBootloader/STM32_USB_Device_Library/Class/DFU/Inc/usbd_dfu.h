@@ -66,8 +66,8 @@ extern "C" {
 #define DFU_DESCRIPTOR_TYPE            0x21U
 
 #define FL_DESC_STR                    "@Flashlayout /0x00/1*1Ke"
-#define FSBL_EXT_DESC_STR              "@FSBL-EXT /0x03/1*283Ke"
-#define FSBL_APP_DESC_STR              "@FSBL-APP /0x04/1*64Me"
+#define FSBL_EXT_DESC_STR              "@FSBL-EXT /0x03/1*32Ke"
+#define FSBL_APP_DESC_STR              "@FSBL-APP /0x04/1*128Me"
 #define OTP_DESC_STR                   "@OTP /0xF2/1*752Be"
 
 
@@ -213,7 +213,6 @@ typedef struct
 /**
   * @}
   */
-
 
 
 /** @defgroup USBD_CORE_Exported_Macros

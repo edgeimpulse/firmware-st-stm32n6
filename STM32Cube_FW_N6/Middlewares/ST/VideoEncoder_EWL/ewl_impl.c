@@ -16,13 +16,14 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include <string.h>
 #include "ewl.h"
 #include "ewl_impl.h"
 #include "stm32n6xx_hal.h"
 #include "stm32n6xx_ll_venc.h"
 #include "reg_offset_v7.h"
 
-#include <string.h>
+
 
 /* Global variables ----------------------------------------------------------*/
 
@@ -43,7 +44,7 @@ u32 mem_counter = 0;
 #endif /* EWL_TIMEOUT */
 
 #ifndef EWL_DEFAULT_POOL_SIZE
-#define EWL_DEFAULT_POOL_SIZE 1440000
+#define EWL_DEFAULT_POOL_SIZE 0x190000
 #endif /* EWL_DEFAULT_POOL_SIZE */
 
 /* Private macros ------------------------------------------------------------*/
@@ -245,6 +246,8 @@ i32 EWLRelease(const void *inst)
   }
 #elif (EWL_ALLOC_API == EWL_USE_STM32MPM_MM)
 #elif (EWL_ALLOC_API == EWL_USER_MM)
+#elif (EWL_ALLOC_API == EWL_USE_FREERTOS_MM)
+  vEventGroupDelete(ewl_instance.ewl_event_group);  
 #else
 #endif /* EWL_ALLOC_API */
   /* save memory pool address */
@@ -631,17 +634,18 @@ __weak i32 EWLWaitHwRdy(const void *inst, u32 *slicesReady)
     /* ignore the irq status of input line buffer in hw handshake mode */
     if ((irq_stats == ASIC_STATUS_LINE_BUFFER_DONE) && (hw_handshake_status != 0UL))
     {
+      VENC_REG(1U) = (1<<9);
       continue;
     }
     if ((irq_stats & ASIC_STATUS_ALL) != 0UL)
     {
       /* clear IRQ and slice ready status */
       u32 clr_stats;
-      irq_stats &= (~(ASIC_STATUS_SLICE_READY | ASIC_IRQ_LINE | ASIC_STATUS_FUSE));
+      irq_stats &= (~(ASIC_STATUS_SLICE_READY | ASIC_IRQ_LINE));
 
       if (clrByWrite1 != 0UL)
       {
-        clr_stats = ASIC_STATUS_SLICE_READY | ASIC_IRQ_LINE | ASIC_STATUS_FUSE;
+        clr_stats = ASIC_STATUS_SLICE_READY | ASIC_IRQ_LINE;
       }
       else
       {
@@ -720,25 +724,32 @@ __weak void EWLPoolReleaseCb(u8 **pool_ptr)
 
 void VENC_IRQHandler(void)
 {
-  /* Ignore the IRQ if the source is not a slice ready or frame ready event */
-  if((VENC_REG(1U) & (ASIC_STATUS_SLICE_READY | ASIC_STATUS_FRAME_READY)) == 0)
+  u32 hw_handshake_status = READ_BIT(VENC_REG(BASE_HEncInstantInput >> 2U), (1U << 29U));
+  uint32_t irq_status = VENC_REG(1U);
+  if(!hw_handshake_status && (irq_status & ASIC_STATUS_FUSE))
   {
-    VENC_REG(1U) = (1<<9);
-    return;
+    VENC_REG(1U) = ASIC_STATUS_FUSE | ASIC_IRQ_LINE;
+    /* read back the IRQ status to update its value */
+    irq_status = VENC_REG(1U);
   }
+  /* See if there are other flags than the FUSE status raised */
+  if(irq_status != 0U)
+  {
+    /* status flag is raised, clear the ones that the IRQ needs to clear and signal to EWLWaitHwReady */
+    VENC_REG(1U) = ASIC_STATUS_SLICE_READY | ASIC_IRQ_LINE;
 #if (EWL_SYNC_API == EWL_USE_THREADX_SYNC)
-  /* set event flags for synchronization */
-  u32 status = tx_event_flags_set(&ewl_instance.flag_events, 1, TX_OR);
-  if (status != TX_SUCCESS)
-  {
-    PTRACE("set flags error\n");
-    return ;
-  }
+    /* set event flags for synchronization */
+    u32 status = tx_event_flags_set(&ewl_instance.flag_events, 1, TX_OR);
+    if (status != TX_SUCCESS)
+    {
+      PTRACE("set flags error\n");
+      return ;
+    }
 #elif (EWL_SYNC_API == EWL_USE_FREERTOS_SYNC)
-  BaseType_t higher_prio_task_woken = pdFALSE;
-  if(xEventGroupSetBitsFromISR(ewl_instance.ewl_event_group, 1, &higher_prio_task_woken) == pdFAIL){
-    portYIELD_FROM_ISR(higher_prio_task_woken);
-  }
+    BaseType_t higher_prio_task_woken = pdFALSE;
+    if(xEventGroupSetBitsFromISR(ewl_instance.ewl_event_group, 1, &higher_prio_task_woken) == pdFAIL){
+      portYIELD_FROM_ISR(higher_prio_task_woken);
+    }
 #endif /* EWL_SYNC_API */
-  VENC_REG(1U) = ASIC_STATUS_SLICE_READY | ASIC_IRQ_LINE;
+  }
 }

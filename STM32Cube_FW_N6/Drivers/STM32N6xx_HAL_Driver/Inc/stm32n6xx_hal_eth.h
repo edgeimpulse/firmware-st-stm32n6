@@ -38,6 +38,9 @@ extern "C" {
   */
 
 /* Exported types ------------------------------------------------------------*/
+/* ETH Multi-Queue feature is supported by HW */
+#define ETH_MULTIQUEUE_SUPPORTED
+
 #ifndef ETH_MTL_TX_Q_CNT
 #define ETH_MTL_TX_Q_CNT         2U
 #endif /* ETH_MTL_TX_Q_CNT */
@@ -125,7 +128,7 @@ typedef struct
 
   uint32_t *PacketAddress[ETH_TX_DESC_CNT];  /*<! Ethernet packet addresses array */
 
-  uint32_t *CurrentPacketAddress;           /*<! Current transmit NX_PACKET addresses */
+  uint32_t *CurrentPacketAddress;           /*<! Current transmit packet addresses */
 
   uint32_t BuffersInUse;                   /*<! Buffers in Use */
 
@@ -140,7 +143,7 @@ typedef struct
   */
 typedef struct
 {
-  uint32_t TxCH;                     /*!< Sets the Tx Queue/Channel which will transmit the packet */
+  uint32_t TxDMACh;                 /*!< Sets the Tx Queue/Channel which will transmit the packet */
 
   uint32_t Attributes;              /*!< Tx packet HW features capabilities.
                                          This parameter can be a combination of @ref ETH_Tx_Packet_Attributes*/
@@ -579,10 +582,7 @@ typedef struct
   DMAErrorCode;              /*!< Holds the DMA CH0/CH1 Rx Tx Error code when a DMA AIS interrupt occurs
                                                              This parameter can be a combination of
                                                              @ref ETH_DMA_Status_Flags */
-  __IO uint32_t
-  MTLErrorCode;              /*!< Holds the MTL Q0/Q1 Error code when an MTL Queue interrupt occurs
-                                                             This parameter can be a combination of
-                                                             @ref ETH_MTL_Status_Flags */
+
   __IO uint32_t
   MACErrorCode;              /*!< Holds the MAC Rx Tx Error code when a MAC Rx or Tx status interrupt occurs
                                                              This parameter can be a combination of
@@ -599,13 +599,19 @@ typedef struct
                                                              This parameter can be a value of
                                                              @ref ETH_PTP_Config_Status */
 
-  __IO uint32_t              TxCH;                      /*!< Holds the Tx DMA Channel Number which made the data transfer.
+  __IO uint32_t              TxCH;                      /*!< Holds the Tx DMA Channels Number events.
                                                              This parameter can be a value of
-                                                             @ref ETH_DMA_Channel_Number_Selection */
+                                                             @ref ETH_DMA_Channel_Number_Tx_Rx_Selection */
 
-  __IO uint32_t              RxCH;                      /*!< Holds the Rx DMA Channel Number which made the data reception.
+  __IO uint32_t              RxCH;                      /*!< Holds the Rx DMA Channels Number events.
                                                              This parameter can be a value of
-                                                             @ref ETH_DMA_Channel_Number_Selection */
+                                                             @ref ETH_DMA_Channel_Number_Tx_Rx_Selection */
+  __IO uint32_t              TxOpCH;                    /*!< Holds the Tx DMA Channel Index which transfer data.
+                                                             This parameter can be a value of
+                                                             @ref ETH_DMA_Channel_Number_TxOp_RxOp_Selection */
+  __IO uint32_t              RxOpCH;                    /*!< Holds the Rx DMA Channel Index which receive data.
+                                                             This parameter can be a value of
+                                                             @ref ETH_DMA_Channel_Number_TxOp_RxOp_Selection */
 
 #if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
 
@@ -1071,8 +1077,9 @@ typedef struct
 
 typedef enum
 {
-  HAL_ETH_ERROR_DMA_CH0 = 0x00000008U,
-  HAL_ETH_ERROR_DMA_CH1 = 0x00000010U
+  HAL_ETH_ERROR_DMA = 0x00000008U,
+  HAL_ETH_ERROR_DMA_CH0 = 0x00000010U,
+  HAL_ETH_ERROR_DMA_CH1 = 0x00000020U
 } ETH_DMAChannelErrorTypeDef;
 
 #if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
@@ -1652,8 +1659,8 @@ typedef enum
   */
 #define HAL_ETH_STATE_RESET                0x00000000U    /*!< Peripheral not yet Initialized or disabled */
 #define HAL_ETH_STATE_READY                0x00000010U    /*!< Peripheral Communication started           */
-#define HAL_ETH_STATE_BUSY                 0x00000023U    /*!< an internal process is ongoing             */
-#define HAL_ETH_STATE_STARTED              0x00000023U    /*!< an internal process is started             */
+#define HAL_ETH_STATE_BUSY                 0x00000020U    /*!< an internal process is ongoing             */
+#define HAL_ETH_STATE_STARTED              0x00000040U    /*!< an internal process is started             */
 #define HAL_ETH_STATE_ERROR                0x000000E0U    /*!< Error State                                */
 /**
   * @}
@@ -1688,11 +1695,20 @@ typedef enum
   */
 #endif /* HAL_ETH_USE_PTP */
 
-/** @defgroup ETH_DMA_Channel_Number_Selection ETH DMA Channel Number Selection
+/** @defgroup ETH_DMA_Channel_Number_Tx_Rx_Selection ETH DMA Channel Number Tx Rx Selection
   * @{
   */
-#define ETH_DMA_CH0                 0x00000000U
-#define ETH_DMA_CH1                 0x00000001U
+#define ETH_DMA_CH0                 0x00000001U
+#define ETH_DMA_CH1                 0x00000002U
+/**
+  * @}
+  */
+/** @defgroup ETH_DMA_Channel_Number_TxOp_RxOp_Selection ETH DMA Channel Number Tx Rx Selection Index
+  * @{
+  */
+#define ETH_DMA_CH0_IDX             (0U)
+#define ETH_DMA_CH1_IDX             (1U)
+
 /**
   * @}
   */
@@ -2060,6 +2076,7 @@ uint32_t             HAL_ETH_GetError(const ETH_HandleTypeDef *heth);
 uint32_t             HAL_ETH_GetDMAError(const ETH_HandleTypeDef *heth);
 uint32_t             HAL_ETH_GetMACError(const ETH_HandleTypeDef *heth);
 uint32_t             HAL_ETH_GetMACWakeUpSource(const ETH_HandleTypeDef *heth);
+uint32_t             HAL_ETH_GetTxBuffersNumber(const ETH_HandleTypeDef *heth);
 /**
   * @}
   */

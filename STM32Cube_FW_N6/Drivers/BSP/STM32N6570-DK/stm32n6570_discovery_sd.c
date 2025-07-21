@@ -150,9 +150,9 @@ int32_t BSP_SD_Init(uint32_t Instance)
   }
   else
   {
-    
-    
-  /* SDMMC1 FPGA activation  and security configuration */
+
+
+  /* SDMMC1 activation  and security configuration */
   {
     uint32_t RIFSCAddress1 = 0x54024C18; /*  (RIFSC_RIMC_ATTRx) with x = 2 (0x8 :Master index of SDMMC1) */
     uint32_t RIFSCAddress2 = 0x54024C1C; /*  (RIFSC_RIMC_ATTRx) with x = 4 (0xC:Master index of SDMMC2) */
@@ -164,7 +164,8 @@ int32_t BSP_SD_Init(uint32_t Instance)
      /* readback data */
      data = *(uint32_t*)RIFSCAddress1 ;
      (void)data;
-
+     __HAL_RCC_SDMMC1_FORCE_RESET();
+     __HAL_RCC_SDMMC1_RELEASE_RESET();
      /* Lines below are useful only for DMA transfer */
      /* SDMMC1 Secure Guard RISUP Index is 53 */
      RIFSCAddress1 = 0x54024014; /* RIFSC_RISC_SECCFGRx with x = 1 */
@@ -180,6 +181,8 @@ int32_t BSP_SD_Init(uint32_t Instance)
      /* readback data */
      data = *(uint32_t*)RIFSCAddress2 ;
      (void)data;
+     __HAL_RCC_SDMMC2_FORCE_RESET();
+     __HAL_RCC_SDMMC2_RELEASE_RESET();
 
      /* Lines below are useful only for DMA transfer */
      /* SDMMC1 Secure Guard RISUP Index is 54 */
@@ -187,12 +190,12 @@ int32_t BSP_SD_Init(uint32_t Instance)
      data = *(uint32_t*)RIFSCAddress2 ;
      *(uint32_t*)RIFSCAddress2 = data | 0x00400000U;
      /* readback data */
-     data = *(uint32_t*)RIFSCAddress2 ;     
+     data = *(uint32_t*)RIFSCAddress2 ;
      (void)data;
 
 
-  } 
-  
+  }
+
     /* GPIO Detect pin configuration */
     SD_DETECT_GPIO_CLK_ENABLE();
 
@@ -421,6 +424,7 @@ int32_t BSP_SD_DetectITConfig(uint32_t Instance)
   else
   {
     SD_DETECT_GPIO_CLK_ENABLE();
+    HAL_PWREx_EnableVddIO3();
 
     /* Configure Interrupt mode for SD detection pin */
     gpio_init_structure.Pin     = PinDetect[Instance];
@@ -534,7 +538,7 @@ int32_t BSP_SD_ReadBlocks(uint32_t Instance, uint32_t *pData, uint32_t BlockIdx,
   */
 int32_t BSP_SD_WriteBlocks(uint32_t Instance, uint32_t *pData, uint32_t BlockIdx, uint32_t BlocksNbr)
 {
-  uint32_t timeout = SD_READ_TIMEOUT * BlocksNbr;
+  uint32_t timeout = SD_WRITE_TIMEOUT * BlocksNbr;
   int32_t ret;
 
   if (Instance >= SD_INSTANCES_NBR)
@@ -885,28 +889,28 @@ static void SD_EXTI_Callback(void)
 static void SD_MspInit(SD_HandleTypeDef *hsd)
 {
   GPIO_InitTypeDef gpio_init_structure = {0};
-  
+
   if (hsd == &hsd_sdmmc[0])
   {
 
     HAL_PWREx_EnableVddIO5();
     /* Enable SDMMC clock */
     __HAL_RCC_SDMMC2_CLK_ENABLE();
-    
+
     /* Enable GPIOs clock */
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
-    
+
     /* Common GPIO configuration */
     gpio_init_structure.Mode      = GPIO_MODE_AF_PP;
     gpio_init_structure.Pull      = GPIO_PULLUP;
     gpio_init_structure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
     gpio_init_structure.Alternate = GPIO_AF11_SDMMC2;
-    
+
     /* D2-CLK-CMD-D0-D1*/
     gpio_init_structure.Pin = GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4  | GPIO_PIN_5 ;
     HAL_GPIO_Init(GPIOC, &gpio_init_structure);
-    
+
     /* D3*/
     gpio_init_structure.Pin = GPIO_PIN_4;
     HAL_GPIO_Init(GPIOE, &gpio_init_structure);

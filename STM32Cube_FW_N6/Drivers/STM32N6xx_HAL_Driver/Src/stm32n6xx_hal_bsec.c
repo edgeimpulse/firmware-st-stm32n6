@@ -389,7 +389,7 @@ HAL_StatusTypeDef HAL_BSEC_OTP_Read(BSEC_HandleTypeDef * hbsec, uint32_t FuseId,
     /* Reload the data :
        - Unshadowed fuse are not automatically reload and data no more available after register read
        - Shadowed fuse contains by default the shadow value in the register */
-    if ((HAL_BSEC_OTP_Reload(hbsec, FuseId) == HAL_OK))
+    if (HAL_BSEC_OTP_Reload(hbsec, FuseId) == HAL_OK)
     {
       /* Read data from shadow register */
       *pFuseData = hbsec->Instance->FVRw[FuseId];

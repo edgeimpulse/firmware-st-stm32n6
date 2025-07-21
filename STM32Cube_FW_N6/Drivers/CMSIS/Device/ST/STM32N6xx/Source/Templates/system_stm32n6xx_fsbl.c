@@ -80,19 +80,11 @@
   * @{
   */
 #if !defined  (HSE_VALUE)
-#if defined(USE_FPGA)
-#define HSE_VALUE      30000000UL /*!< Value of the High-Speed External oscillator in Hz */
-#else
 #define HSE_VALUE      48000000UL /*!< Value of the High-Speed External oscillator in Hz */
-#endif /* USE_FPGA */
 #endif /* HSE_VALUE */
 
 #if !defined  (HSI_VALUE)
-#if defined(USE_FPGA)
-  #define HSI_VALUE      48000000UL /*!< Value of the High-Speed Internal oscillator in Hz */
-#else
-  #define HSI_VALUE      64000000UL /*!< Value of the High-Speed Internal oscillator in Hz */
-#endif /* USE_FPGA */
+#define HSI_VALUE      64000000UL /*!< Value of the High-Speed Internal oscillator in Hz */
 #endif /* HSI_VALUE */
 
 #if !defined  (MSI_VALUE)
@@ -255,39 +247,6 @@ void SystemInit(void)
 
   /* Deactivate GPIOG clock */
   RCC->AHB4ENCR = RCC_AHB4ENCR_GPIOGENC;
-
-
-  /* Check whether patch is required at System initialization */
-#if defined(STM32N6XX_SI_CUT1_1)
-  /*----------Begin patch Cut1.x sample --------------------------------------*/
-  /* Necessary for Cut1.x on exit from bootrom                                */
-  /* Disable LPTIM4 interrupt                                                 */
-  NVIC_DisableIRQ(LPTIM4_IRQn);
-  NVIC_ClearPendingIRQ(LPTIM4_IRQn);
-  /* LPTIM4 and LPTIM4 clock selection reset                                  */
-  RCC->APB4RSTSR1 = RCC_APB4RSTSR1_LPTIM4RSTS;
-  RCC->APB4RSTCR1 = RCC_APB4RSTCR1_LPTIM4RSTC;
-  RCC->CCIPR12 &= ~RCC_CCIPR12_LPTIM4SEL;
-  /* Deactivate LPTIM4 clock */
-  RCC->APB4ENCR1 = RCC_APB4ENCR1_LPTIM4ENC;
-
-  SCB_InvalidateDCache();
-  SCB_InvalidateICache();
-  /* Re-enable interrupts disabled in startup_stm32YYYxx_fsbl.s/.c */
-  __enable_irq();
-
-  /* enable Dcache and Icache lookups */
-  MEMSYSCTL->MSCR |= MEMSYSCTL_MSCR_DCACTIVE_Msk | MEMSYSCTL_MSCR_ICACTIVE_Msk;
-
-  /* Setup I/O compensation cells for */
-  SYSCFG->VDDIO2CCCR = 0x00000278UL; /* SDMMC1 domain compensation */
-  SYSCFG->VDDIO3CCCR = 0x00000278UL; /* SDMMC2 domain compensation */
-  SYSCFG->VDDIO4CCCR = 0x00000278UL; /* Hexa-SPI domain compensation */
-  SYSCFG->VDDIO5CCCR = 0x00000278UL; /* Octo-SPI domain compensation */
-  SYSCFG->VDDCCCR    = 0x00000278UL; /* VDD domain compensation */
-
-  /*----------End patch Cut1.x sample ----------------------------------------*/
-#endif /* STM32N6XX_SI_CUT1_1 */
 
   /* Read back the value to make sure it is written before deactivating SYSCFG */
   (void) SYSCFG->INITSVTORCR;
@@ -452,13 +411,6 @@ void SystemCoreClockUpdate(void)
       break;
     }
 
-#if defined(USE_FPGA)
-    /********** FPGA SPECIFIC *************/
-    /* FPGA PLL implementation use 32MHz as fixed PLL input frequency */
-    (void)pllsource;
-    sysclk = 32000000UL;
-    pllbypass = 0U;
-#else
     /* Get oscillator frequency used as PLL clock source */
     switch (pllsource)
     {
@@ -485,7 +437,7 @@ void SystemCoreClockUpdate(void)
       /* Nothing to do, should not occur */
       break;
     }
-#endif /* USE_FPGA */
+
     /* Check whether PLL is in bypass mode or not */
     if (pllbypass == 0U)
     {

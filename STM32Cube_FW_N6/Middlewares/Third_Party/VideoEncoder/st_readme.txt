@@ -21,6 +21,25 @@
   @endverbatim
 
 
+### 17-December-2024 ###
+=========================
+  + Prevent infinite loop in case of encoding timeout
+     in \source\h264\H264CodeFrame.c
+
+
+### 22-October-2024 ###
+=========================
+  + Add fuse error handling 
+     in \inc\h264encapi.h
+     in \source\common\encasiccontroller.c
+     in \source\h264\H264CodeFrame.c
+     in \source\h264\H264CodeFrame.h
+     in \source\h264\H264EncApi.c
+  + Change include files order to avoid typedef conflicts
+     in \source\h264\H264EncApi.c 
+     in \source\h264\H264Init.c   
+
+
 ### 25-June-2024 ###
 =========================
   + Fix output overflow bug

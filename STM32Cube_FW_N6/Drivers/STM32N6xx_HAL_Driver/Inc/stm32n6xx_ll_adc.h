@@ -388,10 +388,13 @@ static const uint32_t ADC_CHANNEL_LUT[] =
 
 /* ADC internal channels related definitions */
 /* Internal voltage reference VrefInt */
-#define VREFINT_CAL_ADDR                   ((uint16_t*) (0x1FF1E860UL)) /* Internal voltage reference, address of
+#define VREFINT_CAL_ADDR                   ((uint16_t*) (0x460091B8UL)) /* Internal voltage reference, address of
                                            parameter VREFINT_CAL: VrefInt ADC raw data acquired at temperature 30 DegC
-                                           (tolerance: +-5 DegC), Vref+ = 3.3 V (tolerance: +-10 mV). */
-#define VREFINT_CAL_VREF                   (3300UL)                     /* Analog voltage reference (Vref+) value
+                                           (tolerance: +-5 DegC), Vref+ = 3.3 V (tolerance: +-10 mV).
+                                           On this STM32 series, it is required to load the OTP110 word before reading
+                                           this address.
+                                           In case of usage with HAL driver, refer to HAL_BSEC_OTP_Reload() */
+#define VREFINT_CAL_VREF                   (1800UL)                     /* Analog voltage reference (Vref+) value
                                            with which VrefInt has been calibrated in production
                                            (tolerance: +-10 mV) (unit: mV). */
 
@@ -2712,8 +2715,7 @@ static const uint8_t ADC_CHANNEL_DIFF_LUT[2][20] =
   * @brief  Helper macro to calculate the voltage (unit: mVolt)
   *         corresponding to a ADC conversion data (unit: digital value).
   * @note   Analog reference voltage (Vref+) must be either known from
-  *         user board environment or can be calculated using ADC measurement
-  *         and ADC helper macro @ref __LL_ADC_CALC_VREFANALOG_VOLTAGE().
+  *         user board environment.
   * @param  __VREFANALOG_VOLTAGE__ Analog reference voltage (unit: mV)
   * @param  __ADC_DATA__ ADC conversion data (resolution 12 bits)
   *                       (unit: digital value).
@@ -2739,8 +2741,7 @@ static const uint8_t ADC_CHANNEL_DIFF_LUT[2][20] =
   *         middle code in. Converted voltage can be positive or negative
   *         depending on differential input voltages.
   * @note   Analog reference voltage (Vref+) must be either known from
-  *         user board environment or can be calculated using ADC measurement
-  *         and ADC helper macro @ref __LL_ADC_CALC_VREFANALOG_VOLTAGE().
+  *         user board environment.
   * @param  __VREFANALOG_VOLTAGE__ Analog reference voltage (unit: mV)
   * @param  __ADC_DATA__ ADC conversion data (unit: digital value).
   * @param  __ADC_RESOLUTION__ This parameter can be one of the following values:
@@ -2757,38 +2758,6 @@ static const uint8_t ADC_CHANNEL_DIFF_LUT[2][20] =
  / (int32_t)(__LL_ADC_DIGITAL_SCALE(__ADC_RESOLUTION__))\
  - (int32_t)(__VREFANALOG_VOLTAGE__))
 
-/**
-  * @brief  Helper macro to calculate analog reference voltage (Vref+)
-  *         (unit: mVolt) from ADC conversion data of internal voltage
-  *         reference VrefInt.
-  * @note   Computation is using VrefInt calibration value
-  *         stored in system memory for each device during production.
-  * @note   This voltage depends on user board environment: voltage level
-  *         connected to pin Vref+.
-  *         On devices with small package, the pin Vref+ is not present
-  *         and internally bonded to pin Vdda.
-  * @note   On this STM32 series, calibration data of internal voltage reference
-  *         VrefInt corresponds to a resolution of 12 bits,
-  *         this is the recommended ADC resolution to convert voltage of
-  *         internal voltage reference VrefInt.
-  *         Otherwise, this macro performs the processing to scale
-  *         ADC conversion data to 12 bits.
-  * @param  __VREFINT_ADC_DATA__ ADC conversion data (resolution 12 bits)
-  *         of internal voltage reference VrefInt (unit: digital value).
-  * @param  __ADC_RESOLUTION__ This parameter can be one of the following values:
-  *         @arg @ref LL_ADC_RESOLUTION_12B
-  *         @arg @ref LL_ADC_RESOLUTION_10B
-  *         @arg @ref LL_ADC_RESOLUTION_8B
-  *         @arg @ref LL_ADC_RESOLUTION_6B
-  * @retval Analog reference voltage (unit: mV)
-  */
-#define __LL_ADC_CALC_VREFANALOG_VOLTAGE(__VREFINT_ADC_DATA__,\
-                                         __ADC_RESOLUTION__)                 \
-(((uint32_t)(*VREFINT_CAL_ADDR) * VREFINT_CAL_VREF)                          \
- / __LL_ADC_CONVERT_DATA_RESOLUTION((__VREFINT_ADC_DATA__),                  \
-                                    (__ADC_RESOLUTION__),                    \
-                                    LL_ADC_RESOLUTION_12B)                   \
-)
 
 /**
   * @}
@@ -7005,7 +6974,7 @@ __STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_ADRDY(const ADC_Common_TypeDef 
   */
 __STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_EOC(const ADC_Common_TypeDef *ADCxy_COMMON)
 {
-  return ((READ_BIT(ADCxy_COMMON->CSR, LL_ADC_FLAG_EOC_SLV) == (LL_ADC_FLAG_EOC_SLV)) ? 1UL : 0UL);
+  return ((READ_BIT(ADCxy_COMMON->CSR, LL_ADC_FLAG_EOC_MST) == (LL_ADC_FLAG_EOC_MST)) ? 1UL : 0UL);
 }
 
 /**

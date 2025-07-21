@@ -32,9 +32,7 @@ typedef void(*VECTOR_TABLE_Type)(void);
  *----------------------------------------------------------------------------*/
 extern uint32_t __INITIAL_SP;
 extern uint32_t __STACK_LIMIT;
-#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-extern uint32_t __STACK_SEAL;
-#endif
+
 
 extern __NO_RETURN void __PROGRAM_START(void);
 
@@ -482,10 +480,6 @@ __NO_RETURN void Reset_Handler(void)
 	__disable_irq();
   __set_MSPLIM((uint32_t)(&__STACK_LIMIT));
   __set_MSP((uint32_t)(&__INITIAL_SP));
-
-#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-  __TZ_set_STACKSEAL_S((uint32_t *)(&__STACK_SEAL));
-#endif
   __enable_irq();
 		 
   SystemInit();                            /* CMSIS System Initialization */

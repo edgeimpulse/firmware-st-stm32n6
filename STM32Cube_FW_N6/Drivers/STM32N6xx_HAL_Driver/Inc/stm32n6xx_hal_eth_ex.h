@@ -86,25 +86,7 @@ typedef struct
   */
 
 /**
-  * @brief  HAL ETH Rx VLAN User Priority enum definition
-  */
-typedef enum
-{
-  ETH_RX_QUEUE_PRIO_0    = 0x00000000U,   /*!<  Rx VLAN User Tag Priority 0 */
-  ETH_RX_QUEUE_PRIO_1    = 0x00000002U,   /*!<  Rx VLAN User Tag Priority 1 */
-  ETH_RX_QUEUE_PRIO_2    = 0x00000004U,   /*!<  Rx VLAN User Tag Priority 2 */
-  ETH_RX_QUEUE_PRIO_3    = 0x00000008U,   /*!<  Rx VLAN User Tag Priority 3 */
-  ETH_RX_QUEUE_PRIO_4    = 0x00000010U,   /*!<  Rx VLAN User Tag Priority 4 */
-  ETH_RX_QUEUE_PRIO_5    = 0x00000020U,   /*!<  Rx VLAN User Tag Priority 5 */
-  ETH_RX_QUEUE_PRIO_6    = 0x00000040U,   /*!<  Rx VLAN User Tag Priority 6 */
-  ETH_RX_QUEUE_PRIO_7    = 0x00000080U    /*!<  Rx VLAN User Tag Priority 7 */
-} ETH_PSRTypeDef;
-/**
-  *
-  */
-
-/**
-  * @brief  HAL ETH Rx VLAN User Priority enum definition
+  * @brief  ETH MAC TMRQR INDIRECT REG enum definition
   */
 typedef enum
 {
@@ -157,9 +139,9 @@ typedef struct
 
   uint32_t                AVUntaggedControlPacketsQueue;                  /*!< Specifies the Receive queue to receive AV untagged control packets */
 
-  ETH_PSRTypeDef          PrioritiesSelectedRxQ0;                         /*!< Specifies the Priorities Selected in the Receive Queue 0 */
+  uint32_t                PrioritiesSelectedRxQ0;                         /*!< Specifies the Priorities Selected in the Receive Queue 0 @ref ETHEx_Rx_VLAN_PRIO */
 
-  ETH_PSRTypeDef          PrioritiesSelectedRxQ1;                         /*!< Specifies the Priorities Selected in the Receive Queue 1 */
+  uint32_t                PrioritiesSelectedRxQ1;                         /*!< Specifies the Priorities Selected in the Receive Queue 1 @ref ETHEx_Rx_VLAN_PRIO */
 
 
 } ETH_MACMTLMappingTypeDef;
@@ -422,9 +404,9 @@ typedef struct
   FunctionalState     SendRespondmPacket;       /*! Send Respond mPacket */
 
   uint32_t            HoldAdvance;              /*! The maximum time in nanoseconds that can elapse between issuing a
-                                               HOLD to the MAC and the MAC ceasing to transmit any preemptable frame */
+                                               HOLD to the MAC and the MAC ceasing to transmit any preemptible frame */
   uint32_t            ReleaseAdvance;           /*! The maximum time in nanoseconds that can elapse between issuing a
-                             RELEASE to the MAC and the MAC being ready to resume transmission of preemptable frames */
+                             RELEASE to the MAC and the MAC being ready to resume transmission of preemptible frames */
 } ETH_FPEConfigTypeDef;
 /**
   *
@@ -578,6 +560,21 @@ typedef struct
   * @}
   */
 
+/** @defgroup ETHEx_Rx_VLAN_PRIO ETHEx Rx VLAN PRIO
+  * @{
+  */
+#define  ETH_RX_QUEUE_PRIO_0   0x00000001U    /*!<  Rx VLAN User Tag Priority 0 */
+#define  ETH_RX_QUEUE_PRIO_1   0x00000002U    /*!<  Rx VLAN User Tag Priority 1 */
+#define  ETH_RX_QUEUE_PRIO_2   0x00000004U    /*!<  Rx VLAN User Tag Priority 2 */
+#define  ETH_RX_QUEUE_PRIO_3   0x00000008U    /*!<  Rx VLAN User Tag Priority 3 */
+#define  ETH_RX_QUEUE_PRIO_4   0x00000010U    /*!<  Rx VLAN User Tag Priority 4 */
+#define  ETH_RX_QUEUE_PRIO_5   0x00000020U    /*!<  Rx VLAN User Tag Priority 5 */
+#define  ETH_RX_QUEUE_PRIO_6   0x00000040U    /*!<  Rx VLAN User Tag Priority 6 */
+#define  ETH_RX_QUEUE_PRIO_7   0x00000080U    /*!<  Rx VLAN User Tag Priority 7 */
+/**
+  * @}
+  */
+
 /** @defgroup ETHEx_Preemption_Packet ETHEx Preemption Packet
   * @{
   */
@@ -676,32 +673,32 @@ uint32_t          HAL_ETHEx_GetRxDMAChNumber(const ETH_HandleTypeDef *heth);
 uint32_t          HAL_ETHEx_GetTxDMAChNumber(const ETH_HandleTypeDef *heth);
 uint32_t          HAL_ETHEx_GetRxMTLQNumber(const ETH_HandleTypeDef *heth);
 uint32_t          HAL_ETHEx_GetTxMTLQNumber(const ETH_HandleTypeDef *heth);
-uint32_t          HAL_ETHEx_GetMTLError(const ETH_HandleTypeDef *heth);
 HAL_StatusTypeDef HAL_ETHEx_GetMTLConfig(const ETH_HandleTypeDef *heth, ETH_MTLConfigTypeDef *mtlconf);
 HAL_StatusTypeDef HAL_ETHEx_SetMTLConfig(ETH_HandleTypeDef *heth, ETH_MTLConfigTypeDef *mtlconf);
 HAL_StatusTypeDef HAL_ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappingTypeDef *macmtlconf);
 HAL_StatusTypeDef HAL_ETHEx_GetMACMTLMappingConfig(const ETH_HandleTypeDef *heth, ETH_MACMTLMappingTypeDef *macmtlconf);
 void              ETHEx_SetMTLConfig(ETH_HandleTypeDef *heth, const ETH_MTLConfigTypeDef *mtlconf);
-void              ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappingTypeDef *macmtlconf);
-HAL_StatusTypeDef HAL_ETHEx_SetUserTagPriorityQueue(ETH_HandleTypeDef *heth, ETH_PSRTypeDef psrq, uint32_t queue);
-HAL_StatusTypeDef HAL_ETHEx_GetUserTagPriorityQueue(const ETH_HandleTypeDef *heth, ETH_PSRTypeDef *psrq,
+HAL_StatusTypeDef ETHEx_SetMACMTLMappingConfig(ETH_HandleTypeDef *heth, const ETH_MACMTLMappingTypeDef *macmtlconf);
+HAL_StatusTypeDef HAL_ETHEx_SetUserTagPriorityQueue(ETH_HandleTypeDef *heth, uint32_t psrq, uint32_t queue);
+HAL_StatusTypeDef HAL_ETHEx_GetUserTagPriorityQueue(const ETH_HandleTypeDef *heth, uint32_t *psrq,
                                                     uint32_t queue);
 HAL_StatusTypeDef HAL_ETHEx_SetPacketTypeQueue(ETH_HandleTypeDef *heth,
-                                               ETH_PacketTypeQueueConfigTypeDef *typequeueconf);
+                                               const ETH_PacketTypeQueueConfigTypeDef *typequeueconf);
 HAL_StatusTypeDef HAL_ETHEx_GetPacketTypeQueue(ETH_HandleTypeDef *heth,
                                                ETH_PacketTypeQueueConfigTypeDef *typequeueconf);
 #ifdef HAL_ETH_USE_CBS
 HAL_StatusTypeDef HAL_ETHEx_SetCBSConfig(ETH_HandleTypeDef *heth, ETH_CBSConfigTypeDef *cbsconf);
-HAL_StatusTypeDef HAL_ETHEx_GetCBSConfig(ETH_HandleTypeDef *heth, ETH_CBSConfigTypeDef *pCBSConfig, uint8_t queueIndex);
+HAL_StatusTypeDef HAL_ETHEx_GetCBSConfig(const ETH_HandleTypeDef *heth,
+                                         ETH_CBSConfigTypeDef *pCBSConfig, uint8_t queueIndex);
 HAL_StatusTypeDef HAL_ETHEx_EnableCBS(ETH_HandleTypeDef *heth, uint8_t queueIndex);
 #endif /* HAL_ETH_USE_CBS */
 #ifdef HAL_ETH_USE_TAS
-uint32_t          HAL_ETHEx_GetGCLDepth(ETH_HandleTypeDef *heth);
-uint32_t          HAL_ETHEx_GetGCLWidthTimeInterval(ETH_HandleTypeDef *heth);
+uint32_t          HAL_ETHEx_GetGCLDepth(const ETH_HandleTypeDef *heth);
+uint32_t          HAL_ETHEx_GetGCLWidthTimeInterval(const ETH_HandleTypeDef *heth);
 HAL_StatusTypeDef HAL_ETHEx_EnableEST(ETH_HandleTypeDef *heth);
 HAL_StatusTypeDef HAL_ETHEx_DisableEST(ETH_HandleTypeDef *heth);
 HAL_StatusTypeDef HAL_ETHEx_SetESTConfig(ETH_HandleTypeDef *heth,  ETH_ESTConfigTypeDef *estconf);
-HAL_StatusTypeDef HAL_ETHEx_SetGCLRegisters(ETH_HandleTypeDef *heth, ETH_GCLConfigTypeDef *gclconf);
+HAL_StatusTypeDef HAL_ETHEx_SetGCLRegisters(ETH_HandleTypeDef *heth, const ETH_GCLConfigTypeDef *gclconf);
 HAL_StatusTypeDef HAL_ETHEx_SetGCLConfig(ETH_HandleTypeDef *heth, ETH_GCLConfigTypeDef *gclconf);
 HAL_StatusTypeDef HAL_ETHEx_GetGCLRegisters(ETH_HandleTypeDef *heth, ETH_GCLConfigTypeDef *gclconf);
 #endif /* HAL_ETH_USE_TAS */

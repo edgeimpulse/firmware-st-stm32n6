@@ -918,6 +918,9 @@ typedef struct
   uint32_t AdcClockSelection;      /*!< Specifies ADC interface clock source.
                                         This parameter can be a value of @ref RCCEx_ADC_Clock_Source     */
 
+  uint32_t AdcDivider;             /*!< Specifies ADC clock divider.
+                                        This parameter can be a value between 1 to 256 */
+
   uint32_t Adf1ClockSelection;     /*!< Specifies ADF1 Clock clock source.
                                         This parameter can be a value of @ref RCCEx_ADF1_Clock_Source    */
 
@@ -1214,6 +1217,17 @@ typedef struct
   */
 #define __HAL_RCC_GET_ADC_SOURCE() LL_RCC_GetADCClockSource(LL_RCC_ADC_CLKSOURCE)
 
+/** @brief  Macro to configure the ADC clock divider.
+  * @param  __ADC_DIVIDER__ specifies  clock divider for ADC.
+  *         This parameter can be a value between 1 and 256.
+  */
+#define __HAL_RCC_ADC_DIVIDER_CONFIG(__ADC_DIVIDER__) LL_RCC_SetADCPrescaler((__ADC_DIVIDER__) - 1U)
+
+/** @brief  Macro to get the ADC clock divider.
+  * @retval The divider can be a value between 1 and 256.
+  */
+#define __HAL_RCC_GET_ADC_DIVIDER() (LL_RCC_GetADCPrescaler() + 1U)
+
 /** @brief  Macro to configure the ADF1 clock
   * @param  __ADF1_CLKSOURCE__ specifies the ADF1  clock source.
   *         This parameter can be one of the following values:
@@ -1387,13 +1401,13 @@ typedef struct
   *         This parameter can be a value between 1 and 16.
   */
 #define __HAL_RCC_ETH1PTP_DIVIDER_CONFIG(__ETH1PTP_DIVIDER__) \
-  LL_RCC_SetETH1PTPDivider(__ETH1PTP_DIVIDER__)
+  LL_RCC_SetETH1PTPDivider(((__ETH1PTP_DIVIDER__) - 1U) << RCC_CCIPR2_ETH1PTPDIV_Pos)
 
 /** @brief  Macro to get the ETH1 PTP divider.
   * @retval The divider can be a value between 1 and 16.
   */
 #define __HAL_RCC_GET_ETH1PTP_DIVIDER() \
-  LL_RCC_GetETH1PTPDivider() >> RCC_CCIPR2_ETH1PTPDIV_Pos;
+  ((LL_RCC_GetETH1PTPDivider() >> RCC_CCIPR2_ETH1PTPDIV_Pos) + 1U)
 
 /** @brief  Macro to configure the FDCAN kernel clock source.
   * @param  __FDCAN_CLKSOURCE__ specifies  clock source for FDCAN kernel
@@ -2679,6 +2693,9 @@ HAL_StatusTypeDef HAL_RCCEx_PLLSSCGConfig(uint32_t PLLnumber, const RCC_PLLInitT
    ((__SOURCE__) == RCC_ADCCLKSOURCE_HSI)  || \
    ((__SOURCE__) == RCC_ADCCLKSOURCE_PIN)  || \
    ((__SOURCE__) == RCC_ADCCLKSOURCE_TIMG))
+
+#define IS_RCC_ADCDIVIDER(__VALUE__) \
+  ((1U <= (__VALUE__)) && ((__VALUE__) <= 256U))
 
 #define IS_RCC_ADF1CLKSOURCE(__SOURCE__) \
   (((__SOURCE__) == RCC_ADF1CLKSOURCE_HCLK) || \

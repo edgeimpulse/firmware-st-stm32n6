@@ -10,7 +10,7 @@
  ******************************************************************************
  * @attention
  *
- * Copyright (c) 2023 STMicroelectronics.
+ * Copyright (c) 2024 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -24,14 +24,8 @@
 #ifndef __ISP_PARAM_CONF__H
 #define __ISP_PARAM_CONF__H
 
-/* Uncomment the following line if you want to read the IQT parameter from flash memory.
- * Keep that line commented if you want to define the IQT parameter in that file.
- */
-//#define ISP_MW_CONFIG_FROM_NVMEM
-
-#if !defined(ISP_MW_CONFIG_FROM_NVMEM)
-/* Minimal configuration (demosaicing + decimation = 1) of dummy sensor */
-static const ISP_IQParamTypeDef ISP_IQParamCacheInit = {
+/* Minimal configuration (demosaicing + decimation = 1) of DUMMY sensor */
+static const ISP_IQParamTypeDef ISP_IQParamCacheInit_DUMMY = {
     .sensorGainStatic = {
         .gain = 0,
     },
@@ -40,7 +34,7 @@ static const ISP_IQParamTypeDef ISP_IQParamCacheInit = {
     },
     .AECAlgo = {
         .enable = 0,
-        .exposureCompensation = 0,
+        .exposureCompensation = EXPOSURE_TARGET_0_0_EV,
     },
     .statRemoval = {
         .enable = 0,
@@ -55,25 +49,15 @@ static const ISP_IQParamTypeDef ISP_IQParamCacheInit = {
         .enable = 0,
         .threshold = 0,
     },
-    .decimation = {
-        .factor = 1,
-    },
     .blackLevelStatic = {
         .enable = 0,
         .BLCR = 0,
         .BLCG = 0,
         .BLCB = 0,
     },
-    .blackLevelAlgo = {
-        .enable = 0,
-        .referenceGain = { 0, 0, 0, 0, 0, },
-        .BLCR = { 0, 0, 0, 0, 0, },
-        .BLCG = { 0, 0, 0, 0, 0, },
-        .BLCB = { 0, 0, 0, 0, 0, },
-    },
     .demosaicing = {
         .enable = 1,
-        .type = 0,
+        .type = ISP_DEMOS_TYPE_RGGB,
         .peak = 0,
         .lineV = 0,
         .lineH = 0,
@@ -81,9 +65,9 @@ static const ISP_IQParamTypeDef ISP_IQParamCacheInit = {
     },
     .ispGainStatic = {
         .enable = 0,
-        .ispGainB = 0,
-        .ispGainG = 0,
         .ispGainR = 0,
+        .ispGainG = 0,
+        .ispGainB = 0,
     },
     .colorConvStatic = {
         .enable = 0,
@@ -126,7 +110,13 @@ static const ISP_IQParamTypeDef ISP_IQParamCacheInit = {
         .enablePipe1 = 0,
         .enablePipe2 = 0,
     },
+    .sensorDelay = {
+        .delay = 0,
+    },
 };
-#endif /* !defined(ISP_MW_CONFIG_FROM_NVMEM) */
+
+static const ISP_IQParamTypeDef* ISP_IQParamCacheInit[] = {
+    &ISP_IQParamCacheInit_DUMMY
+};
 
 #endif /* __ISP_PARAM_CONF__H */

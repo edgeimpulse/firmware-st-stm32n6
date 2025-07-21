@@ -34,7 +34,6 @@
 
 
 /* Define the driver information structure that is only available within this file.  */
-/* Place Ethernet BD at uncacheable memory*/
 static  NX_DRIVER_INFORMATION nx_driver_information;
 
 /* Rounded header size */
@@ -46,10 +45,8 @@ USHORT                     packet_type;
 
 #ifdef NX_DRIVER_ENABLE_PTP
 TIMESTAMP_CALLBACK timestamp_callback = NULL;
-#define SUBSECOND_INCREMENT 20 << 16
 #define HAL_PTP_TIMEOUT      0xFU
-#define PTP_REF_CLK 50000000UL
-static ETH_PTP_ConfigTypeDef ptpconfig = {0};
+#define PTP_REF_CLK          50000000UL
 #endif
 /****** DRIVER SPECIFIC ****** Start of part/vendor specific data area.  Include hardware-specific data here!  */
 
@@ -79,11 +76,6 @@ static VOID         _nx_driver_transfer_to_netx(NX_IP *ip_ptr, NX_PACKET *packet
 #else
 static VOID         _nx_driver_transfer_to_netx(NX_IP *ip_ptr, NX_PACKET *packet_ptr);
 #endif /* NX_DRIVER_ENABLE_PTP */
-
-#ifdef NX_DRIVER_INTERNAL_TRANSMIT_QUEUE
-static VOID         _nx_driver_transmit_packet_enqueue(NX_PACKET *packet_ptr);
-static NX_PACKET    *_nx_driver_transmit_packet_dequeue(VOID);
-#endif /* NX_DRIVER_INTERNAL_TRANSMIT_QUEUE */
 
 /* Define the prototypes for the hardware implementation of this driver. The contents of these routines are
 driver-specific.  */
@@ -432,13 +424,6 @@ static VOID  _nx_driver_initialize(NX_IP_DRIVER *driver_req_ptr)
   /* Clear the deferred events for the driver.  */
   nx_driver_information.nx_driver_information_deferred_events =       0;
 
-#ifdef NX_DRIVER_INTERNAL_TRANSMIT_QUEUE
-
-  /* Clear the transmit queue count and head pointer.  */
-  nx_driver_information.nx_driver_transmit_packets_queued =  0;
-  nx_driver_information.nx_driver_transmit_queue_head =      NX_NULL;
-  nx_driver_information.nx_driver_transmit_queue_tail =      NX_NULL;
-#endif /* NX_DRIVER_INTERNAL_TRANSMIT_QUEUE */
   /* Call the hardware-specific ethernet controller initialization.  */
   status =  _nx_driver_hardware_initialize(driver_req_ptr);
 
@@ -531,6 +516,7 @@ static VOID  _nx_driver_enable(NX_IP_DRIVER *driver_req_ptr)
   ETH_MACConfigTypeDef MACConf;
   UINT            status, duplex, speed = 0;
   INT             PHYLinkState;
+  uint32_t tickstart;
 
   /* Setup the IP pointer from the driver request.  */
   ip_ptr =  driver_req_ptr -> nx_ip_driver_ptr;
@@ -559,9 +545,13 @@ static VOID  _nx_driver_enable(NX_IP_DRIVER *driver_req_ptr)
     return;
   }
 
-  HAL_Delay(1500);
+  tickstart = HAL_GetTick();
 
-  PHYLinkState = nx_eth_phy_get_link_state();
+  do{
+
+    PHYLinkState = nx_eth_phy_get_link_state();
+
+  }while((PHYLinkState <= ETH_PHY_STATUS_LINK_DOWN) && ((HAL_GetTick() - tickstart) < PHY_LINK_TIMEOUT));
 
   /* Get link state */
   if(PHYLinkState <= ETH_PHY_STATUS_LINK_DOWN)
@@ -609,11 +599,12 @@ case ETH_PHY_STATUS_100MBITS_FULLDUPLEX:
     HAL_ETH_GetMACConfig(&eth_handle, &MACConf);
     MACConf.DuplexMode = duplex;
     MACConf.Speed = speed;
+#if defined(ETH_DMASBMR_BLEN4) /* ETH AXI support*/
 if (speed == ETH_SPEED_1000M)
     MACConf.PortSelect = DISABLE;
 else
     MACConf.PortSelect = ENABLE;
-
+#endif
     HAL_ETH_SetMACConfig(&eth_handle, &MACConf);
   }
 
@@ -1364,7 +1355,9 @@ static VOID  _nx_driver_deferred_processing(NX_IP_DRIVER *driver_req_ptr)
   TX_INTERRUPT_SAVE_AREA
 
   ULONG       deferred_events;
-
+#ifdef MULTI_QUEUE_FEATURE
+  ULONG       buff_in_use;
+#endif
   /* Disable interrupts.  */
   TX_DISABLE
 
@@ -1378,34 +1371,39 @@ static VOID  _nx_driver_deferred_processing(NX_IP_DRIVER *driver_req_ptr)
 #ifdef MULTI_QUEUE_FEATURE
     if(deferred_events & NX_DRIVER_DEFERRED_PACKET_TRANSMITTED_CH0)
     {
-      if (eth_handle.TxDescList[ETH_DMA_CH0].BuffersInUse >= (NX_DRIVER_TX_DESCRIPTORS / 2))
+      eth_handle.TxOpCH = ETH_DMA_CH0_IDX;
+      buff_in_use = HAL_ETH_GetTxBuffersNumber(&eth_handle);
+
+      if (buff_in_use >= NX_DRIVER_TX_RELEASE_THRESHOLD)
       {
-        nx_driver_information.nx_driver_information_number_of_transmit_buffers_in_use[ETH_DMA_CH0] = 0;
-        eth_handle.TxCH = ETH_DMA_CH0;
         HAL_ETH_ReleaseTxPacket(&eth_handle);
+        nx_driver_information.nx_driver_information_number_of_transmit_buffers_in_use[ETH_DMA_CH0_IDX] = buff_in_use;
+
       }
     }
 
-  if(deferred_events & NX_DRIVER_DEFERRED_PACKET_TRANSMITTED_CH1)
-  {
-    if (eth_handle.TxDescList[ETH_DMA_CH1].BuffersInUse >= (NX_DRIVER_TX_DESCRIPTORS / 2))
+    if(deferred_events & NX_DRIVER_DEFERRED_PACKET_TRANSMITTED_CH1)
     {
-      nx_driver_information.nx_driver_information_number_of_transmit_buffers_in_use[ETH_DMA_CH1] = 0;
-      eth_handle.TxCH = ETH_DMA_CH1;
-      HAL_ETH_ReleaseTxPacket(&eth_handle);
+      eth_handle.TxOpCH = ETH_DMA_CH1_IDX;
+      buff_in_use = HAL_ETH_GetTxBuffersNumber(&eth_handle);
+
+      if (buff_in_use >= NX_DRIVER_TX_RELEASE_THRESHOLD)
+      {
+        HAL_ETH_ReleaseTxPacket(&eth_handle);
+        nx_driver_information.nx_driver_information_number_of_transmit_buffers_in_use[ETH_DMA_CH1_IDX] = buff_in_use;
     }
   }
 
   if(deferred_events & NX_DRIVER_DEFERRED_PACKET_RECEIVED_CH0)
   {
-    eth_handle.RxCH = ETH_DMA_CH0;
-    _nx_driver_hardware_packet_received();
+     eth_handle.RxOpCH = ETH_DMA_CH0_IDX;
+     _nx_driver_hardware_packet_received();
   }
 
   if(deferred_events & NX_DRIVER_DEFERRED_PACKET_RECEIVED_CH1)
   {
-    eth_handle.RxCH = ETH_DMA_CH1;
-    _nx_driver_hardware_packet_received();
+     eth_handle.RxOpCH = ETH_DMA_CH1_IDX;
+     _nx_driver_hardware_packet_received();
   }
 
 #else
@@ -1484,41 +1482,6 @@ NX_LINK_TIME link_time;
     link_time.second_high = 0;
     link_time.second_low = ptp_ts_ptr[1];
 
-#ifdef DEMO_TSN_LISTENER
-TIMESTAMP_INFO *ts_info_ptr;
-NX_PTP_TIME rx_ts;
-TIMESTAMP_INFO rx_ts_info;
-UINT type =( *(packet_ptr->nx_packet_prepend_ptr + 16) << 8) | (*(packet_ptr->nx_packet_prepend_ptr + 17));
-
-    if((timestamp_callback) &&(type == packet_type))
-    {
-
-        rx_ts.second_high = link_time.second_high;
-        rx_ts.second_low = link_time.second_low;
-        rx_ts.nanosecond = link_time.nano_second;
-        timestamp_callback(packet_ptr, TIME_STAMP_TYPE_PACKET_RX, &rx_ts);
-#ifdef OPCUA_RAW_PACKET
-        ts_info_ptr = (TIMESTAMP_INFO *)(packet_ptr->nx_packet_prepend_ptr + 18);
-        memcpy(&rx_ts_info, ts_info_ptr, sizeof(rx_ts_info));
-        rx_ts_info.ts_gen.nanosecond = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_gen.nanosecond);
-        rx_ts_info.ts_gen.second_low = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_gen.second_low);
-        rx_ts_info.ts_gen.second_high = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_gen.second_high);
-
-        rx_ts_info.ts_in_txbd.nanosecond = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_in_txbd.nanosecond);
-        rx_ts_info.ts_in_txbd.second_low = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_in_txbd.second_low);
-        rx_ts_info.ts_in_txbd.second_high = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_in_txbd.second_high);
-
-        rx_ts_info.ts_tx_done.nanosecond = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_tx_done.nanosecond);
-        rx_ts_info.ts_tx_done.second_low = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_tx_done.second_low);
-        rx_ts_info.ts_tx_done.second_high = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_tx_done.second_high);
-
-        rx_ts_info.ts_counter = NX_CHANGE_ULONG_ENDIAN(rx_ts_info.ts_counter);
-
-        rx_timestamp(packet_ptr, &rx_ts_info);
-#endif /* OPCUA_RAW_PACKET */
-    }
-
-#endif
     nx_link_ethernet_packet_received(ip_ptr,
                                      nx_driver_information.nx_driver_information_interface -> nx_interface_index,
                                      packet_ptr, &link_time);
@@ -1632,186 +1595,6 @@ static VOID _nx_driver_transfer_to_netx(NX_IP *ip_ptr, NX_PACKET *packet_ptr)
 }
 #endif /* NX_DRIVER_ENABLE_PTP */
 
-#ifdef NX_DRIVER_INTERNAL_TRANSMIT_QUEUE
-/**************************************************************************/
-/*                                                                        */
-/*  FUNCTION                                               RELEASE        */
-/*                                                                        */
-/*    _nx_driver_transmit_packet_enqueue                                  */
-/*                                                           6.1          */
-/*  AUTHOR                                                                */
-/*                                                                        */
-/*    Yuxin Zhou, Microsoft Corporation                                   */
-/*                                                                        */
-/*  DESCRIPTION                                                           */
-/*                                                                        */
-/*    This function queues a transmit packet when the hardware transmit   */
-/*    queue does not have the resources (buffer descriptors, etc.) to     */
-/*    send the packet.  The queue is maintained as a singularly linked-   */
-/*    list with head and tail pointers. The maximum number of packets on  */
-/*    the transmit queue is regulated by the constant                     */
-/*    NX_DRIVER_MAX_TRANSMIT_QUEUE_DEPTH. When this number is exceeded,   */
-/*    the oldest packet is discarded after the new packet is queued.      */
-/*                                                                        */
-/*    Note: that it is assumed further driver interrupts are locked out   */
-/*    during the call to this driver utility.                             */
-/*                                                                        */
-/*  INPUT                                                                 */
-/*                                                                        */
-/*    packet_ptr                            Packet pointer                */
-/*                                                                        */
-/*  OUTPUT                                                                */
-/*                                                                        */
-/*    None                                                                */
-/*                                                                        */
-/*  CALLS                                                                 */
-/*                                                                        */
-/*    _nx_packet_transmit_release           Release packet                */
-/*                                                                        */
-/*  CALLED BY                                                             */
-/*                                                                        */
-/*    _nx_driver_hardware_packet_send       Driver packet send function   */
-/*                                                                        */
-/*  RELEASE HISTORY                                                       */
-/*                                                                        */
-/*    DATE              NAME                      DESCRIPTION             */
-/*                                                                        */
-/*  05-19-2020     Yuxin Zhou               Initial Version 6.0           */
-/*  xx-xx-xxxx     Yuxin Zhou               Modified comment(s),          */
-/*                                            resulting in version 6.1    */
-/*                                                                        */
-/**************************************************************************/
-static VOID _nx_driver_transmit_packet_enqueue(NX_PACKET *packet_ptr)
-{
-
-  /* Determine if there is anything on the queue.  */
-  if (nx_driver_information.nx_driver_transmit_queue_tail)
-  {
-
-    /* Yes, something is on the transmit queue. Simply add the new packet to the
-    tail.  */
-    nx_driver_information.nx_driver_transmit_queue_tail -> nx_packet_queue_next  =  packet_ptr;
-
-    /* Update the tail pointer.  */
-    nx_driver_information.nx_driver_transmit_queue_tail =  packet_ptr;
-  }
-  else
-  {
-
-    /* First packet on the transmit queue.  */
-
-    /* Setup head pointers.  */
-    nx_driver_information.nx_driver_transmit_queue_head =  packet_ptr;
-    nx_driver_information.nx_driver_transmit_queue_tail =  packet_ptr;
-
-    /* Set the packet's next pointer to NULL.  */
-    packet_ptr -> nx_packet_queue_next =  NX_NULL;
-  }
-
-  /* Increment the total packets queued.  */
-  nx_driver_information.nx_driver_transmit_packets_queued++;
-
-  /* Determine if the total packet queued exceeds the driver's maximum transmit
-  queue depth.  */
-  if (nx_driver_information.nx_driver_transmit_packets_queued > NX_DRIVER_MAX_TRANSMIT_QUEUE_DEPTH)
-  {
-
-    /* Yes, remove the head packet (oldest) packet in the transmit queue and release it.  */
-    packet_ptr =  nx_driver_information.nx_driver_transmit_queue_head;
-
-    /* Adjust the head pointer to the next packet.  */
-    nx_driver_information.nx_driver_transmit_queue_head =  packet_ptr -> nx_packet_queue_next;
-
-    /* Decrement the transmit packet queued count.  */
-    nx_driver_information.nx_driver_transmit_packets_queued--;
-
-    /* Remove the ethernet header.  */
-    NX_DRIVER_ETHERNET_HEADER_REMOVE(packet_ptr);
-
-    /* Release the packet.  */
-    nx_packet_transmit_release(packet_ptr);
-  }
-}
-
-
-/**************************************************************************/
-/*                                                                        */
-/*  FUNCTION                                               RELEASE        */
-/*                                                                        */
-/*    _nx_driver_transmit_packet_dequeue                                  */
-/*                                                           6.1          */
-/*  AUTHOR                                                                */
-/*                                                                        */
-/*    Yuxin Zhou, Microsoft Corporation                                   */
-/*                                                                        */
-/*  DESCRIPTION                                                           */
-/*                                                                        */
-/*    This function removes the oldest transmit packet when the hardware  */
-/*    transmit queue has new resources (usually after a transmit complete */
-/*    interrupt) to send the packet. If there are no packets in the       */
-/*    transmit queue, a NULL is returned.                                 */
-/*                                                                        */
-/*    Note: that it is assumed further driver interrupts are locked out   */
-/*    during the call to this driver utility.                             */
-/*                                                                        */
-/*  INPUT                                                                 */
-/*                                                                        */
-/*    None                                                                */
-/*                                                                        */
-/*  OUTPUT                                                                */
-/*                                                                        */
-/*    packet_ptr                            Packet pointer                */
-/*                                                                        */
-/*  CALLS                                                                 */
-/*                                                                        */
-/*    None                                                                */
-/*                                                                        */
-/*  CALLED BY                                                             */
-/*                                                                        */
-/*    _nx_driver_hardware_packet_send       Driver packet send function   */
-/*                                                                        */
-/*  RELEASE HISTORY                                                       */
-/*                                                                        */
-/*    DATE              NAME                      DESCRIPTION             */
-/*                                                                        */
-/*  05-19-2020     Yuxin Zhou               Initial Version 6.0           */
-/*  xx-xx-xxxx     Yuxin Zhou               Modified comment(s),          */
-/*                                            resulting in version 6.1    */
-/*                                                                        */
-/**************************************************************************/
-static NX_PACKET *_nx_driver_transmit_packet_dequeue(VOID)
-{
-
-  NX_PACKET   *packet_ptr;
-
-
-  /* Pickup the head pointer of the tranmit packet queue.  */
-  packet_ptr =  nx_driver_information.nx_driver_transmit_queue_head;
-
-  /* Determine if there is anything on the queue.  */
-  if (packet_ptr)
-  {
-
-    /* Yes, something is on the transmit queue. Simply the packet from the head of the queue.  */
-
-    /* Update the head pointer.  */
-    nx_driver_information.nx_driver_transmit_queue_head =  packet_ptr -> nx_packet_queue_next;
-
-    /* Clear the next pointer in the packet.  */
-    packet_ptr -> nx_packet_queue_next =  NX_NULL;
-
-    /* Decrement the transmit packet queued count.  */
-    nx_driver_information.nx_driver_transmit_packets_queued--;
-  }
-
-  /* Return the packet pointer - NULL if there are no packets queued.  */
-  return(packet_ptr);
-}
-
-#endif /* NX_DRIVER_INTERNAL_TRANSMIT_QUEUE */
-
-
-
 /****** DRIVER SPECIFIC ****** Start of part/vendor specific internal driver functions.  */
 
 /**************************************************************************/
@@ -1858,8 +1641,8 @@ static NX_PACKET *_nx_driver_transmit_packet_dequeue(VOID)
 /**************************************************************************/
 static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
 {
-#ifdef MULTI_QUEUE_FEATURE
-  uint32_t ch = 0;
+#ifdef ETH_MULTIQUEUE_SUPPORTED
+  uint32_t ch;
 #endif
 
   /* Default to successful return.  */
@@ -1871,7 +1654,7 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
   nx_driver_information.nx_driver_information_transmit_release_index = 0;
 
   /* Clear the number of buffers in use counter.  */
-#ifdef MULTI_QUEUE_FEATURE
+#ifdef ETH_MULTIQUEUE_SUPPORTED
   for (ch = 0; ch < ETH_DMA_TX_CH_CNT; ch++)
   {
     nx_driver_information.nx_driver_information_number_of_transmit_buffers_in_use[ch] = 0;
@@ -1894,9 +1677,12 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
 
   ETH_DMAConfigTypeDef dmaDefaultConf;
 
-#ifdef MULTI_QUEUE_FEATURE
+  memset(&dmaDefaultConf, 0, sizeof(ETH_DMAConfigTypeDef));
+  HAL_ETH_GetDMAConfig(&eth_handle, &dmaDefaultConf);
+
   /*--------------- ETHERNET DMA registers default Configuration --------------*/
-  /* Common DMA configuration */
+#ifdef ETH_MULTIQUEUE_SUPPORTED
+/* Common DMA configuration */
   dmaDefaultConf.AddressAlignedBeats = ENABLE;
   dmaDefaultConf.AXIBLENMaxSize = ETH_BLEN_MAX_SIZE_4;
   dmaDefaultConf.BurstMode = ETH_BURSTLENGTH_FIXED;
@@ -1904,6 +1690,7 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
   dmaDefaultConf.TxOSRLimit = ETH_TX_OSR_LIMIT_3;
   dmaDefaultConf.TransmitArbitrationAlgorithm = ETH_DMATXARBITRATION_FIXED_PRIO;
   dmaDefaultConf.TransmitPriority = DISABLE;
+
 
   for (ch = 0; ch < ETH_DMA_CH_CNT; ch++)
   {
@@ -1918,6 +1705,7 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
     dmaDefaultConf.DMACh[ch].MaximumSegmentSize = 0x218U;
   }
 #else
+
 #if defined(ETH_DMASBMR_BLEN4) /* ETH AXI support*/
   dmaDefaultConf.DMAArbitration = ETH_DMAARBITRATION_TX;
 #else
@@ -1941,6 +1729,7 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
   dmaDefaultConf.TCPSegmentation = DISABLE;
   dmaDefaultConf.MaximumSegmentSize = 536;
 #endif
+
 #ifdef STM32_ETH_HAL_LEGACY
   dmaDefaultConf.DropTCPIPChecksumErrorFrame = ENABLE;
   dmaDefaultConf.ReceiveStoreForward =  DISABLE;
@@ -1952,7 +1741,7 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
   dmaDefaultConf.EnhancedDescriptorFormat =  DISABLE;
   dmaDefaultConf.DescriptorSkipLength =  DISABLE;
 #endif
-#endif /* MULTI_QUEUE_FEATURE */
+#endif /* ETH_MULTIQUEUE_SUPPORTED */
 
   /* enable OSF bit to enhance throughput */
   HAL_ETH_SetDMAConfig(&eth_handle, &dmaDefaultConf);
@@ -1979,36 +1768,6 @@ static UINT  _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
 
   /* Clear the number of buffers in use counter.  */
   nx_driver_information.nx_driver_information_multicast_count = 0;
-
-#ifdef NX_DRIVER_ENABLE_PTP
-  /*
-  * PTP timestamp support
-  */
-  uint32_t ptp_clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_ETH1PTP);
-  /* initialize tx timestamp support */
-  nx_driver_information.nx_driver_ptp_ptr = NULL;
-
-  /* Initialize PTP timestamp clock */
-  ptpconfig.Timestamp = ENABLE;
-  ptpconfig.TimestampInitialize = DISABLE;
-  ptpconfig.TimestampUpdate = DISABLE;
-  ptpconfig.TimestampEthernet = DISABLE;
-  ptpconfig.TimestampIPv6 = DISABLE;
-  ptpconfig.TimestampIPv4 = DISABLE;
-  ptpconfig.TimestampEvent = DISABLE;
-  ptpconfig.TimestampMaster = DISABLE;
-  ptpconfig.TimestampFilter = DISABLE;
-  ptpconfig.TimestampRolloverMode = ENABLE;
-  ptpconfig.TimestampUpdateMode = HAL_ETH_PTP_FINE_TS_UPDATE;
-  ptpconfig.TimestampAll = ENABLE;
-  ptpconfig.TimestampV2 = ENABLE;
-  ptpconfig.TimestampAddendUpdate = ENABLE;
-  ptpconfig.TimestampSubsecondInc = SUBSECOND_INCREMENT;
-  ptpconfig.TimestampAddend = (ULONG)((0x100000000UL * PTP_REF_CLK + ptp_clk / 2) / ptp_clk);
-
-  /* Set PTP Configuration */
-  HAL_ETH_PTP_SetConfig(&eth_handle, &ptpconfig);
-#endif /* NX_DRIVER_ENABLE_PTP */
 
   /* Return success!  */
   return(NX_SUCCESS);
@@ -2163,53 +1922,31 @@ static UINT  _nx_driver_hardware_packet_send(NX_PACKET *packet_ptr)
 {
 
 UINT status;
-UCHAR queue_number = 0;
+UCHAR channel_number = 0;
 
 NX_INTERFACE *interface_ptr;
 
     interface_ptr = nx_driver_information.nx_driver_information_interface;
 
-    status = nx_shaper_hw_queue_id_get(interface_ptr,packet_ptr,&queue_number);
+    status = nx_shaper_hw_queue_id_get(interface_ptr,packet_ptr,&channel_number);
 
-    status =  _nx_driver_hardware_packet_send_distribute(packet_ptr, queue_number);
+    status =  _nx_driver_hardware_packet_send_distribute(packet_ptr, channel_number);
 
  return status;
 
 }
 
-static UINT  _nx_driver_hardware_packet_send_distribute(NX_PACKET *packet_ptr, UINT queue_number)
+static UINT  _nx_driver_hardware_packet_send_distribute(NX_PACKET *packet_ptr, UINT channel_number)
 {
   NX_PACKET       *pktIdx;
   UINT            buffLen = 0;
   int i = 0;
 
-  uint32_t TxTimeout = 10;
-  uint32_t tickstart;
 
-  ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
+
+  static ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
 
   memset(Txbuffer, 0 , ETH_TX_DESC_CNT*sizeof(ETH_BufferTypeDef));
-
-#ifdef DEMO_TSN_TALKER
-ETH_TimeTypeDef time1;
-ETH_TimeTypeDef time2;
-
-UINT type;
-
-    type =( *(packet_ptr->nx_packet_prepend_ptr + 16) << 8) | (*(packet_ptr->nx_packet_prepend_ptr + 17));
-    if (type == packet_type)
-    {
-       HAL_ETH_PTP_GetTime(&heth, &time1);
-       HAL_ETH_PTP_GetTime(&heth, &time2);
-
-
-        set_transmit_timestamp.second_low = time1.NanoSeconds < 500000000UL ? time2.Seconds : time1.Seconds;
-        set_transmit_timestamp.nanosecond = (LONG)time1.NanoSeconds;
-
-        if(timestamp_callback)
-            timestamp_callback(packet_ptr, TIME_STAMP_TYPE_PACKET_IN_TXBD, &set_transmit_timestamp);
-    }
-#endif /* DEMO_TSN_TALKER */
 
   for (pktIdx = packet_ptr;pktIdx != NX_NULL ; pktIdx = pktIdx -> nx_packet_next)
   {
@@ -2261,49 +1998,13 @@ UINT type;
   }
 #endif /* NX_DRIVER_ENABLE_PTP */
 
-  TxPacketCfg.TxCH = queue_number;
+  TxPacketCfg.TxDMACh = channel_number;
   TxPacketCfg.Length = buffLen;
   TxPacketCfg.TxBuffer = Txbuffer;
   TxPacketCfg.pData = (uint32_t *)packet_ptr;
 
-  tickstart = HAL_GetTick();
-
-  /* Wait for descriptors to become available */
-  do
-  {
-    if(HAL_ETH_Transmit_IT(&eth_handle, &TxPacketCfg) != HAL_OK)
-    {
-      /* Transmit failed */
-      if(HAL_ETH_GetError(&eth_handle) & HAL_ETH_ERROR_BUSY)
-      {
-        eth_handle.TxCH = queue_number;
-        /* No TX descriptors available, wait for previous transfers to be completed  */
-        HAL_ETH_ReleaseTxPacket(&eth_handle);
-      }
-      else
-      {
-        /* Other error */
-        HAL_ETH_TxFreeCallback((uint32_t *)packet_ptr);
-      }
-    }
-    else
-    {
-      nx_driver_information.nx_driver_information_number_of_transmit_buffers_in_use[queue_number]++;
-
-      /* Transmit successful */
-      return  NX_SUCCESS;
-    }
-
-    /* Check for the Timeout */
-    if (TxTimeout != HAL_MAX_DELAY)
-    {
-      if (((HAL_GetTick() - tickstart) > TxTimeout) || (TxTimeout == 0U))
-      {
-        eth_handle.ErrorCode |= HAL_ETH_ERROR_TIMEOUT;
-        return NX_DRIVER_ERROR;
-      }
-    }
-  }while(HAL_ETH_GetError(&eth_handle) & HAL_ETH_ERROR_BUSY);
+  if(HAL_ETH_Transmit_IT(&eth_handle, &TxPacketCfg) != HAL_OK)
+    return NX_DRIVER_ERROR;
 
   return  NX_SUCCESS;
 }
@@ -2314,7 +2015,7 @@ static UINT  _nx_driver_hardware_packet_send(NX_PACKET *packet_ptr)
   NX_PACKET       *pktIdx;
   UINT            buffLen = 0;
 
-  ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
+  static ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
   memset(Txbuffer, 0 , ETH_TX_DESC_CNT*sizeof(ETH_BufferTypeDef));
 
 
@@ -2581,25 +2282,6 @@ void HAL_ETH_TxPtpCallback(uint32_t * buff, ETH_TimeStampTypeDef *timestamp)
     nx_ptp_client_packet_timestamp_notify(nx_driver_information.nx_driver_ptp_ptr,
                                           release_packet, &ts);
   }
-
-#ifdef DEMO_TSN_TALKER
-
-UINT        type =( *(release_packet->nx_packet_prepend_ptr - 2 ) << 8) |
-                     (*(release_packet->nx_packet_prepend_ptr - 1));
-            /* Handle PTP timestamp notification */
-            if (type == packet_type)
-            {
-                if (0U == (heth.Instance ->MACTSCR & ETH_MACTSCR_TSCTRLSSR))
-                {
-                    /* Binary rollover, 0.465ns accuracy. */
-                    ts.nanosecond = (tas_timestamp.nanosecond * 465U) / 1000U;
-                }
-
-                if (timestamp_callback)
-                    timestamp_callback(release_packet, TIME_STAMP_TYPE_PACKET_TX_DONE, &ts);
-
-            }
-#endif
 }
 #endif /* NX_DRIVER_ENABLE_PTP */
 
@@ -2764,12 +2446,12 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
 #ifdef MULTI_QUEUE_FEATURE
   uint32_t channel = heth->RxCH;
 
-  if (channel == ETH_DMA_CH0)
-  {
+  if ((channel & ETH_DMA_CH0) == ETH_DMA_CH0)
     nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_RECEIVED_CH0;
-  }
-  else /* ETH_DMA_CH1 */
+
+  if ((channel & ETH_DMA_CH1) == ETH_DMA_CH1)
     nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_RECEIVED_CH1;
+
 #else
   nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_RECEIVED;
 #endif /* MULTI_QUEUE_FEATURE */
@@ -2787,10 +2469,10 @@ void HAL_ETH_TxCpltCallback(ETH_HandleTypeDef *heth)
 #ifdef MULTI_QUEUE_FEATURE
   uint32_t channel = heth->TxCH;
 
-  if (channel == ETH_DMA_CH0)
+  if ((channel & ETH_DMA_CH0) == ETH_DMA_CH0)
     nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_TRANSMITTED_CH0;
 
-  if (channel == ETH_DMA_CH1)
+  if ((channel & ETH_DMA_CH1) == ETH_DMA_CH1)
     nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_TRANSMITTED_CH1;
 #else
     nx_driver_information.nx_driver_information_deferred_events |= NX_DRIVER_DEFERRED_PACKET_TRANSMITTED;
@@ -2963,7 +2645,7 @@ UINT nx_driver_set_timestamp_callback(USHORT type, TIMESTAMP_CALLBACK callback)
 }
 #endif /* NX_DRIVER_ENABLE_PTP */
 
-#ifdef NX_DRIVER_ENABLE_TSN
+#ifdef MULTI_QUEUE_FEATURE
 UINT nx_driver_shaper_config(NX_SHAPER_DRIVER_PARAMETER* parameter, UCHAR shaper_capability )
 {
 UINT status;
@@ -2982,7 +2664,7 @@ NX_SHAPER_HW_QUEUE hw_queue[ETH_MTL_TX_Q_CNT];
 
     return status;
 }
-
+#endif /* MULTI_QUEUE_FEATURE */
 #ifdef NX_DRIVER_ENABLE_CBS
 UINT nx_driver_shaper_cbs_entry(NX_SHAPER_DRIVER_PARAMETER *parameter)
 {
@@ -3070,7 +2752,8 @@ ETH_FPEConfigTypeDef fpeconf;
             fpeconf.SendRespondmPacket = DISABLE;
             fpeconf.SendVerifymPacket = DISABLE;
             fpeconf.HoldReleaseStatus = 0;
-            fpeconf.PreemptionClassification = (((uint32_t)(((uint32_t)(~fpe_parameter->express_queue_bitmap)) << 8)) & 0x300);
+            fpeconf.PreemptionClassification = (((uint32_t)(((uint32_t)(~fpe_parameter->express_queue_bitmap))
+                                                            << ETH_MTLFPECSR_PEC_Pos)) & ETH_MTLFPECSR_PEC_Msk);
             fpeconf.ReleaseAdvance = (fpe_parameter->ra << 16);
             fpeconf.HoldAdvance = fpe_parameter->ha;
 
@@ -3079,7 +2762,8 @@ ETH_FPEConfigTypeDef fpeconf;
             break;
 
         default:
-
+          /* Wrong parameter, Disable FPE feature */
+          HAL_ETHEx_DisableFPE(&heth);
             break;
     }
 
@@ -3166,8 +2850,8 @@ ETH_TASOperationConfigTypeDef opconfig[NX_SHAPER_GCL_LENGTH_MAX];
             {
               HAL_ETH_PTP_GetTime(&heth, &time);
               gate_ctl->BaseTimeRegister = (ULONG64)time.Seconds << 32| (ULONG64)time.NanoSeconds;
-              /*add  5 second delay from now */
-              gate_ctl->BaseTimeRegister += (ULONG64)5 << 32;
+              /*add  1 second delay from now */
+              gate_ctl->BaseTimeRegister += (ULONG64)1 << 32;
             }
 
             estconfig.PTPTimeOffset = PTP_REF_CLK;
@@ -3177,6 +2861,8 @@ ETH_TASOperationConfigTypeDef opconfig[NX_SHAPER_GCL_LENGTH_MAX];
             break;
 
         default:
+          /* Wrong parameter, Disable TAS feature */
+          HAL_ETHEx_DisableEST(&heth);
 
             break;
     }
@@ -3184,5 +2870,4 @@ ETH_TASOperationConfigTypeDef opconfig[NX_SHAPER_GCL_LENGTH_MAX];
     return status;
 }
 #endif /* NX_DRIVER_ENABLE_TAS */
-#endif /* NX_DRIVER_ENABLE_TSN */
 /****** DRIVER SPECIFIC ****** Start of part/vendor specific internal driver functions.  */

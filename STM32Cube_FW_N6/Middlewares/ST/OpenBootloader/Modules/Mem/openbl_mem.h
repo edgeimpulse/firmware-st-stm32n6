@@ -34,7 +34,7 @@ typedef struct
   uint32_t EndAddress;
   uint32_t Size;
   uint32_t Type;
-  void (*Init)(uint32_t Address);
+  uint32_t (*Init)(uint32_t Address);
   uint8_t (*Read)(uint32_t Address);
   void (*Write)(uint32_t Address, uint8_t *Data, uint32_t DataLength);
   void (*JumpToAddress)(uint32_t Address);
@@ -50,17 +50,19 @@ void OPENBL_MEM_JumpToAddress(uint32_t Address);
 void OPENBL_MEM_SetReadOutProtection(uint32_t Address, FunctionalState State);
 void OPENBL_MEM_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength);
 
-void OPENBL_MEM_Init(uint32_t Address);
+uint32_t OPENBL_MEM_Init(uint32_t Address);
+void OPENBL_MEM_Configure(uint32_t Address, void *ConfPtr);
 uint8_t OPENBL_MEM_Read(uint32_t Address, uint32_t MemoryIndex);
 uint32_t OPENBL_MEM_GetAddressArea(uint32_t Address);
 uint32_t OPENBL_MEM_GetMemoryIndex(uint32_t Address);
 uint8_t OPENBL_MEM_CheckJumpAddress(uint32_t Address);
 uint64_t OPENBL_MEM_Verify(uint32_t Address, uint32_t DataAddr, uint32_t DataLength, uint32_t missalignement);
-ErrorStatus OPENBL_MEM_Erase(uint32_t Address, uint8_t *p_Data, uint32_t DataLength);
+ErrorStatus OPENBL_MEM_Erase(uint32_t Address, const uint8_t *p_Data, uint32_t DataLength);
 void OPENBL_MEM_MassErase(uint32_t Address);
 void OPENBL_MEM_SectorErase(uint32_t Address, uint32_t EraseStartAddress, uint32_t EraseEndAddress);
-ErrorStatus OPENBL_MEM_RegisterMemory(OPENBL_MemoryTypeDef *Memory);
-ErrorStatus OPENBL_MEM_SetWriteProtection(FunctionalState State, uint32_t Address, uint8_t *Buffer, uint32_t Length);
+ErrorStatus OPENBL_MEM_RegisterMemory(const OPENBL_MemoryTypeDef *Memory);
+ErrorStatus OPENBL_MEM_SetWriteProtection(FunctionalState State, uint32_t Address, const uint8_t *Buffer,
+                                          uint32_t Length);
 
 #ifdef __cplusplus
 }

@@ -54,7 +54,6 @@ extern "C" {
   */
 
 
-
 /** @defgroup USBD_MEDIA_Exported_Macros
   * @{
   */

@@ -42,7 +42,7 @@
 * Input         : Register Address, length of buffer
 * Output        : data Read
 *******************************************************************************/
-int32_t wm8904_read_reg(wm8904_ctx_t *ctx, uint16_t reg, uint16_t* data, uint16_t length)
+int32_t wm8904_read_reg(const wm8904_ctx_t *ctx, uint16_t reg, uint16_t* data, uint16_t length)
 {
   int32_t ret;
   uint16_t tmp;
@@ -65,7 +65,7 @@ int32_t wm8904_read_reg(wm8904_ctx_t *ctx, uint16_t reg, uint16_t* data, uint16_
 * Input         : Register Address, data to be written, length of buffer
 * Output        : None
 *******************************************************************************/
-int32_t wm8904_write_reg(wm8904_ctx_t *ctx, uint16_t reg, uint16_t *data, uint16_t length)
+int32_t wm8904_write_reg(const wm8904_ctx_t *ctx, uint16_t reg, const uint16_t *data, uint16_t length)
 {
   uint16_t tmp;
   tmp = ((uint16_t)(*data >> 8) & 0x00FFU);

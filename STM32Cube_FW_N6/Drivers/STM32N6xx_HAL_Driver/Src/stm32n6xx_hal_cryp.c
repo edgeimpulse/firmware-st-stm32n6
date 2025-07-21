@@ -343,8 +343,17 @@
                                                                                }while(0)
 #endif /* USE_HAL_SAES_ONLY */
 
-#define HAL_CRYP_FIFO_FLUSH(__HANDLE__) (((CRYP_TypeDef *)((__HANDLE__)->Instance))->CR |=  CRYP_CR_FFLUSH)
+#define CRYP_FIFO_FLUSH(__HANDLE__) (((CRYP_TypeDef *)((__HANDLE__)->Instance))->CR |=  CRYP_CR_FFLUSH)
 
+#define SAES_IP_RESET(__HANDLE__)   do { \
+                                         __IO uint32_t tmpreg; \
+                                         SET_BIT(((SAES_TypeDef *)((__HANDLE__)->Instance))->CR, SAES_CR_IPRST); \
+                                         /* Delay after an SAES peripheral IPRST */ \
+                                         tmpreg = READ_BIT(((SAES_TypeDef *)((__HANDLE__)->Instance))->CR, \
+                                         SAES_CR_IPRST); \
+                                         CLEAR_BIT(((SAES_TypeDef *)((__HANDLE__)->Instance))->CR, SAES_CR_IPRST); \
+                                         UNUSED(tmpreg); \
+                                          } while(0)
 
 /**
   * @}
@@ -533,6 +542,9 @@ HAL_StatusTypeDef HAL_CRYP_Init(CRYP_HandleTypeDef *hcryp)
 #if !defined(USE_HAL_SAES_ONLY) || (USE_HAL_SAES_ONLY == 1)
   if (IS_SAES_INSTANCE(hcryp->Instance))
   {
+    /* Reset of SAES */
+    SAES_IP_RESET(hcryp);
+
     /* Wait for BUSY flag to go to 0 */
     if (CRYP_WaitOnBUSYFlag(hcryp, CRYP_GENERAL_TIMEOUT) != HAL_OK)
     {
@@ -645,7 +657,7 @@ HAL_StatusTypeDef HAL_CRYP_DeInit(CRYP_HandleTypeDef *hcryp)
   *         the configuration information for CRYP module
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_CRYP_SetConfig(CRYP_HandleTypeDef *hcryp, CRYP_ConfigTypeDef *pConf)
+HAL_StatusTypeDef HAL_CRYP_SetConfig(CRYP_HandleTypeDef *hcryp, const CRYP_ConfigTypeDef *pConf)
 {
   /* Check the CRYP handle allocation */
   if ((hcryp == NULL) || (pConf == NULL))
@@ -794,7 +806,7 @@ HAL_StatusTypeDef HAL_CRYP_GetConfig(CRYP_HandleTypeDef *hcryp, CRYP_ConfigTypeD
     pConf->HeaderWidthUnit = hcryp->Init.HeaderWidthUnit;
     pConf->KeyMode         = hcryp->Init.KeyMode;
     pConf->KeySelect       = hcryp->Init.KeySelect;
-    hcryp->Init.KeyProtection   = pConf->KeyProtection;
+    pConf->KeyProtection   = hcryp->Init.KeyProtection;
     pConf->KeyIVConfigSkip = hcryp->Init.KeyIVConfigSkip;
 
     /* Process Unlocked */
@@ -7602,7 +7614,7 @@ static void CRYP_GCMCCM_SetHeaderPhase_IT(CRYP_HandleTypeDef *hcryp)
 #endif /* USE_HAL_CRYP_REGISTER_CALLBACKS */
       }
     }
-    else if ((((headersize_in_bytes / 4U) - (hcryp->CrypHeaderCount)) >= 4U))
+    else if (((headersize_in_bytes / 4U) - (hcryp->CrypHeaderCount)) >= 4U)
     {
       /* Can enter full 4 header words */
 #if (USE_HAL_CRYP_SUSPEND_RESUME == 1U)

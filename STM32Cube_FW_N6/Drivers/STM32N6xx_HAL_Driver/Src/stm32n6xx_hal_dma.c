@@ -166,14 +166,11 @@
     *** Security and privilege attributes ***
     =========================================
     [..]
-          (+) Use HAL_DMA_ConfigChannelAttributes() function to configure DMA channel isolation, security and
-              privilege attributes.
-              (++) Isolation : at channel level (HPDMA only).
+          (+) Use HAL_DMA_ConfigChannelAttributes() function to configure DMA channel security and privilege attributes.
               (++) Security  : at channel level, at source level and at destination level.
               (++) Privilege : at channel level.
           (+) Use HAL_DMA_GetConfigChannelAttributes() function to get the DMA channel attributes.
-          (+) Use HAL_DMA_LockChannelAttributes() function to lock the DMA channel isolation, security and
-              privilege attributes
+          (+) Use HAL_DMA_LockChannelAttributes() function to lock the DMA channel security and privilege attributes
               configuration. This API can be called once after each system boot.
               If called again, HAL_DMA_ConfigChannelAttributes() API has no effect.
               Unlock is done either by a system boot or a by an RCC reset.
@@ -330,6 +327,17 @@ HAL_StatusTypeDef HAL_DMA_Init(DMA_HandleTypeDef *const hdma)
 
   /* Allocate lock resource */
   __HAL_UNLOCK(hdma);
+
+  /* Initialize the callbacks */
+  if (hdma->State == HAL_DMA_STATE_RESET)
+  {
+    /* Clean all callbacks */
+    hdma->XferCpltCallback     = NULL;
+    hdma->XferHalfCpltCallback = NULL;
+    hdma->XferErrorCallback    = NULL;
+    hdma->XferAbortCallback    = NULL;
+    hdma->XferSuspendCallback  = NULL;
+  }
 
   /* Update the DMA channel state */
   hdma->State = HAL_DMA_STATE_BUSY;
@@ -948,7 +956,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* Data Transfer Error Interrupt management *************************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_DTE) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_DTE) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_DTE) != 0U)
@@ -962,7 +970,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* Update Linked-list Error Interrupt management ********************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_ULE) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_ULE) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_ULE) != 0U)
@@ -976,7 +984,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* User Setting Error Interrupt management **************************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_USE) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_USE) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_USE) != 0U)
@@ -990,7 +998,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* Trigger Overrun Interrupt management *****************************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_TO) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_TO) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_TO) != 0U)
@@ -1004,7 +1012,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* Half Transfer Complete Interrupt management **********************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_HT) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_HT) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_HT) != 0U)
@@ -1022,7 +1030,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* Suspend Transfer Interrupt management ****************************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_SUSP) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_SUSP) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_SUSP) != 0U)
@@ -1080,7 +1088,7 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *const hdma)
   }
 
   /* Transfer Complete Interrupt management ***************************************************************************/
-  if ((__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_TC) != 0U))
+  if (__HAL_DMA_GET_FLAG(hdma, DMA_FLAG_TC) != 0U)
   {
     /* Check if interrupt source is enabled */
     if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_TC) != 0U)
@@ -1399,11 +1407,11 @@ uint32_t HAL_DMA_GetError(DMA_HandleTypeDef const *const hdma)
   */
 
 /**
-  * @brief  Configure the DMA channel CID, security and privilege attribute(s).
+  * @brief  Configure the DMA channel security and privilege attribute(s).
   * @note   These attributes cannot be modified when the corresponding lock state is enabled.
   * @param  hdma              : Pointer to a DMA_HandleTypeDef structure that contains the configuration information for
   *                             the specified DMA Channel.
-  * @param  ChannelAttributes : Specifies the DMA channel CID/secure/privilege attributes.
+  * @param  ChannelAttributes : Specifies the DMA channel secure/privilege attributes.
   *                             This parameter can be a one or a combination of @ref DMA_Channel_Attributes.
   * @retval HAL Status.
   */
@@ -1485,24 +1493,11 @@ HAL_StatusTypeDef HAL_DMA_ConfigChannelAttributes(DMA_HandleTypeDef *const hdma,
   }
 #endif /* CPU_IN_SECURE_STATE */
 
-#if defined (CPU_IN_SECURE_STATE)
-  if (p_dma_instance == HPDMA1)
-  {
-    /*static CID field value used ONLY and CID filtering not disable */
-    if ((ChannelAttributes & (DMA_CHANNEL_CID_DISABLE | DMA_CHANNEL_ATTR_CID_STATIC_SELECT))
-        == DMA_CHANNEL_ATTR_CID_STATIC_SELECT)
-    {
-      /* Write static CID configuration */
-      hdma->Instance->CCIDCFGR = ((ChannelAttributes & DMA_CCIDCFGR_SCID_Msk) | DMA_CCIDCFGR_CFEN);
-    }
-  }
-#endif /* CPU_IN_SECURE_STATE */
-
   return HAL_OK;
 }
 
 /**
-  * @brief  Get the DMA channel CID, security and privilege attributes.
+  * @brief  Get the DMA channel security and privilege attributes.
   * @param  hdma               : Pointer to a DMA_HandleTypeDef structure that contains the configuration information
   *                              for the specified DMA Channel.
   * @param  pChannelAttributes : Pointer to the returned attributes.
@@ -1539,24 +1534,13 @@ HAL_StatusTypeDef HAL_DMA_GetConfigChannelAttributes(DMA_HandleTypeDef const *co
   /* Get DMA channel destination security attribute */
   attributes |= ((hdma->Instance->CTR1 & DMA_CTR1_DSEC) == 0U) ? DMA_CHANNEL_DEST_NSEC : DMA_CHANNEL_DEST_SEC;
 
-  /* Get channel allocated CID(s) */
-  if ((hdma->Instance->CCIDCFGR & DMA_CCIDCFGR_CFEN_Msk) == DMA_CCIDCFGR_CFEN)
-  {
-    /* Get CIDs value from Static CID and translate it in bitfield value as defined by DMA_Protection_Attributes */
-    attributes |= (DMA_CHANNEL_ATTR_CID_STATIC_SELECT | (READ_REG(hdma->Instance->CCIDCFGR) & DMA_CCIDCFGR_SCID_Msk));
-  }
-  else
-  {
-    attributes |= DMA_CHANNEL_CID_DISABLE;
-  }
-
   /* return value */
   *pChannelAttributes = attributes;
 
   return HAL_OK;
 }
 
-#if defined(CPU_IN_SECURE_STATE)
+#if defined (CPU_IN_SECURE_STATE)
 /**
   * @brief  Set the DMA channel filtering CID (Isolation configuration). It can be
   *             - static: the CID passed as parameter is programmed;
@@ -1632,7 +1616,6 @@ HAL_StatusTypeDef HAL_DMA_GetIsolationAttributes(DMA_HandleTypeDef const *const 
 
   return HAL_OK;
 }
-
 
 #if defined (CPU_IN_SECURE_STATE)
 /**

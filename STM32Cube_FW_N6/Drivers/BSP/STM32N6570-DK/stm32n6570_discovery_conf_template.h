@@ -29,15 +29,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32n6xx_hal.h"
 
-/* STM32N6570_DK revisions defines */
-#define STM32N6570_DK_A01 0
-#define STM32N6570_DK_B01 1
-#define STM32N6570_DK_C01 2
-
-#if !defined(STM32N6570_DK_REV)
-#define STM32N6570_DK_REV STM32N6570_DK_C01
-#endif
-
 /* COM defines */
 #define USE_COM_LOG                         0U
 #define USE_BSP_COM_FEATURE                 0U
@@ -64,11 +55,7 @@ extern "C" {
 
 
 /* Audio codec defines */
-#if (STM32N6570_DK_REV >= STM32N6570_DK_B01)
 #define USE_AUDIO_CODEC_WM8904
-#else /* (STM32N6570_DK_REV >= STM32N6570_DK_B01) */
-#define USE_AUDIO_CODEC_CS42L51
-#endif /* (STM32N6570_DK_REV >= STM32N6570_DK_B01) */
 
 /* Default Audio IN internal buffer size */
 #define DEFAULT_AUDIO_IN_BUFFER_SIZE        2048U

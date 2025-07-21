@@ -48,14 +48,7 @@ extern "C" {
  */
 #define EVISION_SIGN(x) ((x) > 0.0f ? 1.0f : -1.0f)
 
-/*** Logger parameters ***/
-/*! @brief Text buffer length for a log message */
-#define EVISION_PARAM_LOG_MSG_MAX_LEN (512u)
-/*! @brief Text format for the ID of a log */
-#define EVISION_PARAM_LOG_ID_FMT "[evision_estimator {%d}] - "
-/*! @brief Text buffer length for a log ID */
-#define EVISION_PARAM_LOG_ID_MAX_LEN (32u)
-
+#ifdef ALGO_SW_STATISTICS
 /* YUV parameters */
 /*! @brief Minimum of Y value due to ISP RGB 2 YUV conversion formula */
 #define EVISION_YUV_MIN_Y_VAL (16.0)
@@ -67,6 +60,7 @@ extern "C" {
 #define EVISION_YUV_MAX_VAL (255)
 /*! @brief range of Y value due to ISP RGB 2 YUV conversion formula */
 #define EVISION_YUV_RANGE_Y_VAL (EVISION_YUV_MAX_Y_VAL - EVISION_YUV_MIN_Y_VAL)
+#endif
 
 /**
  * @typedef evision_return_t
@@ -109,31 +103,6 @@ typedef enum evision_state {
      */
     EVISION_STATE_RUN = 2u,
 } evision_state_t;
-
-/**
- * @typedef evision_log_severity_t
- * @brief Indication on the severity of a log.
- *
- * @enum evision_log_severity
- * @brief Indication on the severity of a log.
- *
- * The estimator can yield logs with the callback function evision_api_log_callback.
- * This code indicates the severity of a message. Depending on that it can be handled differently.
- */
-typedef enum evision_log_severity {
-    /*! @brief
-     * Informative log.
-     */
-    EVISION_LOGSEV_INFO = 0u,
-    /*! @brief
-     * Warning log, the results may not be the one expected.
-     */
-    EVISION_LOGSEV_WARNING = 1u,
-    /*! @brief
-     * Error log, something occurred that jeopardizes the execution.
-     */
-    EVISION_LOGSEV_ERROR = 2u,
-} evision_log_severity_t;
 
 /**
  * @typedef evision_image_format_t
@@ -188,16 +157,15 @@ typedef enum evision_image_format {
  ************************************************************************/
 
 /**
- * @brief Callback function signature to handle estimator's logs.
+ * @brief Callback function to output logs.
  *
  * @param[in] msg Received message.
- * @param[in] severity Severity of the log.
  *
  * If the user wants to handle the log and messages yielded by the estimator,
  * a function with this signature must be specified.
  *
  */
-typedef void (*evision_api_log_callback)(const char* const msg, const evision_log_severity_t severity);
+typedef void (*evision_api_log_callback)(const char* const msg);
 
 /************************************************************************
  * Public Structures
@@ -230,6 +198,7 @@ typedef struct evision_image {
     evision_image_format_t format;
 } evision_image_t;
 
+#ifdef ALGO_SW_STATISTICS
 /**
  * @typedef evision_roi_t
  * @brief Represents a Region Of Interest (aka a rectangle of pixels in an image).
@@ -286,25 +255,8 @@ typedef struct evision_roi_array {
      */
     uint16_t len;
 } evision_roi_array_t;
+#endif
 
-/**
- * @typedef evision_log_t
- * @brief Represent an internal logger used by an estimator
- *
- * @struct evision_log
- * @brief Represent an internal logger used by an estimator
- *
- */
-typedef struct evision_log {
-    /*! @brief
-     * String representing the ID of the log yielder.
-     */
-    char id[EVISION_PARAM_LOG_ID_MAX_LEN];
-    /*! @brief
-     * Callback function to be called to handle the log.
-     */
-    evision_api_log_callback clbk;
-} evision_log_t;
 
 /************************************************************************
  * Private Structure Declaration
@@ -319,15 +271,7 @@ typedef struct evision_log {
  ************************************************************************/
 
 /* Library management functions */
-
-/**
- * @fn const char* evision_api_get_version(void)
- * @brief Get the current version of the library.
- *
- * @return String representing the version.
- */
-const char* evision_api_get_version(void);
-
+#ifdef ALGO_SW_STATISTICS
 /* ROI array management */
 
 /**
@@ -365,48 +309,7 @@ evision_roi_array_t* evision_api_roi_array_new_grid(const uint16_t frame_width, 
  * - EVISION_RET_PARAM_ERR
  */
 evision_return_t evision_api_roi_array_delete(evision_roi_array_t* self);
-
-/* Log handling */
-
-/**
- * @fn void evision_api_log_init(evision_log_t* const self)
- * @brief Init the internal logger.
- *
- * @param[in, out] self Concerned log instance address.
- *
- * Init the internal logger. Set a unique identifier for each estimator.
- * It will be added to each log message.
- */
-void evision_api_log_init(evision_log_t* const self);
-
-/**
- * @fn void evision_api_log_raise(const evision_log_t* const self, const evision_log_severity_t severity, const char* fmt, ...)
- * @brief Raise a log.
- *
- * @param[in] self Concerned logger instance address.
- * @param[in] severity Severity level of the log.
- * @param[in] fmt Formated text to be yield (see printf).
- * @param[in] ... Values to be added to the text (see printf).
- *
- * Creates a log message with the identification of the logger (Estimator) and calls the
- * callback (if there is one) to handle the log.
- */
-void evision_api_log_raise(const evision_log_t* const self, const evision_log_severity_t severity, const char* fmt, ...);
-
-/**
- * @fn evision_return_t evision_api_set_log_handler(evision_log_t* logger, evision_api_log_callback handler)
- * @brief Set a callback function to handle an estimator's logs.
- *
- * @param[in, out] logger Logger to which to set the callback function.
- * @param[in] handler Function address to be called when there is a log.
- * @return
- * - EVISION_RET_SUCCESS
- * - EVISION_RET_PARAM_ERR
- *
- * <b>Raises:</b>
- * - EVISION_LOGSEV_WARNING
- */
-evision_return_t evision_api_set_log_handler(evision_log_t* logger, evision_api_log_callback handler);
+#endif
 
 /************************************************************************
  * Public Function Definitions

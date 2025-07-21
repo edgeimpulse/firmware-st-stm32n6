@@ -81,19 +81,11 @@
   * @{
   */
 #if !defined  (HSE_VALUE)
-#if defined(USE_FPGA)
-#define HSE_VALUE      30000000UL /*!< Value of the High-Speed External oscillator in Hz */
-#else
 #define HSE_VALUE      48000000UL /*!< Value of the High-Speed External oscillator in Hz */
-#endif /* USE_FPGA */
 #endif /* HSE_VALUE */
 
 #if !defined  (HSI_VALUE)
-#if defined(USE_FPGA)
-  #define HSI_VALUE      48000000UL /*!< Value of the High-Speed Internal oscillator in Hz */
-#else
-  #define HSI_VALUE      64000000UL /*!< Value of the High-Speed Internal oscillator in Hz */
-#endif /* USE_FPGA */
+#define HSI_VALUE      64000000UL /*!< Value of the High-Speed Internal oscillator in Hz */
 #endif /* HSI_VALUE */
 
 #if !defined  (MSI_VALUE)
@@ -197,15 +189,6 @@ void SystemInit(void)
   RCC->APB4ENSR2 = RCC_APB4ENSR2_SYSCFGENS;
   /* Delay after an RCC peripheral clock enabling */
   (void)RCC->APB4ENR2;
-
-#if defined(STM32N6XX_SI_CUT1_1)
-  /* Setup I/O compensation cells for */
-  SYSCFG->VDDIO2CCCR = 0x00000278UL; /* SDMMC1 domain compensation */
-  SYSCFG->VDDIO3CCCR = 0x00000278UL; /* SDMMC2 domain compensation */
-  SYSCFG->VDDIO4CCCR = 0x00000278UL; /* Hexa-SPI domain compensation */
-  SYSCFG->VDDIO5CCCR = 0x00000278UL; /* Octo-SPI domain compensation */
-  SYSCFG->VDDCCCR    = 0x00000278UL; /* VDD domain compensation */
-#endif /* STM32N6XX_SI_CUT1_1 */
 
   /* Set default Vector Table location after system reset or return from Standby */
   SYSCFG->INITSVTORCR = SCB->VTOR;
@@ -371,13 +354,6 @@ void SystemCoreClockUpdate(void)
       break;
     }
 
-#if defined(USE_FPGA)
-    /********** FPGA SPECIFIC *************/
-    /* FPGA PLL implementation use 32MHz as fixed PLL input frequency */
-    (void)pllsource;
-    sysclk = 32000000UL;
-    pllbypass = 0U;
-#else
     /* Get oscillator frequency used as PLL clock source */
     switch (pllsource)
     {
@@ -404,7 +380,7 @@ void SystemCoreClockUpdate(void)
       /* Nothing to do, should not occur */
       break;
     }
-#endif /* USE_FPGA */
+
     /* Check whether PLL is in bypass mode or not */
     if (pllbypass == 0U)
     {

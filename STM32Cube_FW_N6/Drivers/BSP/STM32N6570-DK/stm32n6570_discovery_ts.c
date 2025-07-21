@@ -127,6 +127,7 @@ TS_Ctx_t  Ts_Ctx[TS_INSTANCES_NBR]     = {0};
 int32_t BSP_TS_Init(uint32_t Instance, TS_Init_t *TS_Init)
 {
   int32_t ret = BSP_ERROR_NONE;
+  GPIO_InitTypeDef gpio_init_structure = {0};
 
   if((Instance >= TS_INSTANCES_NBR) || (TS_Init->Width == 0U) ||( TS_Init->Width > TS_MAX_WIDTH) ||\
                          (TS_Init->Height == 0U) ||( TS_Init->Height > TS_MAX_HEIGHT) ||\
@@ -136,6 +137,15 @@ int32_t BSP_TS_Init(uint32_t Instance, TS_Init_t *TS_Init)
   }
   else
   {
+    /* Initialize NRST pin */
+    gpio_init_structure.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio_init_structure.Pull = GPIO_PULLUP;
+    gpio_init_structure.Pin  = TS_NRST_PIN;
+    HAL_GPIO_Init(TS_NRST_GPIO_PORT, &gpio_init_structure);
+
+    /* Disable GT911 reset */
+    HAL_GPIO_WritePin(TS_NRST_GPIO_PORT, TS_NRST_PIN, GPIO_PIN_SET);
+
     if(GT911_Probe(Instance) != BSP_ERROR_NONE)
     {
       ret = BSP_ERROR_NO_INIT;
@@ -192,6 +202,15 @@ int32_t BSP_TS_DeInit(uint32_t Instance)
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
   }
+
+  /* Reset GT911 */
+  HAL_GPIO_WritePin(TS_NRST_GPIO_PORT, TS_NRST_PIN, GPIO_PIN_RESET);
+
+  /* Reset pin must be driven low for at least 100us for a proper reset */
+  HAL_Delay(1U);
+
+  /* DeInit reset GPIO */
+  HAL_GPIO_DeInit(TS_NRST_GPIO_PORT, TS_NRST_PIN);
 
   return ret;
 }
@@ -335,8 +354,10 @@ __weak void BSP_TS_Callback(uint32_t Instance)
 int32_t BSP_TS_GetState(uint32_t Instance, TS_State_t *TS_State)
 {
   int32_t ret = BSP_ERROR_NONE;
-  uint32_t x_oriented, y_oriented;
-  uint32_t x_diff, y_diff;
+  uint32_t x_oriented;
+  uint32_t y_oriented;
+  uint32_t x_diff;
+  uint32_t y_diff;
 
   if(Instance >= TS_INSTANCES_NBR)
   {
@@ -422,8 +443,10 @@ int32_t BSP_TS_Get_MultiTouchState(uint32_t Instance, TS_MultiTouch_State_t *TS_
 {
   int32_t ret = BSP_ERROR_NONE;
   uint32_t index;
-  uint32_t x_oriented, y_oriented;
-  uint32_t x_diff, y_diff;
+  uint32_t x_oriented;
+  uint32_t y_oriented;
+  uint32_t x_diff;
+  uint32_t y_diff;
 
   if(Instance >= TS_INSTANCES_NBR)
   {

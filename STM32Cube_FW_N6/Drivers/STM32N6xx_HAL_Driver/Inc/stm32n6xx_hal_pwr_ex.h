@@ -69,9 +69,7 @@ typedef struct
                            This parameter can be a value of
                            @ref PWREx_PVM_Mode.                               */
 } PWR_PVMTypeDef;
-/**
-  * @}
-  */
+
 
 /**
   * @brief  PWR VddCORE monitoring configuration structure definition
@@ -1128,6 +1126,11 @@ void              HAL_PWREx_ADCVM_Falling_Callback(void);
 /**
   * @}
   */
+
+/**
+  * @}
+  */
+
 
 #ifdef __cplusplus
 }

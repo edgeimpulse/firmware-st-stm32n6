@@ -2864,11 +2864,6 @@ HAL_StatusTypeDef HAL_ADC_ConfigChannel(ADC_HandleTypeDef *hadc, const ADC_Chann
       /* Configuration of differential mode */
       if (pConfig->SingleDiff == ADC_DIFFERENTIAL_ENDED)
       {
-        /* Set sampling time of the selected ADC channel */
-        LL_ADC_SetChannelSamplingTime(hadc->Instance,
-                                      __HAL_ADC_CHANNEL_DIFF_NEG_INPUT(hadc, pConfig->Channel),
-                                      pConfig->SamplingTime);
-
         /* Set ADC channel preselection of corresponding negative channel */
         LL_ADC_SetChannelPreselection(hadc->Instance,
                                       __HAL_ADC_CHANNEL_DIFF_NEG_INPUT(hadc, pConfig->Channel));

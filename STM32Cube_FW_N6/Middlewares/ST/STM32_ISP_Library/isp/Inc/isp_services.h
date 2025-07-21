@@ -61,8 +61,9 @@ typedef ISP_StatusTypeDef (*ISP_stat_ready_cb)(ISP_AlgoTypeDef *pAlgo);
 ISP_StatusTypeDef ISP_SVC_ISP_SetDemosaicing(ISP_HandleTypeDef *hIsp, ISP_DemosaicingTypeDef *pConfig);
 ISP_StatusTypeDef ISP_SVC_ISP_SetStatRemoval(ISP_HandleTypeDef *hIsp, ISP_StatRemovalTypeDef *pConfig);
 ISP_StatusTypeDef ISP_SVC_ISP_SetDecimation(ISP_HandleTypeDef *hIsp, ISP_DecimationTypeDef *pConfig);
+ISP_StatusTypeDef ISP_SVC_ISP_GetDecimation(ISP_HandleTypeDef *hIsp, ISP_DecimationTypeDef *pConfig);
 ISP_StatusTypeDef ISP_SVC_ISP_SetContrast(ISP_HandleTypeDef *hIsp, ISP_ContrastTypeDef *pConfig);
-ISP_StatusTypeDef ISP_SVC_ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pConfig, ISP_DecimationTypeDef *pDecimation);
+ISP_StatusTypeDef ISP_SVC_ISP_SetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pConfig);
 ISP_StatusTypeDef ISP_SVC_ISP_GetStatArea(ISP_HandleTypeDef *hIsp, ISP_StatAreaTypeDef *pConfig);
 ISP_StatusTypeDef ISP_SVC_ISP_SetBadPixel(ISP_HandleTypeDef *hIsp, ISP_BadPixelTypeDef *pConfig);
 ISP_StatusTypeDef ISP_SVC_ISP_GetBadPixel(ISP_HandleTypeDef *hIsp, ISP_BadPixelTypeDef *pConfig);
@@ -92,20 +93,24 @@ void ISP_SVC_Misc_IncDumpFrameId(ISP_HandleTypeDef *hIsp);
 uint32_t ISP_SVC_Misc_GetDumpFrameId(ISP_HandleTypeDef *hIsp);
 ISP_StatusTypeDef ISP_SVC_Misc_SetWBRefMode(ISP_HandleTypeDef *hIsp, uint32_t RefColorTemp);
 ISP_StatusTypeDef ISP_SVC_Misc_GetWBRefMode(ISP_HandleTypeDef *hIsp, uint32_t *pRefColorTemp);
+void ISP_SVC_Misc_SensorDelayMeasureStart();
+void ISP_SVC_Misc_SensorDelayMeasureStop();
+bool ISP_SVC_Misc_SensorDelayMeasureIsRunning();
+ISP_StatusTypeDef ISP_SVC_Misc_SendSensorDelayMeasure(ISP_HandleTypeDef *hIsp, ISP_SensorDelayTypeDef *pSensorDelay);
 ISP_StatusTypeDef ISP_SVC_Misc_StopPreview(ISP_HandleTypeDef *hIsp);
 ISP_StatusTypeDef ISP_SVC_Misc_StartPreview(ISP_HandleTypeDef *hIsp);
 bool ISP_SVC_Misc_IsGammaEnabled(ISP_HandleTypeDef *hIsp, uint32_t Pipe);
 ISP_StatusTypeDef ISP_SVC_ISP_SetGamma(ISP_HandleTypeDef *hIsp, ISP_GammaTypeDef *pConfig);
 
 /* Dump services */
-ISP_StatusTypeDef ISP_SVC_Dump_GetFrame(ISP_HandleTypeDef *hIsp, uint32_t **pBuffer, ISP_DumpFrameMetaTypeDef *pMeta);
+ISP_StatusTypeDef ISP_SVC_Dump_GetFrame(ISP_HandleTypeDef *hIsp, uint32_t **pBuffer, ISP_DumpCfgTypeDef DumpConfig, ISP_DumpFrameMetaTypeDef *pMeta);
 
 /* IQ param services */
-ISP_StatusTypeDef ISP_SVC_IQParam_Init(ISP_HandleTypeDef *hIsp);
-ISP_StatusTypeDef ISP_SVC_IQParam_Flush(ISP_HandleTypeDef *hIsp);
+ISP_StatusTypeDef ISP_SVC_IQParam_Init(ISP_HandleTypeDef *hIsp, const ISP_IQParamTypeDef *ISP_IQParamCacheInit);
 ISP_IQParamTypeDef *ISP_SVC_IQParam_Get(ISP_HandleTypeDef *hIsp);
 
 /* Statistics services */
+void ISP_SVC_Stats_Init(ISP_HandleTypeDef *hIsp);
 ISP_StatusTypeDef ISP_SVC_Stats_GetLatest(ISP_HandleTypeDef *hIsp, ISP_SVC_StatStateTypeDef *pStats);
 ISP_StatusTypeDef ISP_SVC_Stats_GetNext(ISP_HandleTypeDef *hIsp, ISP_stat_ready_cb callback, ISP_AlgoTypeDef *pAlgo, ISP_SVC_StatStateTypeDef *pStats,
                                         ISP_SVC_StatLocation location, ISP_SVC_StatType type, uint32_t frameDelay);

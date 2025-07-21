@@ -98,7 +98,10 @@
 /** @addtogroup STM32N6570_DK_XSPI_NOR_Exported_Variables
   * @{
   */
+extern XSPI_NOR_Ctx_t XSPI_Nor_Ctx[XSPI_NOR_INSTANCES_NUMBER];
+
 XSPI_HandleTypeDef hxspi_nor[XSPI_NOR_INSTANCES_NUMBER] = {0};
+
 XSPI_NOR_Ctx_t XSPI_Nor_Ctx[XSPI_NOR_INSTANCES_NUMBER]  = {{
     XSPI_ACCESS_NONE,
     MX66UW1G45G_SPI_MODE,
@@ -108,14 +111,17 @@ XSPI_NOR_Ctx_t XSPI_Nor_Ctx[XSPI_NOR_INSTANCES_NUMBER]  = {{
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 /* Exported variables --------------------------------------------------------*/
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @addtogroup STM32N6570_DK_XSPI_RAM_Exported_Variables
   * @{
   */
+extern XSPI_RAM_Ctx_t XSPI_Ram_Ctx[XSPI_NOR_INSTANCES_NUMBER];
+
 XSPI_HandleTypeDef hxspi_ram[XSPI_RAM_INSTANCES_NUMBER] = {0};
+
 XSPI_RAM_Ctx_t XSPI_Ram_Ctx[XSPI_RAM_INSTANCES_NUMBER] = {{
     XSPI_ACCESS_NONE,
     BSP_XSPI_RAM_VARIABLE_LATENCY,
@@ -127,7 +133,7 @@ XSPI_RAM_Ctx_t XSPI_Ram_Ctx[XSPI_RAM_INSTANCES_NUMBER] = {{
 /**
   * @}
   */
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /* Private constants --------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -156,8 +162,8 @@ static uint32_t XSPIRam_IsMspCbValid[XSPI_RAM_INSTANCES_NUMBER] = {0};
 /** @defgroup STM32N6570_DK_XSPI_NOR_Private_Functions XSPI_NOR Private Functions
   * @{
   */
-static void    XSPI_NOR_MspInit(XSPI_HandleTypeDef *hxspi);
-static void    XSPI_NOR_MspDeInit(XSPI_HandleTypeDef *hxspi);
+static void    XSPI_NOR_MspInit(const XSPI_HandleTypeDef *hxspi);
+static void    XSPI_NOR_MspDeInit(const XSPI_HandleTypeDef *hxspi);
 static int32_t XSPI_NOR_ResetMemory(uint32_t Instance);
 static int32_t XSPI_NOR_EnterDOPIMode(uint32_t Instance);
 static int32_t XSPI_NOR_EnterSOPIMode(uint32_t Instance);
@@ -165,18 +171,18 @@ static int32_t XSPI_NOR_ExitOPIMode(uint32_t Instance);
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @defgroup STM32N6570_DK_XSPI_RAM_Private_Functions XSPI_RAM Private Functions
   * @{
   */
-static void XSPI_RAM_MspInit(XSPI_HandleTypeDef *hxspi);
-static void XSPI_RAM_MspDeInit(XSPI_HandleTypeDef *hxspi);
+static void XSPI_RAM_MspInit(const XSPI_HandleTypeDef *hxspi);
+static void XSPI_RAM_MspDeInit(const XSPI_HandleTypeDef *hxspi);
 /**
   * @}
   */
-#endif
+#endif /* (USE_RAM_MEMORY_APS256XX == 1) */
 
 /* Exported functions ---------------------------------------------------------*/
 
@@ -262,7 +268,7 @@ int32_t BSP_XSPI_NOR_Init(uint32_t Instance, BSP_XSPI_NOR_Init_t *Init)
     }
   }
 
-  HAL_XSPI_SetClockPrescaler(&hxspi_nor[Instance], 0);
+ (void) (HAL_XSPI_SetClockPrescaler(&hxspi_nor[Instance], 0));
 
   /* Return BSP status */
   return ret;
@@ -383,11 +389,11 @@ int32_t BSP_XSPI_NOR_RegisterDefaultMspCallbacks(uint32_t Instance)
   else
   {
     /* Register MspInit/MspDeInit Callbacks */
-    if (HAL_XSPI_RegisterCallback(&hxspi_nor[Instance], HAL_XSPI_MSP_INIT_CB_ID, XSPI_NOR_MspInit) != HAL_OK)
+    if (HAL_XSPI_RegisterCallback(&hxspi_nor[Instance], HAL_XSPI_MSP_INIT_CB_ID, ((pXSPI_CallbackTypeDef) XSPI_NOR_MspInit)) != HAL_OK)
     {
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
-    else if (HAL_XSPI_RegisterCallback(&hxspi_nor[Instance], HAL_XSPI_MSP_DEINIT_CB_ID, XSPI_NOR_MspDeInit) != HAL_OK)
+    else if (HAL_XSPI_RegisterCallback(&hxspi_nor[Instance], HAL_XSPI_MSP_DEINIT_CB_ID, ((pXSPI_CallbackTypeDef) XSPI_NOR_MspDeInit)) != HAL_OK)
     {
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
@@ -474,7 +480,7 @@ int32_t BSP_XSPI_NOR_Read(uint32_t Instance, uint8_t *pData, uint32_t ReadAddr, 
     {
 
       /* Bypass the Pre-scaler */
-      HAL_XSPI_SetClockPrescaler(&hxspi_nor[Instance], 0);
+      (void) (HAL_XSPI_SetClockPrescaler(&hxspi_nor[Instance], 0));
 
       if (MX66UW1G45G_ReadDTR(&hxspi_nor[Instance], pData, ReadAddr, Size) != MX66UW1G45G_OK)
       {
@@ -499,7 +505,7 @@ int32_t BSP_XSPI_NOR_Read(uint32_t Instance, uint8_t *pData, uint32_t ReadAddr, 
   * @param  Size      Size of data to write
   * @retval BSP status
   */
-int32_t BSP_XSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr, uint32_t Size)
+int32_t BSP_XSPI_NOR_Write(uint32_t Instance, const uint8_t *pData, uint32_t WriteAddr, uint32_t Size)
 {
   int32_t ret = BSP_ERROR_NONE;
   uint32_t end_addr;
@@ -769,7 +775,7 @@ int32_t BSP_XSPI_NOR_EnableMemoryMappedMode(uint32_t Instance)
   {
 
     /* Bypass the Pre-scaler */
-    HAL_XSPI_SetClockPrescaler(&hxspi_nor[Instance], 0);
+    (void) (HAL_XSPI_SetClockPrescaler(&hxspi_nor[Instance], 0));
 
     if (XSPI_Nor_Ctx[Instance].TransferRate == BSP_XSPI_NOR_STR_TRANSFER)
     {
@@ -1095,7 +1101,7 @@ int32_t BSP_XSPI_NOR_LeaveDeepPowerDown(uint32_t Instance)
 /**
   * @}
   */
-#endif
+#endif /* (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @addtogroup STM32N6570_DK_XSPI_RAM_Exported_Functions
@@ -1153,16 +1159,16 @@ int32_t BSP_XSPI_RAM_Init(uint32_t Instance)
     }
 
     /* Read Latency=7 up to 200MHz */
-    APS256XX_WriteReg(&hxspi_ram[Instance], 0, 0x30);
+    (void) (APS256XX_WriteReg(&hxspi_ram[Instance], 0, 0x30));
 
     /* Write Latency=7 up to 200MHz */
-    APS256XX_WriteReg(&hxspi_ram[Instance], 4, 0x20);
+    (void) (APS256XX_WriteReg(&hxspi_ram[Instance], 4, 0x20));
 
     /* Switch to x16 mode */
-    APS256XX_WriteReg(&hxspi_ram[Instance], 8, 0x40);
+    (void) (APS256XX_WriteReg(&hxspi_ram[Instance], 8, 0x40));
 
     /* Bypass the Pre-scaler */
-    HAL_XSPI_SetClockPrescaler(&hxspi_ram[Instance], 0);
+    (void) (HAL_XSPI_SetClockPrescaler(&hxspi_ram[Instance], 0));
 
   }
 
@@ -1202,15 +1208,16 @@ int32_t BSP_XSPI_RAM_DeInit(uint32_t Instance)
       XSPI_Ram_Ctx[Instance].LatencyType   = BSP_XSPI_RAM_FIXED_LATENCY;
       XSPI_Ram_Ctx[Instance].BurstType     = BSP_XSPI_RAM_LINEAR_BURST;
 
-#if (USE_HAL_XSPI_REGISTER_CALLBACKS == 0)
-      XSPI_RAM_MspDeInit(&hxspi_ram[Instance]);
-#endif /* (USE_HAL_XSPI_REGISTER_CALLBACKS == 0) */
-
       /* Call the DeInit function to reset the driver */
       if (HAL_XSPI_DeInit(&hxspi_ram[Instance]) != HAL_OK)
       {
         ret = BSP_ERROR_PERIPH_FAILURE;
       }
+
+#if (USE_HAL_XSPI_REGISTER_CALLBACKS == 0)
+      XSPI_RAM_MspDeInit(&hxspi_ram[Instance]);
+#endif /* (USE_HAL_XSPI_REGISTER_CALLBACKS == 0) */
+
     }
   }
 
@@ -1243,7 +1250,7 @@ __weak HAL_StatusTypeDef MX_XSPI_RAM_Init(XSPI_HandleTypeDef *hxspi, MX_XSPI_Ini
   hxspi->Init.MemoryMode                 = HAL_XSPI_SINGLE_MEM;
   hxspi->Init.MemorySize                 = Init->MemorySize;
   hxspi->Init.MemorySelect               = HAL_XSPI_CSSEL_NCS1;
-  hxspi->Init.ChipSelectHighTimeCycle    = 1;
+  hxspi->Init.ChipSelectHighTimeCycle    = 5;
   hxspi->Init.ClockMode                  = HAL_XSPI_CLOCK_MODE_0;
   hxspi->Init.ClockPrescaler             = Init->ClockPrescaler;
   hxspi->Init.SampleShifting             = Init->SampleShifting;
@@ -1253,7 +1260,7 @@ __weak HAL_StatusTypeDef MX_XSPI_RAM_Init(XSPI_HandleTypeDef *hxspi, MX_XSPI_Ini
   hxspi->Init.Refresh                    = ((2U * (hspi_clk / hxspi->Init.ClockPrescaler)) / 1000000U) - 4U;
 #if defined (OCTOSPI_DCR1_DLYBYP)
   hxspi->Init.DelayBlockBypass           = HAL_XSPI_DELAY_BLOCK_BYPASS;
-#endif
+#endif /* defined (OCTOSPI_DCR1_DLYBYP) */
   hxspi->Init.WrapSize                   = HAL_XSPI_WRAP_NOT_SUPPORTED;
 
   return HAL_XSPI_Init(hxspi);
@@ -1283,12 +1290,12 @@ int32_t BSP_XSPI_RAM_RegisterDefaultMspCallbacks(uint32_t Instance)
   else
   {
     /* Register MspInit/MspDeInit Callbacks */
-    if (HAL_XSPI_RegisterCallback(&hxspi_ram[Instance], HAL_XSPI_MSP_INIT_CB_ID, XSPI_RAM_MspInit) != HAL_OK)
+    if (HAL_XSPI_RegisterCallback(&hxspi_ram[Instance], HAL_XSPI_MSP_INIT_CB_ID, ((pXSPI_CallbackTypeDef) XSPI_RAM_MspInit)) != HAL_OK)
     {
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
     else if (HAL_XSPI_RegisterCallback(&hxspi_ram[Instance],
-                                       HAL_XSPI_MSP_DEINIT_CB_ID, XSPI_RAM_MspDeInit) != HAL_OK)
+                                       HAL_XSPI_MSP_DEINIT_CB_ID, ((pXSPI_CallbackTypeDef) XSPI_RAM_MspDeInit)) != HAL_OK)
     {
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
@@ -1493,7 +1500,7 @@ int32_t BSP_XSPI_RAM_ReadID(uint32_t Instance, uint8_t *Id)
 /**
   * @}
   */
-#endif
+#endif /* #if (USE_RAM_MEMORY_APS256XX == 1) */
 
 #if (USE_NOR_MEMORY_MX66UW1G45G == 1)
 /** @addtogroup STM32N6570_DK_XSPI_NOR_Private_Functions
@@ -1505,7 +1512,7 @@ int32_t BSP_XSPI_RAM_ReadID(uint32_t Instance, uint8_t *Id)
   * @param  hxspi XSPI handle
   * @retval None
   */
-static void XSPI_NOR_MspInit(XSPI_HandleTypeDef *hxspi)
+static void XSPI_NOR_MspInit(const XSPI_HandleTypeDef *hxspi)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -1541,7 +1548,7 @@ static void XSPI_NOR_MspInit(XSPI_HandleTypeDef *hxspi)
   GPIO_InitStruct.Pin       = XSPI_NOR_CS_PIN;
   GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull      = GPIO_PULLUP;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = XSPI_NOR_CS_PIN_AF;
   HAL_GPIO_Init(XSPI_NOR_CS_GPIO_PORT, &GPIO_InitStruct);
 
@@ -1602,7 +1609,7 @@ static void XSPI_NOR_MspInit(XSPI_HandleTypeDef *hxspi)
   * @param  hxspi XSPI handle
   * @retval None
   */
-static void XSPI_NOR_MspDeInit(XSPI_HandleTypeDef *hxspi)
+static void XSPI_NOR_MspDeInit(const XSPI_HandleTypeDef *hxspi)
 {
   /* hxspi unused argument(s) compilation warning */
   UNUSED(hxspi);
@@ -1637,12 +1644,7 @@ static int32_t XSPI_NOR_ResetMemory(uint32_t Instance)
 {
   int32_t ret = BSP_ERROR_NONE;
 
-  /* Check if the instance is supported */
-  if (Instance >= XSPI_NOR_INSTANCES_NUMBER)
-  {
-    ret = BSP_ERROR_WRONG_PARAM;
-  }
-  else if (MX66UW1G45G_ResetEnable(&hxspi_nor[Instance], BSP_XSPI_NOR_SPI_MODE,
+  if (MX66UW1G45G_ResetEnable(&hxspi_nor[Instance], BSP_XSPI_NOR_SPI_MODE,
                                     BSP_XSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
@@ -1696,13 +1698,7 @@ static int32_t XSPI_NOR_EnterDOPIMode(uint32_t Instance)
   int32_t ret;
   uint8_t reg[2];
 
-  /* Check if the instance is supported */
-  if (Instance >= XSPI_NOR_INSTANCES_NUMBER)
-  {
-    ret = BSP_ERROR_WRONG_PARAM;
-  }
-  /* Enable write operations */
-  else if (MX66UW1G45G_WriteEnable(&hxspi_nor[Instance], XSPI_Nor_Ctx[Instance].InterfaceMode,
+  if (MX66UW1G45G_WriteEnable(&hxspi_nor[Instance], XSPI_Nor_Ctx[Instance].InterfaceMode,
                                     XSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
@@ -1775,13 +1771,7 @@ static int32_t XSPI_NOR_EnterSOPIMode(uint32_t Instance)
   int32_t ret;
   uint8_t reg[2];
 
-  /* Check if the instance is supported */
-  if (Instance >= XSPI_NOR_INSTANCES_NUMBER)
-  {
-    ret = BSP_ERROR_WRONG_PARAM;
-  }
-  /* Enable write operations */
-  else if (MX66UW1G45G_WriteEnable(&hxspi_nor[Instance], XSPI_Nor_Ctx[Instance].InterfaceMode,
+  if (MX66UW1G45G_WriteEnable(&hxspi_nor[Instance], XSPI_Nor_Ctx[Instance].InterfaceMode,
                                     XSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
@@ -1847,13 +1837,7 @@ static int32_t XSPI_NOR_ExitOPIMode(uint32_t Instance)
   int32_t ret = BSP_ERROR_NONE;
   uint8_t reg[2];
 
-  /* Check if the instance is supported */
-  if (Instance >= XSPI_NOR_INSTANCES_NUMBER)
-  {
-    ret = BSP_ERROR_WRONG_PARAM;
-  }
-  /* Enable write operations */
-  else if (MX66UW1G45G_WriteEnable(&hxspi_nor[Instance], XSPI_Nor_Ctx[Instance].InterfaceMode,
+  if (MX66UW1G45G_WriteEnable(&hxspi_nor[Instance], XSPI_Nor_Ctx[Instance].InterfaceMode,
                                     XSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
@@ -1919,7 +1903,7 @@ static int32_t XSPI_NOR_ExitOPIMode(uint32_t Instance)
 /**
   * @}
   */
-#endif
+#endif /* #if (USE_NOR_MEMORY_MX66UW1G45G == 1) */
 
 #if (USE_RAM_MEMORY_APS256XX == 1)
 /** @addtogroup STM32N6570_DK_XSPI_RAM_Private_Functions
@@ -1930,7 +1914,7 @@ static int32_t XSPI_NOR_ExitOPIMode(uint32_t Instance)
   * @param  hxspi XSPI handle
   * @retval None
   */
-static void XSPI_RAM_MspInit(XSPI_HandleTypeDef *hxspi)
+static void XSPI_RAM_MspInit(const XSPI_HandleTypeDef *hxspi)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -2080,7 +2064,7 @@ static void XSPI_RAM_MspInit(XSPI_HandleTypeDef *hxspi)
   * @param  hxspi XSPI handle
   * @retval None
   */
-static void XSPI_RAM_MspDeInit(XSPI_HandleTypeDef *hxspi)
+static void XSPI_RAM_MspDeInit(const XSPI_HandleTypeDef *hxspi)
 {
   /* hxspi unused argument(s) compilation warning */
   UNUSED(hxspi);
@@ -2106,7 +2090,7 @@ static void XSPI_RAM_MspDeInit(XSPI_HandleTypeDef *hxspi)
   /* Disable the XSPI memory interface clock */
   XSPI_RAM_CLK_DISABLE();
 }
-#endif
+#endif /* #if (USE_RAM_MEMORY_APS256XX == 1) */
 /**
   * @}
   */

@@ -172,7 +172,7 @@ typedef struct
 #define PWR_WAKEUP_FLAG1               PWR_WKUPSR_WKUPF1                       /*!< Wakeup flag on PA0  */
 #define PWR_WAKEUP_FLAG2               PWR_WKUPSR_WKUPF2                       /*!< Wakeup flag on PA2  */
 #define PWR_WAKEUP_FLAG3               PWR_WKUPSR_WKUPF3                       /*!< Wakeup flag on PC13 */
-#define PWR_WAKEUP_FLAG4               PWR_WKUPSR_WKUPF4                       /*!< Wakeup flag on PC1  */
+#define PWR_WAKEUP_FLAG4               PWR_WKUPSR_WKUPF4                       /*!< Wakeup flag on PD2  */
 
 #define PWR_WAKEUP_FLAG_ALL           (PWR_WKUPSR_WKUPF1 | PWR_WKUPSR_WKUPF2 |\
                                        PWR_WKUPSR_WKUPF3 | PWR_WKUPSR_WKUPF4)

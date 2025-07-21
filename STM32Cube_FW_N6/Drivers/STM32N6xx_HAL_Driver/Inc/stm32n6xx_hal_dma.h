@@ -120,9 +120,9 @@ typedef struct
 typedef struct
 {
   uint32_t CidFiltering;      /*!< Specified the CID filtering mode.
-                                   This parameter can be a value of @DMA_ISOLATION_MODE               */
+                                   This parameter can be a value of @ref DMA_ISOLATION_MODE               */
   uint32_t StaticCid;         /*!< Specified the static CID.
-                                   This parameter can be a value of @DMA_Channel_CID_Filtering_Static */
+                                   This parameter can be a value of @ref DMA_Channel_CID_Filtering_Static */
 } DMA_IsolationConfigTypeDef;
 
 /**
@@ -751,13 +751,13 @@ typedef struct __DMA_HandleTypeDef
   * @brief    DMA Channel Filtering Static CID (isolation)
   * @{
   */
-#define DMA_CHANNEL_STATIC_CID_0             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(0U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID0 */
-#define DMA_CHANNEL_STATIC_CID_1             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(1U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID1 */
-#define DMA_CHANNEL_STATIC_CID_2             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(2U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID2 */
-#define DMA_CHANNEL_STATIC_CID_3             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(3U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID3 */
-#define DMA_CHANNEL_STATIC_CID_4             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(4U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID4 */
-#define DMA_CHANNEL_STATIC_CID_5             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(5U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID5 */
-#define DMA_CHANNEL_STATIC_CID_6             (DMA_CHANNEL_ATTR_CID_STATIC_SELECT|(6U<<DMA_CCIDCFGR_SCID_Pos))         /*!< Enable CID filtering (static mode) and give channel control to CID6 */
+#define DMA_CHANNEL_STATIC_CID_0             (0U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID0 in static mode */
+#define DMA_CHANNEL_STATIC_CID_1             (1U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID1 in static mode */
+#define DMA_CHANNEL_STATIC_CID_2             (2U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID2 in static mode */
+#define DMA_CHANNEL_STATIC_CID_3             (3U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID3 in static mode */
+#define DMA_CHANNEL_STATIC_CID_4             (4U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID4 in static mode */
+#define DMA_CHANNEL_STATIC_CID_5             (5U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID5 in static mode */
+#define DMA_CHANNEL_STATIC_CID_6             (6U<<DMA_CCIDCFGR_SCID_Pos)         /*!<  Channel control to CID6 in static mode */
 /**
   * @}
   */
@@ -767,27 +767,22 @@ typedef struct __DMA_HandleTypeDef
   * @note     Secure and non-secure attributes are only available from the secure world when TZEN = 1
   * @{
   */
+#define DMA_CHANNEL_PRIV      (DMA_CHANNEL_ATTR_PRIV_MASK | 0x01U)     /*!< Channel is privileged             */
+#define DMA_CHANNEL_NPRIV     (DMA_CHANNEL_ATTR_PRIV_MASK)             /*!< Channel is unprivileged           */
 
-#define DMA_CHANNEL_CID_DISABLE              (0x80000000U)
+#define DMA_CHANNEL_SEC       (DMA_CHANNEL_ATTR_SEC_MASK | 0x02U)      /*!< Channel is secure                 */
+#define DMA_CHANNEL_NSEC      (DMA_CHANNEL_ATTR_SEC_MASK)              /*!< Channel is non-secure             */
+#define DMA_CHANNEL_SRC_SEC   (DMA_CHANNEL_ATTR_SEC_SRC_MASK | 0x04U)  /*!< Channel source is secure          */
+#define DMA_CHANNEL_SRC_NSEC  (DMA_CHANNEL_ATTR_SEC_SRC_MASK)          /*!< Channel source is non-secure      */
+#define DMA_CHANNEL_DEST_SEC  (DMA_CHANNEL_ATTR_SEC_DEST_MASK | 0x08U) /*!< Channel destination is secure     */
+#define DMA_CHANNEL_DEST_NSEC (DMA_CHANNEL_ATTR_SEC_DEST_MASK)         /*!< Channel destination is non-secure */
 
-#define DMA_CHANNEL_PRIV                     (DMA_CHANNEL_ATTR_PRIV_MASK | (1U<<DMA_CHANNEL_PRIV_VAL_POS))           /*!< channel is privileged             */
-#define DMA_CHANNEL_NPRIV                    (DMA_CHANNEL_ATTR_PRIV_MASK)                                            /*!< channel is unprivileged           */
-
-#define DMA_CHANNEL_SEC                      (DMA_CHANNEL_ATTR_SEC_MASK | (1U<<DMA_CHANNEL_SEC_VAL_POS))             /*!< channel is secure                 */
-#define DMA_CHANNEL_NSEC                     (DMA_CHANNEL_ATTR_SEC_MASK)                                             /*!< channel is non-secure             */
-
-#define DMA_CHANNEL_SRC_SEC                  (DMA_CHANNEL_ATTR_SEC_SRC_MASK | (1U<<DMA_CHANNEL_SRC_SEC_VAL_POS))     /*!< src is secure                 */
-#define DMA_CHANNEL_SRC_NSEC                 (DMA_CHANNEL_ATTR_SEC_SRC_MASK)                                         /*!< src is non-secure             */
-
-#define DMA_CHANNEL_DEST_SEC                 (DMA_CHANNEL_ATTR_SEC_DEST_MASK | (1U<<DMA_CHANNEL_DEST_SEC_VAL_POS))   /*!< dest is secure                */
-#define DMA_CHANNEL_DEST_NSEC                (DMA_CHANNEL_ATTR_SEC_DEST_MASK)                                        /*!< dest is non-secure            */
-
-#define DMA_CHANNEL_ATTRIBUTE_UNLOCKED (0x00U)                                                                       /*!< Channel attribute is unlocked     */
-#define DMA_CHANNEL_ATTRIBUTE_LOCKED   (0x01U)                                                                       /*!< Channel attribute is locked       */
-
+#define DMA_CHANNEL_ATTRIBUTE_UNLOCKED (0x00U)                         /*!< Channel attribute is unlocked     */
+#define DMA_CHANNEL_ATTRIBUTE_LOCKED   (0x01U)                         /*!< Channel attribute is locked       */
 /**
   * @}
   */
+
 
 /**
   * @}
@@ -1026,19 +1021,12 @@ HAL_StatusTypeDef HAL_DMA_GetIsolationAttributes(DMA_HandleTypeDef const *const 
 #define HAL_DMA_CHANNEL_START          (0x00000050U) /* DMA channel offset                       */
 #define HAL_DMA_CHANNEL_SIZE           (0x00000080U) /* DMA channel size                         */
 #define HAL_DMA_OFFSET_MASK            (0x00000FFFU) /* DMA channel offset mask                  */
-#define DMA_CHANNEL_ATTR_PRIV_MASK     (0x01000000U) /* DMA channel privilege                    */
-#define DMA_CHANNEL_ATTR_SEC_MASK      (0x02000000U) /* DMA channel secure                       */
-#define DMA_CHANNEL_ATTR_SEC_SRC_MASK  (0x04000000U) /* DMA channel source secure                */
-#define DMA_CHANNEL_ATTR_SEC_DEST_MASK (0x08000000U) /* DMA channel destination secure           */
-
-
-#define DMA_CHANNEL_ATTR_CID_STATIC_SELECT  (0x20000000U)
-
-#define DMA_CHANNEL_PRIV_VAL_POS       0
-#define DMA_CHANNEL_SEC_VAL_POS        1
-#define DMA_CHANNEL_SRC_SEC_VAL_POS    2
-#define DMA_CHANNEL_DEST_SEC_VAL_POS   3
-
+#define DMA_CHANNEL_ATTR_PRIV_MASK     (0x00000010U) /* DMA channel privilege mask               */
+#define DMA_CHANNEL_ATTR_SEC_MASK      (0x00000020U) /* DMA channel secure mask                  */
+#define DMA_CHANNEL_ATTR_SEC_SRC_MASK  (0x00000040U) /* DMA channel source secure mask           */
+#define DMA_CHANNEL_ATTR_SEC_DEST_MASK (0x00000080U) /* DMA channel destination secure mask      */
+#define DMA_CHANNEL_ATTR_VALUE_MASK    (0x0000000FU) /* DMA channel attributes value mask        */
+#define DMA_CHANNEL_ATTR_ITEM_MASK     (0x000000F0U) /* DMA channel attributes item mask         */
 #define DMA_CHANNEL_BURST_MIN          (0x00000001U) /* DMA channel minimum burst size           */
 #define DMA_CHANNEL_BURST_MAX          (0x00000040U) /* DMA channel maximum burst size           */
 /**
@@ -1121,18 +1109,14 @@ HAL_StatusTypeDef HAL_DMA_GetIsolationAttributes(DMA_HandleTypeDef const *const 
   (((SIZE) > 0U) && ((SIZE) <= DMA_CBR1_BNDT))
 
 #if defined (CPU_IN_SECURE_STATE)
-#define IS_DMA_ATTRIBUTES(ATTRIBUTE) \
-  ((((ATTRIBUTE) & DMA_CHANNEL_ATTR_CID_STATIC_SELECT ) == DMA_CHANNEL_ATTR_CID_STATIC_SELECT)    || \
-   (((ATTRIBUTE) & DMA_CHANNEL_CID_DISABLE            ) == DMA_CHANNEL_CID_DISABLE)               || \
-   (((ATTRIBUTE) & DMA_CHANNEL_ATTR_SEC_MASK          ) == DMA_CHANNEL_ATTR_SEC_MASK)             || \
-   (((ATTRIBUTE) & DMA_CHANNEL_ATTR_SEC_SRC_MASK      ) == DMA_CHANNEL_ATTR_SEC_SRC_MASK)         || \
-   (((ATTRIBUTE) & DMA_CHANNEL_ATTR_SEC_DEST_MASK     ) == DMA_CHANNEL_ATTR_SEC_DEST_MASK)        || \
-   (((ATTRIBUTE) & DMA_CHANNEL_ATTR_PRIV_MASK         ) == DMA_CHANNEL_ATTR_PRIV_MASK)              )
+#define IS_DMA_ATTRIBUTES(ATTRIBUTE)                                                                               \
+  (((ATTRIBUTE) != 0U) && (((ATTRIBUTE) & (~(DMA_CHANNEL_ATTR_VALUE_MASK | DMA_CHANNEL_ATTR_ITEM_MASK))) == 0U) && \
+   (((((ATTRIBUTE) & DMA_CHANNEL_ATTR_ITEM_MASK) >> 4U) | ((ATTRIBUTE) & DMA_CHANNEL_ATTR_VALUE_MASK)) ==          \
+    (((ATTRIBUTE) & DMA_CHANNEL_ATTR_ITEM_MASK) >> 4U)))
 #else
-#define IS_DMA_ATTRIBUTES(ATTRIBUTE)  \
-  ((((ATTRIBUTE) & DMA_CHANNEL_ATTR_CID_STATIC_SELECT ) == DMA_CHANNEL_ATTR_CID_STATIC_SELECT)    || \
-   (((ATTRIBUTE) & DMA_CHANNEL_CID_DISABLE            ) == DMA_CHANNEL_CID_DISABLE)               || \
-   (((ATTRIBUTE) & DMA_CHANNEL_ATTR_PRIV_MASK         ) == DMA_CHANNEL_ATTR_PRIV_MASK)              )
+#define IS_DMA_ATTRIBUTES(ATTRIBUTE)    \
+  (((ATTRIBUTE) == DMA_CHANNEL_PRIV) || \
+   ((ATTRIBUTE) == DMA_CHANNEL_NPRIV))
 #endif /* CPU_IN_SECURE_STATE */
 
 #if defined (CPU_IN_SECURE_STATE)

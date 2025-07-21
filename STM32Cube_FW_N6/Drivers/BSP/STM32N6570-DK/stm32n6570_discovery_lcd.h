@@ -32,12 +32,12 @@
 
 #ifndef USE_LCD_CTRL_RK050HR18
 #define USE_LCD_CTRL_RK050HR18        1U
-#endif
+#endif /* USE_LCD_CTRL_RK050HR18 */
 
 #if (USE_LCD_CTRL_RK050HR18 == 1)
 /* Include RK050HR18 LCD Driver IC driver code */
 #include "../Components/rk050hr18/rk050hr18.h"
-#endif
+#endif /* (USE_LCD_CTRL_RK050HR18 == 1) */
 #include "lcd.h"
 /** @addtogroup BSP
   * @{

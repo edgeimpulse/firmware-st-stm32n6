@@ -272,7 +272,7 @@ typedef enum
 
 #define CPU_AS_TRUSTED_DOMAIN
 
-#include <core_cm55.h>                    /*!< ARM Cortex-M55 processor and core peripherals */
+#include "core_cm55.h"                    /*!< ARM Cortex-M55 processor and core peripherals */
 #include "system_stm32n6xx.h"             /*!< STM32N6xx System */
 
 /* =========================================================================================================================== */
@@ -1300,21 +1300,6 @@ typedef struct
 } FDCAN_ClockCalibrationUnit_TypeDef;
 
 /**
- * @brief FD Controller Area Network Configuration
- */
-typedef struct
-{
- __IO uint32_t CKDIV;          /*!< FDCAN clock divider register,            Address offset: 0x100 + 0x000 */
-      uint32_t RESERVED1[128]; /*!< Reserved,                                0x100 + 0x004 - 0x100 + 0x200 */
- __IO uint32_t OPTR;           /*!< FDCAN option register,                   Address offset: 0x100 + 0x204 */
-      uint32_t RESERVED2[58];  /*!< Reserved,                                0x100 + 0x208 - 0x100 + 0x2EC */
- __IO uint32_t HWCFG;          /*!< FDCAN hardware configuration register,   Address offset: 0x100 + 0x2F0 */
- __IO uint32_t VERR;           /*!< FDCAN IP version register,               Address offset: 0x100 + 0x2F4 */
- __IO uint32_t IPIDR;          /*!< FDCAN IP ID register,                    Address offset: 0x100 + 0x2F8 */
- __IO uint32_t SIDR;           /*!< FDCAN size ID register,                  Address offset: 0x100 + 0x2FC */
-} FDCAN_Config_TypeDef;
-
-/**
   * @brief Flexible Memory Controller Bank1
   */
 typedef struct
@@ -1647,32 +1632,30 @@ typedef struct
   */
 typedef struct
 {
-  __IO uint32_t IDR;            /*!< LTDC identification register Address offset: 0x0 */
-  __IO uint32_t LCR;            /*!< LDTC layer count register Address offset: 0x4 */
+       uint32_t RESERVED0[2];   /*!< Reserved Address offset: 0x00-0x04 */
   __IO uint32_t SSCR;           /*!< LTDC synchronization size configuration register Address offset: 0x8 */
   __IO uint32_t BPCR;           /*!< LTDC back porch configuration register Address offset: 0xc */
   __IO uint32_t AWCR;           /*!< LTDC active width configuration register Address offset: 0x10 */
   __IO uint32_t TWCR;           /*!< LTDC total width configuration register Address offset: 0x14 */
   __IO uint32_t GCR;            /*!< LTDC global control register Address offset: 0x18 */
-  __IO uint32_t GC1R;           /*!< LTDC global configuration 1 register Address offset: 0x1c */
-  __IO uint32_t GC2R;           /*!< LTDC global configuration 2 register Address offset: 0x20 */
+       uint32_t RESERVED1[2];   /*!< Reserved Address offset: */
   __IO uint32_t SRCR;           /*!< LTDC shadow reload configuration register Address offset: 0x24 */
   __IO uint32_t GCCR;           /*!< LTDC gamma correction configuration register Address offset: 0x28 */
   __IO uint32_t BCCR;           /*!< LTDC background color configuration register Address offset: 0x2c */
-       uint32_t RESERVED0;      /*!< Reserved Address offset: 0x30 */
+       uint32_t RESERVED2;      /*!< Reserved Address offset: 0x30 */
   __IO uint32_t IER;            /*!< LTDC interrupt enable register Address offset: 0x34 */
   __IO uint32_t ISR;            /*!< LTDC interrupt status register Address offset: 0x38 */
   __IO uint32_t ICR;            /*!< LTDC Interrupt Clear Register Address offset: 0x3c */
   __IO uint32_t LIPCR;          /*!< LTDC line interrupt position configuration register Address offset: 0x40 */
   __IO uint32_t CPSR;           /*!< LTDC current position status register Address offset: 0x44 */
   __IO uint32_t CDSR;           /*!< LTDC current display status register Address offset: 0x48 */
-       uint32_t RESERVED1[5];   /*!< Reserved Address offset: 0x4c */
+       uint32_t RESERVED3[5];   /*!< Reserved Address offset: 0x4c */
   __IO uint32_t EDCR;           /*!< LTDC external display control register Address offset: 0x60 */
   __IO uint32_t IER2;           /*!< LTDC interrupt enable register 2 Address offset: 0x64 */
   __IO uint32_t ISR2;           /*!< LTDC interrupt status register 2 Address offset: 0x68 */
   __IO uint32_t ICR2;           /*!< LTDC Interrupt Clear Register 2 Address offset: 0x6c */
   __IO uint32_t LIPCR2;         /*!< LTDC line interrupt position configuration register 2 Address offset: 0x70 */
-       uint32_t RESERVED2;      /*!< Reserved Address offset: 0x74 */
+       uint32_t RESERVED4;      /*!< Reserved Address offset: 0x74 */
   __IO uint32_t ECRCR;          /*!< LTDC expected CRC register Address offset: 0x78 */
   __IO uint32_t CCRCR;          /*!< LTDC computed CRC register Address offset: 0x7c */
   __IO uint32_t RB0AR;          /*!< LTDC rotation buffer 0 address register Address offset: 0x80 */
@@ -2617,14 +2600,14 @@ typedef struct
   __IO uint32_t ICNEWRCR;       /*!< SYSCFG AHB-AXI bridge early write response,                                  Address offset: 0x34 */
   __IO uint32_t ICNCGCR;        /*!< SYSCFG ICN clock gating control register,                                    Address offset: 0x38 */
   uint32_t      RESERVED2[2];   /*!< Reserved,                                                                    Address offset: 0x3C-0x40 */
-  __IO uint32_t VDDIO2CCCR;     /*!< SYSCFG VDDIO2 compensation cell control register,                            Address offset: 0x44 */
-  __IO uint32_t VDDIO2CCSR;     /*!< SYSCFG VDDIO2 compensation cell status register,                             Address offset: 0x48 */
-  __IO uint32_t VDDIO3CCCR;     /*!< SYSCFG VDDIO3 compensation cell control register,                            Address offset: 0x4C */
-  __IO uint32_t VDDIO3CCSR;     /*!< SYSCFG VDDIO3 compensation cell status register,                             Address offset: 0x50 */
-  __IO uint32_t VDDIO4CCCR;     /*!< SYSCFG VDDIO4 compensation cell control register,                            Address offset: 0x54 */
-  __IO uint32_t VDDIO4CCSR;     /*!< SYSCFG VDDIO4 compensation cell status register,                             Address offset: 0x58 */
-  __IO uint32_t VDDIO5CCCR;     /*!< SYSCFG VDDIO5 compensation cell control register,                            Address offset: 0x5C */
-  __IO uint32_t VDDIO5CCSR;     /*!< SYSCFG VDDIO5 compensation cell status register,                             Address offset: 0x60 */
+  __IO uint32_t VDDIO4CCCR;     /*!< SYSCFG VDDIO4 compensation cell control register,                            Address offset: 0x44 */
+  __IO uint32_t VDDIO4CCSR;     /*!< SYSCFG VDDIO4 compensation cell status register,                             Address offset: 0x48 */
+  __IO uint32_t VDDIO5CCCR;     /*!< SYSCFG VDDIO5 compensation cell control register,                            Address offset: 0x4C */
+  __IO uint32_t VDDIO5CCSR;     /*!< SYSCFG VDDIO5 compensation cell status register,                             Address offset: 0x50 */
+  __IO uint32_t VDDIO2CCCR;     /*!< SYSCFG VDDIO2 compensation cell control register,                            Address offset: 0x54 */
+  __IO uint32_t VDDIO2CCSR;     /*!< SYSCFG VDDIO2 compensation cell status register,                             Address offset: 0x58 */
+  __IO uint32_t VDDIO3CCCR;     /*!< SYSCFG VDDIO3 compensation cell control register,                            Address offset: 0x5C */
+  __IO uint32_t VDDIO3CCSR;     /*!< SYSCFG VDDIO3 compensation cell status register,                             Address offset: 0x60 */
   __IO uint32_t VDDCCCR;        /*!< SYSCFG VDD compensation cell control register,                               Address offset: 0x64 */
   __IO uint32_t VDDCCSR;        /*!< SYSCFG VDD compensation cell status register,                                Address offset: 0x68 */
   __IO uint32_t CBR;            /*!< SYSCFG control timer break register,                                         Address offset: 0x6C */
@@ -2964,7 +2947,6 @@ typedef struct
 #define UART8_BASE_NS                   (APB1PERIPH_BASE_NS + 0x7C00UL)
 #define MDIOS_BASE_NS                   (APB1PERIPH_BASE_NS + 0x9400UL)
 #define FDCAN1_BASE_NS                  (APB1PERIPH_BASE_NS + 0xA000UL)
-#define FDCAN_CONFIG_BASE_NS            (APB1PERIPH_BASE_NS + 0xA100UL)
 #define FDCAN2_BASE_NS                  (APB1PERIPH_BASE_NS + 0xA400UL)
 #define FDCAN_CCU_BASE_NS               (APB1PERIPH_BASE_NS + 0xA800UL)
 #define SRAMCAN_BASE_NS                 (APB1PERIPH_BASE_NS + 0xC000UL)
@@ -3242,7 +3224,6 @@ typedef struct
 #define UART8_BASE_S                    (APB1PERIPH_BASE_S + 0x7C00UL)
 #define MDIOS_BASE_S                    (APB1PERIPH_BASE_S + 0x9400UL)
 #define FDCAN1_BASE_S                   (APB1PERIPH_BASE_S + 0xA000UL)
-#define FDCAN_CONFIG_BASE_S             (APB1PERIPH_BASE_S + 0xA100UL)
 #define FDCAN2_BASE_S                   (APB1PERIPH_BASE_S + 0xA400UL)
 #define FDCAN_CCU_BASE_S                (APB1PERIPH_BASE_S + 0xA800UL)
 #define SRAMCAN_BASE_S                  (APB1PERIPH_BASE_S + 0xC000UL)
@@ -3484,7 +3465,6 @@ typedef struct
 #define FDCAN2_NS                 ((FDCAN_GlobalTypeDef *) FDCAN2_BASE_NS)
 #define FDCAN3_NS                 ((FDCAN_GlobalTypeDef *) FDCAN3_BASE_NS)
 #define FDCAN_CCU_NS              ((FDCAN_ClockCalibrationUnit_TypeDef *) FDCAN_CCU_BASE_NS)
-#define FDCAN_CONFIG_NS           ((FDCAN_Config_TypeDef *) FDCAN_CONFIG_BASE_NS)
 #define FMC_Bank1E_R_NS           ((FMC_Bank1E_TypeDef *) FMC_Bank1E_R_BASE_NS)
 #define FMC_Bank1_R_NS            ((FMC_Bank1_TypeDef *) FMC_Bank1_R_BASE_NS)
 #define FMC_Bank3_R_NS            ((FMC_Bank3_TypeDef *) FMC_Bank3_R_BASE_NS)
@@ -3685,7 +3665,6 @@ typedef struct
 #define FDCAN2_S                  ((FDCAN_GlobalTypeDef *) FDCAN2_BASE_S)
 #define FDCAN3_S                  ((FDCAN_GlobalTypeDef *) FDCAN3_BASE_S)
 #define FDCAN_CCU_S               ((FDCAN_ClockCalibrationUnit_TypeDef *) FDCAN_CCU_BASE_S)
-#define FDCAN_CONFIG_S            ((FDCAN_Config_TypeDef *) FDCAN_CONFIG_BASE_S)
 #define FMC_Bank1E_R_S            ((FMC_Bank1E_TypeDef *) FMC_Bank1E_R_BASE_S)
 #define FMC_Bank1_R_S             ((FMC_Bank1_TypeDef *) FMC_Bank1_R_BASE_S)
 #define FMC_Bank3_R_S             ((FMC_Bank3_TypeDef *) FMC_Bank3_R_BASE_S)
@@ -3937,9 +3916,6 @@ typedef struct
 
 #define FDCAN_CCU                 FDCAN_CCU_S
 #define FDCAN_CCU_BASE            FDCAN_CCU_BASE_S
-
-#define FDCAN_CONFIG              FDCAN_CONFIG_S
-#define FDCAN_CONFIG_BASE         FDCAN_CONFIG_BASE_S
 
 #define FMC_R_BASE                FMC_R_BASE_S
 
@@ -4559,9 +4535,6 @@ typedef struct
 
 #define FDCAN_CCU                 FDCAN_CCU_NS
 #define FDCAN_CCU_BASE            FDCAN_CCU_BASE_NS
-
-#define FDCAN_CONFIG              FDCAN_CONFIG_NS
-#define FDCAN_CONFIG_BASE         FDCAN_CONFIG_BASE_NS
 
 #define FMC_R_BASE                FMC_R_BASE_NS
 #define FMC_R_BASE_BASE           FMC_R_BASE_BASE_NS
@@ -23370,34 +23343,34 @@ typedef struct
 
 /* Bit fields for LTDC_SSCR register */
 #define LTDC_SSCR_VSH_Pos                (0U)
-#define LTDC_SSCR_VSH_Msk                (0xffffUL << LTDC_SSCR_VSH_Pos)
+#define LTDC_SSCR_VSH_Msk                (0xfffUL << LTDC_SSCR_VSH_Pos)
 #define LTDC_SSCR_VSH                    LTDC_SSCR_VSH_Msk  /*!< vertical synchronization height (in units of horizontal scan line)These bits define the vertical Synchronization height minus 1. It represents the number of horizontal synchronization lines. */
 #define LTDC_SSCR_HSW_Pos                (16U)
-#define LTDC_SSCR_HSW_Msk                (0xffffUL << LTDC_SSCR_HSW_Pos)
+#define LTDC_SSCR_HSW_Msk                (0xfffUL << LTDC_SSCR_HSW_Pos)
 #define LTDC_SSCR_HSW                    LTDC_SSCR_HSW_Msk  /*!< horizontal synchronization width (in units of pixel clock period)These bits define the number of Horizontal Synchronization pixel minus 1. */
 
 /* Bit fields for LTDC_BPCR register */
 #define LTDC_BPCR_AVBP_Pos               (0U)
-#define LTDC_BPCR_AVBP_Msk               (0xffffUL << LTDC_BPCR_AVBP_Pos)
+#define LTDC_BPCR_AVBP_Msk               (0xfffUL << LTDC_BPCR_AVBP_Pos)
 #define LTDC_BPCR_AVBP                   LTDC_BPCR_AVBP_Msk  /*!< accumulated Vertical back porch (in units of horizontal scan line)These bits define the accumulated vertical back porch width that includes the vertical synchronization and vertical back porch lines minus 1.The vertical back porch is the number of horizontal scan lines at a start of frame to the start of the first active scan line of the next frame. */
 #define LTDC_BPCR_AHBP_Pos               (16U)
-#define LTDC_BPCR_AHBP_Msk               (0xffffUL << LTDC_BPCR_AHBP_Pos)
+#define LTDC_BPCR_AHBP_Msk               (0xfffUL << LTDC_BPCR_AHBP_Pos)
 #define LTDC_BPCR_AHBP                   LTDC_BPCR_AHBP_Msk  /*!< accumulated horizontal back porch (in units of pixel clock period)These bits define the accumulated horizontal back porch width that includes the horizontal synchronization and horizontal back porch pixels minus 1.The horizontal back porch is the period between horizontal synchronization going inactive and the start of the active display part of the next scan line. */
 
 /* Bit fields for LTDC_AWCR register */
 #define LTDC_AWCR_AAH_Pos                (0U)
-#define LTDC_AWCR_AAH_Msk                (0xffffUL << LTDC_AWCR_AAH_Pos)
+#define LTDC_AWCR_AAH_Msk                (0xfffUL << LTDC_AWCR_AAH_Pos)
 #define LTDC_AWCR_AAH                    LTDC_AWCR_AAH_Msk  /*!< accumulated active height (in units of horizontal scan line)These bits define the accumulated height which includes the vertical synchronization, vertical back porch and the active height lines minus 1. The active height is the number of active lines in the panel.Refer to device datasheet for maximum active height supported following maximum pixel clock. */
 #define LTDC_AWCR_AAW_Pos                (16U)
-#define LTDC_AWCR_AAW_Msk                (0xffffUL << LTDC_AWCR_AAW_Pos)
+#define LTDC_AWCR_AAW_Msk                (0xfffUL << LTDC_AWCR_AAW_Pos)
 #define LTDC_AWCR_AAW                    LTDC_AWCR_AAW_Msk  /*!< accumulated active width (in units of pixel clock period)These bits define the accumulated active width which includes the horizontal synchronization, horizontal back porch and active pixels minus 1.The active width is the number of pixels in active display area of the panel scan line.Refer to device datasheet for maximum active width supported following maximum pixel clock. */
 
 /* Bit fields for LTDC_TWCR register */
 #define LTDC_TWCR_TOTALH_Pos             (0U)
-#define LTDC_TWCR_TOTALH_Msk             (0xffffUL << LTDC_TWCR_TOTALH_Pos)
+#define LTDC_TWCR_TOTALH_Msk             (0xfffUL << LTDC_TWCR_TOTALH_Pos)
 #define LTDC_TWCR_TOTALH                 LTDC_TWCR_TOTALH_Msk  /*!< total height (in units of horizontal scan line)These bits defines the accumulated height which includes the vertical synchronization, vertical back porch, the active height and vertical front porch height lines minus 1. */
 #define LTDC_TWCR_TOTALW_Pos             (16U)
-#define LTDC_TWCR_TOTALW_Msk             (0xffffUL << LTDC_TWCR_TOTALW_Pos)
+#define LTDC_TWCR_TOTALW_Msk             (0xfffUL << LTDC_TWCR_TOTALW_Pos)
 #define LTDC_TWCR_TOTALW                 LTDC_TWCR_TOTALW_Msk  /*!< total width (in units of pixel clock period)These bits defines the accumulated total width which includes the horizontal synchronization, horizontal back porch, active width and horizontal front porch pixels minus 1. */
 
 /* Bit fields for LTDC_GCR register */
@@ -23557,15 +23530,15 @@ typedef struct
 
 /* Bit fields for LTDC_LIPCR register */
 #define LTDC_LIPCR_LIPOS_Pos             (0U)
-#define LTDC_LIPCR_LIPOS_Msk             (0xffffUL << LTDC_LIPCR_LIPOS_Pos)
+#define LTDC_LIPCR_LIPOS_Msk             (0xfffUL << LTDC_LIPCR_LIPOS_Pos)
 #define LTDC_LIPCR_LIPOS                 LTDC_LIPCR_LIPOS_Msk  /*!< line interrupt positionThese bits configure the line interrupt position. */
 
 /* Bit fields for LTDC_CPSR register */
 #define LTDC_CPSR_CYPOS_Pos              (0U)
-#define LTDC_CPSR_CYPOS_Msk              (0xffffUL << LTDC_CPSR_CYPOS_Pos)
+#define LTDC_CPSR_CYPOS_Msk              (0xfffUL << LTDC_CPSR_CYPOS_Pos)
 #define LTDC_CPSR_CYPOS                  LTDC_CPSR_CYPOS_Msk  /*!< current Y positionThese bits return the current Y position. */
 #define LTDC_CPSR_CXPOS_Pos              (16U)
-#define LTDC_CPSR_CXPOS_Msk              (0xffffUL << LTDC_CPSR_CXPOS_Pos)
+#define LTDC_CPSR_CXPOS_Msk              (0xfffUL << LTDC_CPSR_CXPOS_Pos)
 #define LTDC_CPSR_CXPOS                  LTDC_CPSR_CXPOS_Msk  /*!< current X positionThese bits return the current X position. */
 
 /* Bit fields for LTDC_CDSR register */
@@ -23826,18 +23799,18 @@ typedef struct
 
 /* Bit fields for LTDC_LxWHPCR register */
 #define LTDC_LxWHPCR_WHSTPOS_Pos         (0U)
-#define LTDC_LxWHPCR_WHSTPOS_Msk         (0xffffUL << LTDC_LxWHPCR_WHSTPOS_Pos)
+#define LTDC_LxWHPCR_WHSTPOS_Msk         (0xfffUL << LTDC_LxWHPCR_WHSTPOS_Pos)
 #define LTDC_LxWHPCR_WHSTPOS             LTDC_LxWHPCR_WHSTPOS_Msk  /*!< window horizontal start positionThese bits configure the first visible pixel of a line of the layer window.WHSTPOS[15:0] must be >= AAW[15:0] bits (programmed in LTDC_AWCR register). */
 #define LTDC_LxWHPCR_WHSPPOS_Pos         (16U)
-#define LTDC_LxWHPCR_WHSPPOS_Msk         (0xffffUL << LTDC_LxWHPCR_WHSPPOS_Pos)
+#define LTDC_LxWHPCR_WHSPPOS_Msk         (0xfffUL << LTDC_LxWHPCR_WHSPPOS_Pos)
 #define LTDC_LxWHPCR_WHSPPOS             LTDC_LxWHPCR_WHSPPOS_Msk  /*!< window horizontal stop positionThese bits configure the last visible pixel of a line of the layer window.WHSPPOS[15:0] must be <= AHBP[15:0] bits + 1 (programmed in LTDC_BPCR register). */
 
 /* Bit fields for LTDC_LxWVPCR register */
 #define LTDC_LxWVPCR_WVSTPOS_Pos         (0U)
-#define LTDC_LxWVPCR_WVSTPOS_Msk         (0xffffUL << LTDC_LxWVPCR_WVSTPOS_Pos)
+#define LTDC_LxWVPCR_WVSTPOS_Msk         (0xfffUL << LTDC_LxWVPCR_WVSTPOS_Pos)
 #define LTDC_LxWVPCR_WVSTPOS             LTDC_LxWVPCR_WVSTPOS_Msk  /*!< window vertical start positionThese bits configure the first visible line of the layer window.WVSTPOS[15:0] must be >= AAH[15:0] bits (programmed in LTDC_AWCR register). */
 #define LTDC_LxWVPCR_WVSPPOS_Pos         (16U)
-#define LTDC_LxWVPCR_WVSPPOS_Msk         (0xffffUL << LTDC_LxWVPCR_WVSPPOS_Pos)
+#define LTDC_LxWVPCR_WVSPPOS_Msk         (0xfffUL << LTDC_LxWVPCR_WVSPPOS_Pos)
 #define LTDC_LxWVPCR_WVSPPOS             LTDC_LxWVPCR_WVSPPOS_Msk  /*!< window vertical stop positionThese bits configure the last visible line of the layer window.WVSPPOS[11:0] must be <= AVBP[15:0] bits + 1 (programmed in LTDC_BPCR register). */
 
 /* Bit fields for LTDC_LxCKCR register */
@@ -23888,7 +23861,7 @@ typedef struct
 
 /* Bit fields for LTDC_LxBLCR register */
 #define LTDC_LxBLCR_BL_Pos               (0U)
-#define LTDC_LxBLCR_BL_Msk               (0xffUL << LTDC_LxBLCR_BL_Pos)
+#define LTDC_LxBLCR_BL_Msk               (0x1fUL << LTDC_LxBLCR_BL_Pos)
 #define LTDC_LxBLCR_BL                   LTDC_LxBLCR_BL_Msk  /*!< burst length- 0x00: maximum burst length (16 words 64bit, thus 128 Bytes)- 0x01: 1 word (of 64bit) per burst..- 0x10: 16 words (of 64bit) per burst- 0x11: reserved...- 0xFF: reserved. */
 
 /* Bit fields for LTDC_LxPCR register */
@@ -23918,15 +23891,15 @@ typedef struct
 
 /* Bit fields for LTDC_LxCFBLR register */
 #define LTDC_LxCFBLR_CFBLL_Pos           (0U)
-#define LTDC_LxCFBLR_CFBLL_Msk           (0xffffUL << LTDC_LxCFBLR_CFBLL_Pos)
+#define LTDC_LxCFBLR_CFBLL_Msk           (0x3fffUL << LTDC_LxCFBLR_CFBLL_Pos)
 #define LTDC_LxCFBLR_CFBLL               LTDC_LxCFBLR_CFBLL_Msk  /*!< color frame buffer line lengthThese bits define the length of one line of pixels in bytes + 7.The line length is computed as follows:active high width * number of bytes per pixel + 7. */
 #define LTDC_LxCFBLR_CFBP_Pos            (16U)
-#define LTDC_LxCFBLR_CFBP_Msk            (0xffffUL << LTDC_LxCFBLR_CFBP_Pos)
+#define LTDC_LxCFBLR_CFBP_Msk            (0x7fffUL << LTDC_LxCFBLR_CFBP_Pos)
 #define LTDC_LxCFBLR_CFBP                LTDC_LxCFBLR_CFBP_Msk  /*!< color frame buffer pitch in bytesThese bits define the pitch that is the increment from the start of one line of pixels to the start of the next line in bytes.Negative values (with msb bit = 1) are allowed, to read the buffer from bottom to top, and thus to flip is vertically. When vertically flipped, as the address register must provide the address of the first line to be read, the address register must point to the start of the bottom line of the buffer. */
 
 /* Bit fields for LTDC_LxCFBLNR register */
 #define LTDC_LxCFBLNR_CFBLNBR_Pos        (0U)
-#define LTDC_LxCFBLNR_CFBLNBR_Msk        (0xffffUL << LTDC_LxCFBLNR_CFBLNBR_Pos)
+#define LTDC_LxCFBLNR_CFBLNBR_Msk        (0xfffUL << LTDC_LxCFBLNR_CFBLNBR_Pos)
 #define LTDC_LxCFBLNR_CFBLNBR            LTDC_LxCFBLNR_CFBLNBR_Msk  /*!< frame buffer line numberThese bits define the number of lines in the frame buffer that corresponds to the active high width. */
 
 /* Bit fields for LTDC_L1AFBA0R register */
@@ -23988,7 +23961,7 @@ typedef struct
 #define LTDC_LxFPF0R_APOS                LTDC_LxFPF0R_APOS_Msk  /*!< Location of the alpha component inside the pixel memory word (in bits). */
 
 #define LTDC_LxFPF0R_ALEN_Pos            (5U)
-#define LTDC_LxFPF0R_ALEN_Msk            (0x1fUL << LTDC_LxFPF0R_ALEN_Pos)
+#define LTDC_LxFPF0R_ALEN_Msk            (0xfUL << LTDC_LxFPF0R_ALEN_Pos)
 #define LTDC_LxFPF0R_ALEN                LTDC_LxFPF0R_ALEN_Msk  /*!< Width of the alpha component (in bits). */
 
 #define LTDC_LxFPF0R_RPOS_Pos            (9U)
@@ -23996,7 +23969,7 @@ typedef struct
 #define LTDC_LxFPF0R_RPOS                LTDC_LxFPF0R_RPOS_Msk  /*!< Location of the red component inside the pixel memory word (in bits). */
 
 #define LTDC_LxFPF0R_RLEN_Pos            (14U)
-#define LTDC_LxFPF0R_RLEN_Msk            (0x1fUL << LTDC_LxFPF0R_RLEN_Pos)
+#define LTDC_LxFPF0R_RLEN_Msk            (0xfUL << LTDC_LxFPF0R_RLEN_Pos)
 #define LTDC_LxFPF0R_RLEN                LTDC_LxFPF0R_RLEN_Msk  /*!< Width of the red component (in bits). */
 
 /* Bit fields for LTDC_LxFPF1R register */
@@ -24005,7 +23978,7 @@ typedef struct
 #define LTDC_LxFPF1R_GPOS                LTDC_LxFPF1R_GPOS_Msk  /*!< Location of the alpha component inside the pixel memory word (in bits). */
 
 #define LTDC_LxFPF1R_GLEN_Pos            (5U)
-#define LTDC_LxFPF1R_GLEN_Msk            (0x1fUL << LTDC_LxFPF1R_GLEN_Pos)
+#define LTDC_LxFPF1R_GLEN_Msk            (0xfUL << LTDC_LxFPF1R_GLEN_Pos)
 #define LTDC_LxFPF1R_GLEN                LTDC_LxFPF1R_GLEN_Msk  /*!< Width of the alpha component (in bits). */
 
 #define LTDC_LxFPF1R_BPOS_Pos            (9U)
@@ -24013,7 +23986,7 @@ typedef struct
 #define LTDC_LxFPF1R_BPOS                LTDC_LxFPF1R_BPOS_Msk  /*!< Location of the red component inside the pixel memory word (in bits). */
 
 #define LTDC_LxFPF1R_BLEN_Pos            (14U)
-#define LTDC_LxFPF1R_BLEN_Msk            (0x1fUL << LTDC_LxFPF1R_BLEN_Pos)
+#define LTDC_LxFPF1R_BLEN_Msk            (0xfUL << LTDC_LxFPF1R_BLEN_Pos)
 #define LTDC_LxFPF1R_BLEN                LTDC_LxFPF1R_BLEN_Msk  /*!< Width of the red component (in bits). */
 
 #define LTDC_LxFPF1R_PSIZE_Pos            (18U)
@@ -38814,10 +38787,10 @@ typedef struct
 #define USB_OTG_GCCFG_SDETEN                     USB_OTG_GCCFG_SDETEN_Msk                     /*!< Secondary detection (PD) mode enable */
 #define USB_OTG_GCCFG_VBVALOVAL_Pos              (23U)
 #define USB_OTG_GCCFG_VBVALOVAL_Msk              (0x1U << USB_OTG_GCCFG_VBVALOVAL_Pos)        /*!< 0x00800000 */
-#define USB_OTG_GCCFG_VBVALOVAL                  USB_OTG_GCCFG_VBVALOVAL_Msk                  /*!< Value of VBUSVLDEXT0 femtoPHY input */
+#define USB_OTG_GCCFG_VBVALOVAL                  USB_OTG_GCCFG_VBVALOVAL_Msk                  /*!< Value of VBUSVLDEXT0 PHY input */
 #define USB_OTG_GCCFG_VBVALEXTOEN_Pos            (24U)
 #define USB_OTG_GCCFG_VBVALEXTOEN_Msk            (0x1U << USB_OTG_GCCFG_VBVALEXTOEN_Pos)      /*!< 0x01000000 */
-#define USB_OTG_GCCFG_VBVALEXTOEN                USB_OTG_GCCFG_VBVALEXTOEN_Msk                /*!< Enables of VBUSVLDEXT0 femtoPHY input override */
+#define USB_OTG_GCCFG_VBVALEXTOEN                USB_OTG_GCCFG_VBVALEXTOEN_Msk                /*!< Enables of VBUSVLDEXT0 PHY input override */
 #define USB_OTG_GCCFG_PULLDOWNEN_Pos             (25U)
 #define USB_OTG_GCCFG_PULLDOWNEN_Msk             (0x1U << USB_OTG_GCCFG_PULLDOWNEN_Pos)       /*!< 0x02000000 */
 #define USB_OTG_GCCFG_PULLDOWNEN                 USB_OTG_GCCFG_PULLDOWNEN_Msk                 /*!< Enables Host pulldown resistors, used when ID PAD is disabled */
@@ -40172,8 +40145,6 @@ typedef struct
                                          ((INSTANCE) == FDCAN2_S) || ((INSTANCE) == FDCAN2_NS) || \
                                          ((INSTANCE) == FDCAN3_S) || ((INSTANCE) == FDCAN3_NS))
 
-#define IS_FDCAN_CONFIG_INSTANCE(INSTANCE) (((INSTANCE) == FDCAN_CONFIG_S) || ((INSTANCE) == FDCAN_CONFIG_NS))
-
 #define IS_FDCAN_TT_INSTANCE(__INSTANCE__) ((__INSTANCE__) == FDCAN1_S)
 
 /******************************* GFXMMU Instance *****************************/
@@ -40425,16 +40396,16 @@ typedef struct
                                            ((INSTANCE) == LPUART1_S) || ((INSTANCE) == LPUART1_NS))
 
 /******************** UART Instances : LIN mode ******************************/
-#define IS_UART_LIN_INSTANCE(INSTANCE) (((INSTANCE) == USART1_S)  || ((INSTANCE) == USART1_NS) || \
-                                        ((INSTANCE) == USART2_S)  || ((INSTANCE) == USART2_S)  || \
-                                        ((INSTANCE) == USART3_S)  || ((INSTANCE) == USART3_S)  || \
-                                        ((INSTANCE) == UART4_S)   || ((INSTANCE) == UART4_S)   || \
-                                        ((INSTANCE) == UART5_S)   || ((INSTANCE) == UART5_S)   || \
-                                        ((INSTANCE) == USART6_S)  || ((INSTANCE) == USART6_S)  || \
-                                        ((INSTANCE) == UART7_S)   || ((INSTANCE) == UART7_S)   || \
-                                        ((INSTANCE) == UART8_S)   || ((INSTANCE) == UART8_S)   || \
-                                        ((INSTANCE) == UART9_S)   || ((INSTANCE) == UART9_S)   || \
-                                        ((INSTANCE) == USART10_S) || ((INSTANCE) == USART10_S))
+#define IS_UART_LIN_INSTANCE(INSTANCE) (((INSTANCE) == USART1_S)  || ((INSTANCE) == USART1_NS)  || \
+                                        ((INSTANCE) == USART2_S)  || ((INSTANCE) == USART2_NS)  || \
+                                        ((INSTANCE) == USART3_S)  || ((INSTANCE) == USART3_NS)  || \
+                                        ((INSTANCE) == UART4_S)   || ((INSTANCE) == UART4_NS)   || \
+                                        ((INSTANCE) == UART5_S)   || ((INSTANCE) == UART5_NS)   || \
+                                        ((INSTANCE) == USART6_S)  || ((INSTANCE) == USART6_NS)  || \
+                                        ((INSTANCE) == UART7_S)   || ((INSTANCE) == UART7_NS)   || \
+                                        ((INSTANCE) == UART8_S)   || ((INSTANCE) == UART8_NS)   || \
+                                        ((INSTANCE) == UART9_S)   || ((INSTANCE) == UART9_NS)   || \
+                                        ((INSTANCE) == USART10_S) || ((INSTANCE) == USART10_NS))
 
 /******************** UART Instances : Wake-up from Stop mode ****************/
 #define IS_UART_WAKEUP_FROMSTOP_INSTANCE(INSTANCE) (((INSTANCE) == USART1_S)  || ((INSTANCE) == USART1_NS)  || \
@@ -41059,8 +41030,6 @@ typedef struct
                                          ((INSTANCE) == FDCAN2_NS) || \
                                          ((INSTANCE) == FDCAN3_NS))
 
-#define IS_FDCAN_CONFIG_INSTANCE(INSTANCE) ((INSTANCE) == FDCAN_CONFIG_NS)
-
 #define IS_FDCAN_TT_INSTANCE(__INSTANCE__) ((__INSTANCE__) == FDCAN1_NS)
 
 /******************************* GFXMMU Instance *****************************/
@@ -41208,6 +41177,18 @@ typedef struct
 
 /****************************** UCPD Instances *******************************/
 #define IS_UCPD_ALL_INSTANCE(INSTANCE) ((INSTANCE) == UCPD1_NS)
+
+/******************************* OTG HS HCD Instances *************************/
+#define IS_HCD_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB1_OTG_HS_NS) || \
+                                       ((INSTANCE) == USB2_OTG_HS_NS))
+
+/******************************* OTG HS PCD Instances *************************/
+#define IS_PCD_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB1_OTG_HS_NS) || \
+                                       ((INSTANCE) == USB2_OTG_HS_NS))
+
+/******************************* USB HS PHY Instances *************************/
+#define IS_USBPHYC_ALL_INSTANCE(INSTANCE) (((INSTANCE) == USB1_HS_PHYC_NS) || \
+                                           ((INSTANCE) == USB2_HS_PHYC_NS))
 
 /******************** USART Instances : Synchronous mode *********************/
 #define IS_USART_INSTANCE(INSTANCE) (((INSTANCE) == USART1_NS) || \

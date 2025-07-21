@@ -51,7 +51,6 @@ C_SOURCES += Src/app.c
 C_SOURCES += Src/app_fuseprogramming.c
 C_SOURCES += Src/stm32_lcd_ex.c
 C_SOURCES += Src/stm32n6xx_it.c
-C_SOURCES += Src/mcu_cache.c
 C_SOURCES += Model/network.c
 C_SOURCES += Src/app_cam.c
 C_SOURCES += Src/threadx_hal.c
@@ -60,13 +59,14 @@ C_SOURCES += Src/sysmem.c
 # ASM sources
 ASM_SOURCES =
 ASM_SOURCES_S =
-
+#GCC_PATH= to be set if needed
 #######################################
 # binaries
 #######################################
 PREFIX = arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
+
 ifdef GCC_PATH
 CC = $(GCC_PATH)/$(PREFIX)gcc
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
@@ -102,9 +102,13 @@ MCU = $(CPU) $(FPU)
 
 # C defines
 C_DEFS += -DSTM32N657xx
+C_DEFS += -DUSE_STM32N6570_DK
 C_DEFS += -DUSE_FULL_ASSERT
 C_DEFS += -DUSE_FULL_LL_DRIVER
 C_DEFS += -DVECT_TAB_SRAM
+
+C_DEFS += -DUSER_VECT_TAB_ADDRESS
+
 ifeq ($(REV_BOARD),B01)
 C_DEFS += -DSTM32N6570_DK_REV=STM32N6570_DK_B01
 endif
@@ -126,14 +130,14 @@ endif
 
 # We only support single model
 C_DEFS += -DTX_MAX_PARALLEL_NETWORKS=1
-
+C_DEFS += -DAPP_HAS_PARALLEL_NETWORKS=0
 # C includes
 # Patched files
 C_INCLUDES += -IInc
 CXX_VERSION_FLAGS = -std=gnu++11
 
 # For now using the C flags for C++ as well
-CXXFLAGS = $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(OPT) $(CXX_VERSION_FLAGS)
+CXXFLAGS = $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(OPT) $(CXX_VERSION_FLAGS) -fpermissive
 
 
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fstack-usage -fdata-sections -ffunction-sections #-fcyclomatic-complexity

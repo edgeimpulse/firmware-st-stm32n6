@@ -36,17 +36,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
-/** @defgroup RCCEx_Private_Constants RCCEx Private Constants
-  * @{
-  */
-#if defined(USE_FPGA)
-/* ***** FPGA values ******/
-#define RCC_PLL_SOURCE_FREQ   32000000UL  /* PLL source forced to 32MHz */
-#endif /* USE_FPGA */
-/**
-  * @}
-  */
-
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -131,6 +120,8 @@ static uint32_t RCCEx_GetXSPICLKFreq(uint32_t XSPIxSource);
   *         the backup registers) are set to their reset values.
   * @note   Dynamic switches are used for peripheral input clock selection meaning the switch setting
   *         can only be changed if both input clocks are present during transition time.
+  * @note   Care must be taken when RCC_PPPCLKSOURCE_ICx is selected. The ICx ClockSelection and ClockDivider fields
+  *         modification indeed impacts all peripherals using this ICx as clock source.
   *
   * @retval HAL status
   */
@@ -569,6 +560,7 @@ HAL_StatusTypeDef HAL_RCCEx_PeriphCLKConfig(const RCC_PeriphCLKInitTypeDef  *Per
   {
     /* Check the parameters */
     assert_param(IS_RCC_ADCCLKSOURCE(PeriphClkInit->AdcClockSelection));
+    assert_param(IS_RCC_ADCDIVIDER(PeriphClkInit->AdcDivider));
 
     if (PeriphClkInit->AdcClockSelection == RCC_ADCCLKSOURCE_IC7)
     {
@@ -605,8 +597,9 @@ HAL_StatusTypeDef HAL_RCCEx_PeriphCLKConfig(const RCC_PeriphCLKInitTypeDef  *Per
       /* No specific enable to do on other sources */
     }
 
-    /* Set the source of ADC clock*/
-    __HAL_RCC_ADC_CONFIG(PeriphClkInit->AdcClockSelection);
+    /* Configure the ADC clock source and divider */
+    MODIFY_REG(RCC->CCIPR1, (RCC_CCIPR1_ADCPRE | RCC_CCIPR1_ADC12SEL), \
+               (((PeriphClkInit->AdcDivider - 1U) << RCC_CCIPR1_ADCPRE_Pos) | (PeriphClkInit->AdcClockSelection)));
   }
 
   /*---------------------------- ADF1 configuration --------------------------*/
@@ -794,7 +787,7 @@ HAL_StatusTypeDef HAL_RCCEx_PeriphCLKConfig(const RCC_PeriphCLKInitTypeDef  *Per
 
     /* Configure the ETH1 PTP clock source and divider */
     MODIFY_REG(RCC->CCIPR2, (RCC_CCIPR2_ETH1PTPDIV | RCC_CCIPR2_ETH1PTPSEL), \
-               ((PeriphClkInit->Eth1PtpDivider << RCC_CCIPR2_ETH1PTPDIV_Pos) | PeriphClkInit->Eth1PtpClockSelection));
+               (((PeriphClkInit->Eth1PtpDivider - 1U) << RCC_CCIPR2_ETH1PTPDIV_Pos) | PeriphClkInit->Eth1PtpClockSelection));
   }
 
   /*---------------------- FDCAN configuration -------------------------------*/
@@ -2418,6 +2411,8 @@ void HAL_RCCEx_GetPeriphCLKConfig(RCC_PeriphCLKInitTypeDef  *PeriphClkInit)
 
   /* Get the ADC clock source ------------------------------------------------*/
   PeriphClkInit->AdcClockSelection          = __HAL_RCC_GET_ADC_SOURCE();
+  /* Get the ADC divider ------------------------------------------------*/
+  PeriphClkInit->AdcDivider                 = __HAL_RCC_GET_ADC_DIVIDER();
   /* Get the ADF1 clock source -----------------------------------------------*/
   PeriphClkInit->Adf1ClockSelection         = __HAL_RCC_GET_ADF1_SOURCE();
   /* Get the CKPER clock source ----------------------------------------------*/
@@ -2832,11 +2827,6 @@ uint32_t HAL_RCCEx_GetPLL1CLKFreq(void)
 
       if (pllinputfreq != RCC_PERIPH_FREQUENCY_NO)
       {
-#if defined(USE_FPGA)
-        /**** FPGA PLL input forced to 32MHz *****/
-        pllinputfreq = RCC_PLL_SOURCE_FREQ;
-        /*****************************************/
-#endif /* USE_FPGA */
         divm = LL_RCC_PLL1_GetM();
 
         if (divm != 0U)
@@ -2880,11 +2870,7 @@ uint32_t HAL_RCCEx_GetPLL2CLKFreq(void)
 
       if (pllinputfreq != RCC_PERIPH_FREQUENCY_NO)
       {
-#if defined(USE_FPGA)
-        /**** FPGA PLL input forced to 32MHz *****/
-        pllinputfreq = RCC_PLL_SOURCE_FREQ;
-        /*****************************************/
-#endif /* USE_FPGA */
+
         divm = LL_RCC_PLL2_GetM();
 
         if (divm != 0U)
@@ -2928,11 +2914,6 @@ uint32_t HAL_RCCEx_GetPLL3CLKFreq(void)
 
       if (pllinputfreq != RCC_PERIPH_FREQUENCY_NO)
       {
-#if defined(USE_FPGA)
-        /**** FPGA PLL input forced to 32MHz *****/
-        pllinputfreq = RCC_PLL_SOURCE_FREQ;
-        /*****************************************/
-#endif /* USE_FPGA */
         divm = LL_RCC_PLL3_GetM();
 
         if (divm != 0U)
@@ -2976,11 +2957,7 @@ uint32_t HAL_RCCEx_GetPLL4CLKFreq(void)
 
       if (pllinputfreq != RCC_PERIPH_FREQUENCY_NO)
       {
-#if defined(USE_FPGA)
-        /**** FPGA PLL input forced to 32MHz *****/
-        pllinputfreq = RCC_PLL_SOURCE_FREQ;
-        /*****************************************/
-#endif /* USE_FPGA */
+
         divm = LL_RCC_PLL4_GetM();
 
         if (divm != 0U)
@@ -3480,7 +3457,7 @@ static uint32_t RCCEx_GetADCCLKFreq(uint32_t ADCxSource)
       break;
   }
 
-  return adc_frequency;
+  return (adc_frequency / __HAL_RCC_GET_ADC_DIVIDER());
 }
 
 /**
@@ -4018,7 +3995,7 @@ static uint32_t RCCEx_GetETH1PTPCLKFreq(uint32_t ETH1PTPxSource)
       break;
   }
 
-  return eth1ptp_frequency;
+  return (eth1ptp_frequency / __HAL_RCC_GET_ETH1PTP_DIVIDER());
 }
 
 /**

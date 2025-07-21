@@ -129,7 +129,7 @@ extern "C" {
 #define LL_PWR_WAKEUP_PIN1             PWR_WKUPEPR_WKUPEN1                     /*!< Wake-Up pin 1 : PA0  */
 #define LL_PWR_WAKEUP_PIN2             PWR_WKUPEPR_WKUPEN2                     /*!< Wake-Up pin 2 : PA2  */
 #define LL_PWR_WAKEUP_PIN3             PWR_WKUPEPR_WKUPEN3                     /*!< Wake-Up pin 3 : PC13 */
-#define LL_PWR_WAKEUP_PIN4             PWR_WKUPEPR_WKUPEN4                     /*!< Wake-Up pin 4 : PC1  */
+#define LL_PWR_WAKEUP_PIN4             PWR_WKUPEPR_WKUPEN4                     /*!< Wake-Up pin 4 : PD2  */
 /**
   * @}
   */

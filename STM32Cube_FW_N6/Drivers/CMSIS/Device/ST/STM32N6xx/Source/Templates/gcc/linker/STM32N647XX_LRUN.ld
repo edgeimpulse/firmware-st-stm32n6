@@ -149,7 +149,7 @@ SECTIONS
   {
     . = ALIGN(8);
     __snoncacheable = .;/* create symbol for start of section */
-    KEEP(*(noncacheable_buffer))
+    KEEP(*(.noncacheable))
     . = ALIGN(8);
     __enoncacheable = .;  /* create symbol for end of section */
   } > RAM

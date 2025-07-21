@@ -251,7 +251,7 @@ int32_t BSP_LCD_InitEx(uint32_t Instance, uint32_t Orientation, uint32_t PixelFo
     }
 #else
     LTDC_MspInit(&hlcd_ltdc);
-#endif
+#endif /* (USE_HAL_LTDC_REGISTER_CALLBACKS == 1) */
 
     DMA2D_MspInit(&hlcd_dma2d);
 
@@ -327,8 +327,6 @@ int32_t BSP_LCD_DeInit(uint32_t Instance)
     LTDC_MspDeInit(&hlcd_ltdc);
 #endif /* (USE_HAL_LTDC_REGISTER_CALLBACKS == 0) */
 
-    DMA2D_MspDeInit(&hlcd_dma2d);
-
     (void)HAL_LTDC_DeInit(&hlcd_ltdc);
     if(HAL_DMA2D_DeInit(&hlcd_dma2d) != HAL_OK)
     {
@@ -336,6 +334,7 @@ int32_t BSP_LCD_DeInit(uint32_t Instance)
     }
     else
     {
+      DMA2D_MspDeInit(&hlcd_dma2d);
       Lcd_Ctx[Instance].IsMspCallbacksValid = 0;
     }
   }
@@ -974,7 +973,10 @@ int32_t BSP_LCD_DisplayOff(uint32_t Instance)
 int32_t BSP_LCD_DrawBitmap(uint32_t Instance, uint32_t Xpos, uint32_t Ypos, uint8_t *pBmp)
 {
   int32_t ret = BSP_ERROR_NONE;
-  uint32_t index, width, height, bit_pixel;
+  uint32_t index;
+  uint32_t width;
+  uint32_t height;
+  uint32_t bit_pixel;
   uint32_t Address;
   uint32_t input_color_mode;
   uint8_t *pbmp;
@@ -1071,7 +1073,8 @@ int32_t BSP_LCD_FillRGBRect(uint32_t Instance, uint32_t Xpos, uint32_t Ypos, uin
     pdata += Lcd_Ctx[Instance].BppFactor*Width;
   }
 #else
-  uint32_t color, j;
+  uint32_t color;
+  uint32_t j;
   for(i = 0; i < Height; i++)
   {
     for(j = 0; j < Width; j++)
@@ -1081,7 +1084,7 @@ int32_t BSP_LCD_FillRGBRect(uint32_t Instance, uint32_t Xpos, uint32_t Ypos, uin
       pdata += Lcd_Ctx[Instance].BppFactor;
     }
   }
-#endif
+#endif /* (USE_DMA2D_TO_FILL_RGB_RECT == 1) */
 
   return BSP_ERROR_NONE;
 }
@@ -1232,7 +1235,8 @@ int32_t BSP_LCD_WritePixel(uint32_t Instance, uint32_t Xpos, uint32_t Ypos, uint
   */
 static void LL_FillBuffer(uint32_t Instance, uint32_t *pDst, uint32_t xSize, uint32_t ySize, uint32_t OffLine, uint32_t Color)
 {
-  uint32_t output_color_mode, input_color = Color;
+  uint32_t output_color_mode;
+  uint32_t input_color = Color;
 
   switch(Lcd_Ctx[Instance].PixelFormat)
   {

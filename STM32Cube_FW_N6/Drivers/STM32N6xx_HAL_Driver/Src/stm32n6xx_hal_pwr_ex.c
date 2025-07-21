@@ -215,9 +215,7 @@
   * @}
   */
 
-/**
-  * @}
-  */
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -1772,6 +1770,10 @@ __weak void HAL_PWREx_ADCVM_Falling_Callback(void)
             HAL_PWREx_ADCVM_Falling_Callback() API can be implemented in the user file
    */
 }
+/**
+  * @}
+  */
+
 /**
   * @}
   */

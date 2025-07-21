@@ -101,8 +101,19 @@
     (#) device-nGRE: new to Armv8-M
     (#) device-GRE: new to Armv8-M
 
-    On STM32U3xx, the MPUs are split memory into regions (up to eight for the non-secure MPU,
-    and up to twelve for the secure MPU).
+    A normal memory has the following attributes:
+    (#) Cache Allocation attribute : set when a cache line is allocated (no allocation, read/write/read-write allocation)
+    (#) Cache write policy : write through (write to cache AND memory), write back (memory is written when the cache line is evicted)
+    (#) Transient : indicates that the region will be used for a short period of time
+    For normal memory, attributes can be set for inner and outer caches separately.
+    Note that outer attributes set to 0 change the memory to device mode. Both inner and outer attributes should be set for normal memory.
+
+    Sample configurations
+    (#) Inner-outer cacheable, write back, read-write allocate INNER_OUTER(MPU_RW_ALLOCATE | MPU_WRITE_BACK)
+    (#) Inner write back, read allocation, outer non-cacheable (MPU_R_ALLOCATE | MPU_WRITE_BACK) | OUTER(MPU_NOT_CACHEABLE)
+    For detail on memory attributes, refer to the ARMv8-m MPU documentation.
+
+    On STM32N6xx, the MPUs are split memory into regions (up to sixteen for both Secure and Non-Secure domains)
     The secure MPU is only available when TrustZone is activated.
 
     (#) Enable the MPU using HAL_MPU_Enable() function or HAL_MPU_Enable_NS function for non-secure MPU.
@@ -718,6 +729,7 @@ static void MPU_ConfigRegion(MPU_Type *MPUx, const MPU_Region_InitTypeDef *pMPU_
 
   /* Check the parameters */
   assert_param(IS_MPU_INSTRUCTION_ACCESS(pMPU_RegionInit->DisableExec));
+  assert_param(IS_MPU_PRIV_INSTRUCTION_ACCESS(pMPU_RegionInit->DisablePrivExec));
   assert_param(IS_MPU_REGION_PERMISSION_ATTRIBUTE(pMPU_RegionInit->AccessPermission));
   assert_param(IS_MPU_ACCESS_SHAREABLE(pMPU_RegionInit->IsShareable));
   assert_param(IS_MPU_ATTRIBUTES_NUMBER(pMPU_RegionInit->AttributesIndex));
@@ -728,6 +740,7 @@ static void MPU_ConfigRegion(MPU_Type *MPUx, const MPU_Region_InitTypeDef *pMPU_
                 ((uint32_t)pMPU_RegionInit->DisableExec      << MPU_RBAR_XN_Pos));
 
   MPUx->RLAR = (((uint32_t)pMPU_RegionInit->LimitAddress & 0xFFFFFFE0UL) |
+                ((uint32_t)pMPU_RegionInit->DisablePrivExec << MPU_RLAR_PXN_Pos) |
                 ((uint32_t)pMPU_RegionInit->AttributesIndex  << MPU_RLAR_AttrIndx_Pos) |
                 ((uint32_t)pMPU_RegionInit->Enable           << MPU_RLAR_EN_Pos));
 }

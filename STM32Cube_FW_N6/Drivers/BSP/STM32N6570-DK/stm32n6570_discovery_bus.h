@@ -58,7 +58,6 @@ typedef struct
 /** @defgroup STM32N6570_DK_BUS_Exported_Constants Exported Constants
   * @{
   */
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 /* Definition for I2C1 clock resources */
 #define BUS_I2C1                               I2C1
 #define BUS_I2C1_CLK_ENABLE()                  __HAL_RCC_I2C1_CLK_ENABLE()
@@ -82,7 +81,6 @@ typedef struct
 #ifndef BUS_I2C1_FREQUENCY
 #define BUS_I2C1_FREQUENCY  100000U /* Frequency of I2Cn = 100 KHz*/
 #endif /* BUS_I2C1_FREQUENCY */
-#endif /* STM32N6570_DK_REV */
 
 /* Definition for I2C2 clock resources */
 #define BUS_I2C2                               I2C2
@@ -115,9 +113,7 @@ typedef struct
 /** @addtogroup STM32N6570_DK_BUS_Exported_Variables
   * @{
   */
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 extern I2C_HandleTypeDef hbus_i2c1;
-#endif /* STM32N6570_DK_REV */
 extern I2C_HandleTypeDef hbus_i2c2;
 /**
   * @}
@@ -126,7 +122,6 @@ extern I2C_HandleTypeDef hbus_i2c2;
 /** @addtogroup STM32N6570_DK_BUS_Exported_Functions
   * @{
   */
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 int32_t BSP_I2C1_Init(void);
 int32_t BSP_I2C1_DeInit(void);
 int32_t BSP_I2C1_WriteReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length);
@@ -141,7 +136,6 @@ int32_t BSP_I2C1_RegisterDefaultMspCallbacks (void);
 int32_t BSP_I2C1_RegisterMspCallbacks (BSP_I2C_Cb_t *Callback);
 #endif /* USE_HAL_I2C_REGISTER_CALLBACKS */
 HAL_StatusTypeDef MX_I2C1_Init(I2C_HandleTypeDef *phi2c, uint32_t timing);
-#endif /* STM32N6570_DK_REV */
 int32_t BSP_I2C2_Init(void);
 int32_t BSP_I2C2_DeInit(void);
 int32_t BSP_I2C2_WriteReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length);

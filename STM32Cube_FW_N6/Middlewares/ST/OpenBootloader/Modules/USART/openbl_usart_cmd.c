@@ -24,17 +24,18 @@
 #include "app_openbootloader.h"
 #include "usart_interface.h"
 #include "common_interface.h"
+#include "external_memory_interface.h"
 
 #include "openbl_util.h"
 #include "otp_interface.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define OPENBL_USART_COMMANDS_NB_MAX      14U       /* The maximum number of supported commands */
+#define OPENBL_USART_COMMANDS_NB_MAX      15U       /* The maximum number of supported commands */
 
 #define USART_RAM_BUFFER_SIZE             1164U     /* Size of USART buffer used to store received data from the host */
 
-#define OPENBL_USART_PACKET_SIZE          256      /* Size of USART Packet send by the host */
+#define OPENBL_USART_PACKET_SIZE          256U      /* Size of USART Packet send by the host */
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -43,25 +44,18 @@
 static uint8_t USART_RAM_Buf[USART_RAM_BUFFER_SIZE];    /* Buffer used to store received data from the host */
 static uint8_t a_OPENBL_USART_CommandsList[OPENBL_USART_COMMANDS_NB_MAX] = {0U};
 static uint8_t UsartCommandsNumber = 0U;
-
-static uint8_t PhaseId             = PHASE_FLASHLAYOUT;
+static uint8_t OperationType       = PHASE_FLASHLAYOUT;
 static uint32_t DestinationAddress = RAM_WRITE_ADDRESS;
-static uint32_t PartitionNum       = 1U;
 static uint32_t PacketNum          = 0U;
 static uint32_t OtpReadIndex       = 0U;
-static uint32_t OtpWriteIndex      = 0U;
-static bool IsFlashLayout          = true;
 static Otp_Partition_t Otp;
-static uint8_t OperationType;
 
 /* Private function prototypes -----------------------------------------------*/
 static uint8_t OPENBL_USART_GetAddress(uint32_t *Address);
 static uint8_t OPENBL_USART_GetSpecialCmdOpCode(uint16_t *OpCode, OPENBL_SpecialCmdTypeTypeDef CmdType);
-static uint8_t OPENBL_USART_ConstructCommandsTable(OPENBL_CommandsTypeDef *pUsartCmd);
+static uint8_t OPENBL_USART_ConstructCommandsTable(const OPENBL_CommandsTypeDef *pUsartCmd);
 
 /* External variables --------------------------------------------------------*/
-extern OPENBL_Flashlayout_TypeDef FlashlayoutStruct;
-
 /* Exported variables --------------------------------------------------------*/
 /* Exported functions---------------------------------------------------------*/
 
@@ -184,41 +178,122 @@ void OPENBL_USART_GetID(void)
   */
 void OPENBL_USART_GetPhase(void)
 {
+  static uint32_t partition_num = 1U;
+  static uint8_t phase_id       = PHASE_FLASHLAYOUT;
+  uint8_t i;
+  uint8_t temp_phase_id;
+
+  /* Save the current phase ID value */
+  temp_phase_id = phase_id;
+
   /* First phase is reserved for flash layout phase */
-  if (PhaseId == PHASE_FLASHLAYOUT)
+  if (phase_id == PHASE_FLASHLAYOUT)
   {
+    phase_id            = PHASE_3;
     DestinationAddress = FLASHLAYOUT_ADDRESS;
   }
-  else if (PhaseId == PHASE_0x3)
+  else if (phase_id == PHASE_3)
   {
-    DestinationAddress = RAM_WRITE_ADDRESS;
+    phase_id            = PHASE_4;
+    DestinationAddress = FLASH_LOADER_WRITE_ADDRESS;
+  }
+  /* Flash in External memory phase */
+  else if ((phase_id == PHASE_4) || (phase_id == PHASE_5))
+  {
+    /* Check if the current Phase ID is present in the flash layout structure */
+    for (i = 0U; i < FlashlayoutStruct.partsize; i++)
+    {
+      if (FlashlayoutStruct.id[i] == phase_id)
+      {
+        break;
+      }
+    }
+
+    if (i == FlashlayoutStruct.partsize)
+    {
+      /* Phase ID was not found in the flash layout structure */
+      DestinationAddress = UNDEF_ADDRESS;
+    }
+    else
+    {
+      /* Compute the destination address by using the offset provided by the user in the flash layout */
+      DestinationAddress = EXT_MEMORY_START_ADDRESS + FlashlayoutStruct.offset[i];
+    }
+
+    if (phase_id == PHASE_4)
+    {
+      /* Init external memory */
+      if (OPENBL_MEM_Init(DestinationAddress) != 1U)
+      {
+        /* In case of error during external memory initialization send a NACK to the host */
+        OPENBL_USART_SendByte(NACK_BYTE);
+
+        return;
+      }
+
+      i++;
+
+      /* Check if the current phase the the last one in the flash layout structure or not */
+      if (i == FlashlayoutStruct.partsize)
+      {
+        /* Last phase */
+        phase_id = PHASE_END;
+      }
+      else
+      {
+        /* The is still the phase 5 to be executed */
+        phase_id = PHASE_5;
+      }
+    }
+    else
+    {
+      phase_id = PHASE_END;
+    }
+  }
+  else if (phase_id == PHASE_END)
+  {
+    /* Nothing to do */
   }
   else /* Other phase and after flash layout parsing */
   {
     /* Check if there is available partition */
-    if (PartitionNum < FlashlayoutStruct.partsize)
+    if (partition_num < FlashlayoutStruct.partsize)
     {
       /* Get the current partition phase ID */
-      PhaseId = FlashlayoutStruct.id[PartitionNum];
+      phase_id = (uint8_t)FlashlayoutStruct.id[partition_num];
 
       /* Get the destination address based on current partition */
-      if (!strcmp(FlashlayoutStruct.ip[PartitionNum], "none"))
+      if (strcmp(FlashlayoutStruct.ip[partition_num], "none") == 0)
       {
         /* If partition is "none" destination is RAM address */
         DestinationAddress = RAM_WRITE_ADDRESS;
       }
-      else
+      else if ((strcmp(FlashlayoutStruct.ip[partition_num], "nor") == 0)
+               || (strcmp(FlashlayoutStruct.ip[partition_num], "mmc") == 0))
+      {
+        /* If partition ID is "nor" destination is external memory address (QSPI NOR) */
+        DestinationAddress = FlashlayoutStruct.offset[partition_num];
+      }
+      else /* Only none, nor are supported */
       {
         OPENBL_USART_SendByte(NACK_BYTE);
       }
 
       /* Go to the next partition */
-      PartitionNum++;
+      partition_num++;
+
+      /* Init the external memories */
+      if (OPENBL_MEM_Init(DestinationAddress) != 1U)
+      {
+        OPENBL_USART_SendByte(NACK_BYTE);
+
+        return;
+      }
     }
     else
     {
       /* End operation after this phase */
-      PhaseId = PHASE_END;
+      phase_id = PHASE_END;
     }
   }
 
@@ -227,21 +302,19 @@ void OPENBL_USART_GetPhase(void)
 
   OPENBL_USART_SendByte(6U);                          /* Data length */
 
-  OPENBL_USART_SendByte(PhaseId & 0xFFU);             /* Partition ID */
+  OPENBL_USART_SendByte(temp_phase_id & 0xFFU);       /* Partition ID */
 
-  OPENBL_USART_SendByte(DestinationAddress);          /* Byte 1 of address */
-  OPENBL_USART_SendByte(DestinationAddress >> 8U);    /* Byte 2 of address */
-  OPENBL_USART_SendByte(DestinationAddress >> 16U);   /* Byte 3 of address */
-  OPENBL_USART_SendByte(DestinationAddress >> 24U);   /* Byte 4 of address */
+  OPENBL_USART_SendByte((uint8_t)DestinationAddress);            /* Byte 1 of address */
+  OPENBL_USART_SendByte((uint8_t)(DestinationAddress >> 8U));    /* Byte 2 of address */
+  OPENBL_USART_SendByte((uint8_t)(DestinationAddress >> 16U));   /* Byte 3 of address */
+  OPENBL_USART_SendByte((uint8_t)(DestinationAddress >> 24U));   /* Byte 4 of address */
 
-  OPENBL_USART_SendByte(1);                           /* Data length */
+  OPENBL_USART_SendByte(1U);                          /* Data length (always 1 in current implementation) */
 
   OPENBL_USART_SendByte(0U);
 
   /* Send last Acknowledge synchronization byte */
   OPENBL_USART_SendByte(ACK_BYTE);
-
-  PhaseId++;
 }
 
 /**
@@ -308,13 +381,18 @@ void OPENBL_USART_ReadMemory(void)
   */
 void OPENBL_USART_Download(void)
 {
+  static bool is_flash_layout    = true;
+  static uint32_t current_sector = 0U;
+  static uint32_t last_sector    = 0U;
+  static uint32_t otp_write_index  = 0U;
+  uint32_t offset                = 0U;
   uint32_t address;
   uint32_t temp_xor;
   uint32_t counter;
   uint32_t codesize;
+  uint32_t error;
   uint8_t *ramaddress;
   uint8_t data;
-  uint32_t offset = 0U;
 
   OPENBL_USART_SendByte(ACK_BYTE);
 
@@ -364,10 +442,10 @@ void OPENBL_USART_Download(void)
         if (PacketNum == 0U)
         {
           /* Check OTP version */
-          Otp.Version = (USART_RAM_Buf[0] << 0U)
-                        | (USART_RAM_Buf[1] << 8U)
-                        | (USART_RAM_Buf[2] << 16U)
-                        | (USART_RAM_Buf[3] << 24U);
+          Otp.Version = ((uint32_t)USART_RAM_Buf[0] << 0U)
+                        | ((uint32_t)USART_RAM_Buf[1] << 8U)
+                        | ((uint32_t)USART_RAM_Buf[2] << 16U)
+                        | ((uint32_t)USART_RAM_Buf[3] << 24U);
 
           /* NACK if not expected version */
           if (Otp.Version != OPENBL_OTP_VERSION)
@@ -376,43 +454,60 @@ void OPENBL_USART_Download(void)
           }
 
           /* Get global state */
-          Otp.GlobalState = (USART_RAM_Buf[4] << 0U)
-                            | (USART_RAM_Buf[5] << 8U)
-                            | (USART_RAM_Buf[6] << 16U)
-                            | (USART_RAM_Buf[7] << 24U);
+          Otp.GlobalState = ((uint32_t)USART_RAM_Buf[4] << 0U)
+                            | ((uint32_t)USART_RAM_Buf[5] << 8U)
+                            | ((uint32_t)USART_RAM_Buf[6] << 16U)
+                            | ((uint32_t)USART_RAM_Buf[7] << 24U);
 
           /* Set offset to 8, bytes number for version and global state */
           offset = 8U;
+
+          /* Reset OTP write index */
+          otp_write_index = 0U;
         }
 
         /* Get OTP word and status */
-        for (counter = 0U + offset; (counter < codesize) && (OtpWriteIndex < OTP_PART_SIZE); counter += 4U)
+        for (counter = 0U + offset; (counter < codesize) && (otp_write_index < OTP_PART_SIZE); counter += 4U)
         {
-          Otp.OtpPart[OtpWriteIndex] = (USART_RAM_Buf[counter] << 0U)
-                                       | (USART_RAM_Buf[counter + 1] << 8U)
-                                       | (USART_RAM_Buf[counter + 2] << 16U)
-                                       | (USART_RAM_Buf[counter + 3] << 24U);
+          Otp.OtpPart[otp_write_index] = ((uint32_t)USART_RAM_Buf[counter] << 0U)
+                                         | ((uint32_t)USART_RAM_Buf[counter + 1U] << 8U)
+                                         | ((uint32_t)USART_RAM_Buf[counter + 2U] << 16U)
+                                         | ((uint32_t)USART_RAM_Buf[counter + 3U] << 24U);
 
-          OtpWriteIndex++;
+          otp_write_index++;
         }
 
         /* Write OTP since OTP structure is full */
-        if (OtpWriteIndex == OTP_PART_SIZE)
+        if (otp_write_index == OTP_PART_SIZE)
         {
-          OPENBL_OTP_Write(Otp);
+          (void) OPENBL_OTP_Write(Otp);
 
           /* Reset OTP index */
-          OtpWriteIndex = 0U;
-          OtpReadIndex  = 0U;
+          otp_write_index = 0U;
+          OtpReadIndex    = 0U;
         }
       }
       else /* If normal download operation */
       {
+        /* Check if write address is in external memory */
+        if ((address >= EXT_MEMORY_START_ADDRESS) && (address <= EXT_MEMORY_END_ADDRESS))
+        {
+          current_sector = ((address - EXT_MEMORY_START_ADDRESS) / EXT_MEMORY_SECTOR_SIZE) + 1U;
+
+          if (current_sector > last_sector)
+          {
+            /* Erase sector before writing on it */
+            OPENBL_MEM_SectorErase(address, address, (address + codesize));
+
+            last_sector = current_sector;
+          }
+        }
+
         /* Write data to memory */
         OPENBL_MEM_Write(address, (uint8_t *)USART_RAM_Buf, codesize);
 
         /* First write memory operation is reserved for the flash layout */
-        if (IsFlashLayout)
+        if (is_flash_layout)
         {
           /* First packet number of flash layout download is reserved for ST binary signature */
           if (PacketNum == 0U)
@@ -428,7 +523,20 @@ void OPENBL_USART_Download(void)
             }
 
             /* Leave the flash layout parsing */
-            IsFlashLayout = false;
+            is_flash_layout = false;
+          }
+        }
+
+        /* If External memory download, verify data write to memory */
+        if ((address >= EXT_MEMORY_START_ADDRESS) && (address <= EXT_MEMORY_END_ADDRESS))
+        {
+          /* Verify data write to memory */
+          error = (uint32_t) OPENBL_MEM_Verify(address, (uint32_t)USART_RAM_Buf, codesize, 0U);
+
+          if ((error != 0U) && (error < (address + codesize)))
+          {
+            /* Return a NACK if a verification error is detected */
+            OPENBL_USART_SendByte(NACK_BYTE);
           }
         }
       }
@@ -464,7 +572,11 @@ void OPENBL_USART_ReadPartition(void)
   tmpOffset[1] = OPENBL_USART_ReadByte();
   tmpOffset[0] = OPENBL_USART_ReadByte();
 
-  temp_xor = tmpOffset[3] ^ tmpOffset[2] ^ tmpOffset[1] ^ tmpOffset[0] ^ partition_id;
+  temp_xor = (uint32_t)tmpOffset[3]   \
+             ^ (uint32_t)tmpOffset[2] \
+             ^ (uint32_t)tmpOffset[1] \
+             ^ (uint32_t)tmpOffset[0] \
+             ^ (uint32_t)partition_id;
 
   /* Check the integrity of received data */
   if (OPENBL_USART_ReadByte() != temp_xor)
@@ -487,6 +599,7 @@ void OPENBL_USART_ReadPartition(void)
 
       default:
         OPENBL_USART_SendByte(NACK_BYTE);
+        break;
     }
 
     /* Save the operation type */
@@ -526,6 +639,9 @@ void OPENBL_USART_ReadPartition(void)
     /* Check if first OTP packet */
     if (offset == 0U)
     {
+      /* Reset OTP read index counter */
+      OtpReadIndex = 0U;
+
       /* Send the OTP version */
       OPENBL_USART_SendWord(Otp.Version);
 
@@ -724,7 +840,7 @@ void OPENBL_USART_EraseMemory(void)
       }
       else
       {
-        OPENBL_MEM_Erase(OPENBL_DEFAULT_MEM, (uint8_t *) USART_RAM_Buf, USART_RAM_BUFFER_SIZE);
+        (void) OPENBL_MEM_Erase(OPENBL_DEFAULT_MEM, (uint8_t *) USART_RAM_Buf, USART_RAM_BUFFER_SIZE);
 
         status = ACK_BYTE;
       }
@@ -863,23 +979,14 @@ static uint8_t OPENBL_USART_GetAddress(uint32_t *Address)
     /* Get the packet number */
     PacketNum = (uint32_t)((*Address << 8U) >> 8U);
 
-    /* Check if the operation is supported */
-    switch (OperationType)
-    {
-      case PHASE_FLASHLAYOUT:
-        break;
-
-      default:
-        status = NACK_BYTE;
-    }
-
     /* Check if the address is supported */
-    if (*Address == 0xFFFFFFFFU)
+    if ((*Address == 0xFFFFFFFFU) || (OperationType == PHASE_OTP))
     {
       status = ACK_BYTE;
     }
     else
     {
+
       /* Build the real memory address */
       *Address = DestinationAddress + (PacketNum * OPENBL_USART_PACKET_SIZE);
 
@@ -1121,7 +1228,7 @@ void OPENBL_USART_ExtendedSpecialCommand(void)
   * @brief  This function is used to construct the command list table.
   * @return Returns the number of supported commands.
   */
-static uint8_t OPENBL_USART_ConstructCommandsTable(OPENBL_CommandsTypeDef *pUsartCmd)
+static uint8_t OPENBL_USART_ConstructCommandsTable(const OPENBL_CommandsTypeDef *pUsartCmd)
 {
   uint8_t i = 0U;
 

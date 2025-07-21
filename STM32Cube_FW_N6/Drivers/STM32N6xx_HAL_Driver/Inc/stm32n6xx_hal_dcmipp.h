@@ -88,7 +88,7 @@ typedef struct
   uint32_t DataLaneMapping;   /*!< Configures the Data Lane Mapping
                                    This parameter can be a value from @ref DCMIPP_CSI_DataLaneMapping */
   uint32_t PHYBitrate;        /*!< Configures the Phy Bitrate
-                                   This parameter can be a value from @ref DCMIPP_PHYBitRate          */
+                                   This parameter can be a value from @ref DCMIPP_CSI_PHYBitRate      */
 } DCMIPP_CSI_ConfTypeDef;
 /**
   * @brief  HAL DCMIPP CSI Virtual Channel Filtering configuration structure definition
@@ -534,9 +534,7 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
 #if (USE_HAL_DCMIPP_REGISTER_CALLBACKS == 1)
 #define  HAL_DCMIPP_ERROR_INVALID_CALLBACK ((uint32_t)0x00000040U) /*!< Invalid Callback error  */
 #endif /* USE_HAL_DCMIPP_REGISTER_CALLBACKS */
-/**
-  * @}
-  */
+
 #define HAL_DCMIPP_CSI_ERROR_NONE            (0x00000080U)       /*!< No error                               */
 #define HAL_DCMIPP_CSI_ERROR_SYNC            (0x00000100U)       /*!< Synchronization error                  */
 #define HAL_DCMIPP_CSI_ERROR_WDG             (0x00000200U)       /*!< Watchdog Error                         */
@@ -551,6 +549,9 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
 #define HAL_DCMIPP_CSI_ERROR_DPHY_ESCAPE     (0x00020000U)       /*!< Escape Entry Error on data line (0 OR 1) */
 #define HAL_DCMIPP_CSI_ERROR_SOT_SYNC        (0x00040000U)       /*!< SOT Synchronisation Error on data line(0 OR 1) */
 #define HAL_DCMIPP_CSI_ERROR_SOT             (0x00080000U)       /*!< SOT Error on data line (0 OR 1)        */
+/**
+  * @}
+  */
 
 /** @defgroup DCMIPP_Capture_Mode DCMIPP Capture Mode
   * @{
@@ -562,10 +563,14 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
   */
 
 /**
-  * @brief  DCMIPP_modes (DCMI or CSI): modes are exclusive
+  * @defgroup  DCMIPP_modes (DCMI or CSI): modes are exclusive
+  * @{
   */
 #define  DCMIPP_PARALLEL_MODE   (0x00U << DCMIPP_CMCR_INSEL_Pos)  /*!< DCMIPP Parallel (DCMI) mode */
 #define  DCMIPP_SERIAL_MODE     (0x01U << DCMIPP_CMCR_INSEL_Pos)  /*!< DCMIPP CSI mode             */
+/**
+  * @}
+  */
 
 /** @defgroup DCMIPP_IPPLUG_Client DCMIPP IPPLUG Client
   * @{
@@ -789,7 +794,8 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
   * @}
   */
 /**
-  * @brief DCMIPP_CSI_PHY_BitRate DCMIPP CSI PHY BitRate
+  * @defgroup DCMIPP_CSI_PHYBitRate DCMIPP CSI PHY BitRate
+  * @{
   */
 #define DCMIPP_CSI_PHY_BT_80      0U     /*!< PHY BitRate 80      */
 #define DCMIPP_CSI_PHY_BT_90      1U     /*!< PHY BitRate 90      */
@@ -854,6 +860,9 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
 #define DCMIPP_CSI_PHY_BT_2400    60U    /*!< PHY BitRate 2400    */
 #define DCMIPP_CSI_PHY_BT_2450    61U    /*!< PHY BitRate 2450    */
 #define DCMIPP_CSI_PHY_BT_2500    62U    /*!< PHY BitRate 2500    */
+/**
+  * @}
+  */
 
 /** @defgroup DCMIPP_OutputSamplesType  DCMIPP OutputSamplesType
   * @{
@@ -1285,7 +1294,7 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
 /**
   * @}
   */
-/** @defgroup DCMIPP_CSI Interrupt_Sources  DCMIPP CSI Interrupt sources
+/** @defgroup DCMIPP_CSI_Interrupt_Sources  DCMIPP CSI Interrupt sources
   * @{
   */
 #define DCMIPP_CSI_IT_SYNCERR      CSI_IER0_SYNCERRIE     /*!< Synchronization error interrupt                    */
@@ -1328,7 +1337,7 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
 /**
   * @}
   */
-/** @defgroup DCMIPP_CSI Interrupt_Flags  DCMIPP CSI Interrupt Flags
+/** @defgroup DCMIPP_CSI_Interrupt_Flags  DCMIPP CSI Interrupt Flags
   * @{
   */
 #define DCMIPP_CSI_FLAG_SYNCERR      CSI_SR0_SYNCERRF      /*!< Synchronization error flag                        */
@@ -1502,14 +1511,6 @@ typedef void (*pDCMIPP_PIPE_CallbackTypeDef)(DCMIPP_HandleTypeDef *hdcmipp, uint
 #define __HAL_DCMIPP_GET_IT_SOURCE(__HANDLE__, __INTERRUPT__) ((((__HANDLE__)->Instance->CMIER & \
                                                                  (__INTERRUPT__)) == (__INTERRUPT__)) ? SET : RESET)
 
-/**
-  * @}
-  */
-
-/** @defgroup DCMIPP_CSI_Exported_Macros DCMIPP CSI Exported Macros
-  * @brief    DCMIPP CSI Exported Macros
-  * @{
-  */
 /**
   * @brief  Enable the specified DCMIPP CSI interrupts.
   * @param  __HANDLE__    CSI handle
@@ -1796,11 +1797,11 @@ HAL_StatusTypeDef HAL_DCMIPP_PARALLEL_SetConfig(DCMIPP_HandleTypeDef *hdcmipp,
                                                 const DCMIPP_ParallelConfTypeDef *pParallelConfig);
 HAL_StatusTypeDef HAL_DCMIPP_CSI_PIPE_SetConfig(DCMIPP_HandleTypeDef *hdcmipp,
                                                 uint32_t Pipe, const DCMIPP_CSI_PIPE_ConfTypeDef *pCSI_PipeConfig);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetConfig(DCMIPP_HandleTypeDef *hdcmipp,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetConfig(const DCMIPP_HandleTypeDef *hdcmipp,
                                            const DCMIPP_CSI_ConfTypeDef *pCSI_Config);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCFilteringConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCFilteringConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
                                                       const DCMIPP_CSI_VCFilteringConfTypeDef *pVCFilteringConfig);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetVCConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t VirtualChannel,
                                              uint32_t DataTypeFormat);
 
 
@@ -1879,12 +1880,6 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_Resume(DCMIPP_HandleTypeDef *hdcmipp, uint32_t
   * @{
   */
 void HAL_DCMIPP_IRQHandler(DCMIPP_HandleTypeDef *hdcmipp);
-/**
-  * @}
-  */
-/** @addtogroup DCMIPP_CSI_IRQHandler_Function IRQHandler Function
-  * @{
-  */
 void HAL_DCMIPP_CSI_IRQHandler(DCMIPP_HandleTypeDef *hdcmipp);
 /**
   * @}
@@ -2123,15 +2118,15 @@ HAL_StatusTypeDef HAL_DCMIPP_PIPE_CSI_EnableHeader(DCMIPP_HandleTypeDef *hdcmipp
 HAL_StatusTypeDef HAL_DCMIPP_PIPE_CSI_DisableHeader(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe);
 HAL_StatusTypeDef HAL_DCMIPP_PARALLEL_SetSyncUnmask(DCMIPP_HandleTypeDef *hdcmipp,
                                                     const DCMIPP_EmbeddedSyncUnmaskTypeDef *SyncUnmask);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetLineByteCounterConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetLineByteCounterConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter,
                                                           const DCMIPP_CSI_LineByteCounterConfTypeDef *pLineByteConfig);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableLineByteCounter(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableLineByteCounter(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetTimerConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer,
+HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableLineByteCounter(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter);
+HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableLineByteCounter(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter);
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetTimerConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer,
                                                 const DCMIPP_CSI_TimerConfTypeDef *TimerConfig);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableTimer(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableTimer(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer);
-HAL_StatusTypeDef HAL_DCMIPP_CSI_SetWatchdogCounterConfig(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter);
+HAL_StatusTypeDef HAL_DCMIPP_CSI_EnableTimer(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer);
+HAL_StatusTypeDef HAL_DCMIPP_CSI_DisableTimer(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Timer);
+HAL_StatusTypeDef HAL_DCMIPP_CSI_SetWatchdogCounterConfig(const DCMIPP_HandleTypeDef *hdcmipp, uint32_t Counter);
 
 HAL_StatusTypeDef HAL_DCMIPP_PIPE_EnableComponentsSwap(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe);
 HAL_StatusTypeDef HAL_DCMIPP_PIPE_DisableComponentsSwap(DCMIPP_HandleTypeDef *hdcmipp, uint32_t Pipe);

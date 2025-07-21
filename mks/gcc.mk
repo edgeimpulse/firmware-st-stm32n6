@@ -1,6 +1,6 @@
 C_SOURCES_GCC += Gcc/Src/console.c
 C_SOURCES_GCC += Gcc/Src/threadx_libc.c
-C_SOURCES_GCC += STM32Cube_FW_N6/Projects/STM32N6570-DK/Templates/Template/STM32CubeIDE/Boot/User/Src/syscalls.c
+C_SOURCES_GCC += Gcc/Src/syscalls.c
 
 ASM_SOURCES_GCC += $(FW_REL_DIR)/Drivers/CMSIS/Device/ST/STM32N6xx/Source/Templates/gcc/startup_stm32n657xx.s
 

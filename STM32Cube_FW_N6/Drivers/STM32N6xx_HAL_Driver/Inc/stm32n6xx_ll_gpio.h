@@ -869,9 +869,6 @@ __STATIC_INLINE uint32_t LL_GPIO_IsAnyResourcePinLocked(const GPIO_TypeDef *GPIO
   return ((GPIOx->RCFGLOCKR == 0x00000000U) ? 0UL : 1UL);
 }
 
-/**
-  * @}
-  */
 
 /**
   * @brief  Configure gpio delay of a dedicated pin from 0 to 7 for a dedicated port.
@@ -1116,6 +1113,10 @@ __STATIC_INLINE uint32_t LL_GPIO_GetPIOControlPin_8_15(const GPIO_TypeDef *GPIOx
                     >> ((POSITION_VAL(Pin) & 0x07U)  * GPIO_ADVCFGRH_9_Pos));
 }
 
+/**
+  * @}
+  */
+
 
 /** @defgroup GPIO_LL_EF_Data_Access Data Access
   * @{
@@ -1302,10 +1303,6 @@ __STATIC_INLINE void LL_GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint32_t PinMask)
 }
 
 
-/**
-  * @}
-  */
-
 #if defined CPU_IN_SECURE_STATE
 
 /**
@@ -1399,9 +1396,6 @@ __STATIC_INLINE uint32_t LL_GPIO_IsEnabledPinSecure(const GPIO_TypeDef *GPIOx, u
 }
 
 
-/**
-  * @}
-  */
 
 #if defined CPU_IN_SECURE_STATE
 
@@ -1520,6 +1514,15 @@ void        LL_GPIO_StructInit(LL_GPIO_InitTypeDef *GPIO_InitStruct);
 /**
   * @}
   */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
 
 #endif /* defined (GPIOA) || defined (GPIOB) || defined (GPIOC) || defined (GPIOD) || defined (GPIOE) || defined (GPIOF) || defined (GPIOG) || defined (GPIOH) || defined (GPION) || defined (GPIOO) || defined (GPIOP) || defined (GPIOQ) */
 /**

@@ -111,16 +111,17 @@ typedef struct
 #define WM8904_IN_NONE           0x0000U
 #define WM8904_IN_MIC1           0x0100U
 #define WM8904_IN_MIC2           0x0200U
-#define WM8904_IN_LINE1          0x0300U
-#define WM8904_IN_LINE2          0x0400U
-#define WM8904_IN_MIC1_MIC2      0x0500U
+#define WM8904_IN_MIC1_MIC2      0x0300U
+#define WM8904_IN_LINE1          0x0400U
+#define WM8904_IN_LINE2          0x0800U
+#define WM8904_IN_DIGITAL_MIC1   0x1000U
+#define WM8904_IN_DIGITAL_MIC2   0x2000U
 
 /* Audio Output Device */
 #define WM8904_OUT_NONE          0x0000U
 #define WM8904_OUT_HEADPHONE     0x0001U
 #define WM8904_OUT_LINE          0x0002U
 #define WM8904_OUT_BOTH          0x0003U
-#define WM8904_OUT_AUTO          0x0004U
 
 /* AUDIO FREQUENCY */
 #define WM8904_FREQUENCY_192K    192000U
@@ -130,6 +131,7 @@ typedef struct
 #define WM8904_FREQUENCY_48K     48000U
 #define WM8904_FREQUENCY_44K     44100U
 #define WM8904_FREQUENCY_32K     32000U
+#define WM8904_FREQUENCY_24K     24000U
 #define WM8904_FREQUENCY_22K     22050U
 #define WM8904_FREQUENCY_16K     16000U
 #define WM8904_FREQUENCY_11K     11025U
@@ -184,7 +186,7 @@ extern WM8904_Drv_t WM8904_Driver;
                            Audio Codec functions
 ------------------------------------------------------------------------------*/
 /* High Layer codec functions */
-int32_t WM8904_RegisterBusIO (WM8904_Object_t *pObj, WM8904_IO_t *pIO);
+int32_t WM8904_RegisterBusIO (WM8904_Object_t *pObj, const WM8904_IO_t *pIO);
 int32_t WM8904_Init(WM8904_Object_t *pObj, WM8904_Init_t *pInit);
 int32_t WM8904_DeInit(WM8904_Object_t *pObj);
 int32_t WM8904_ReadID(WM8904_Object_t *pObj, uint32_t *Id);

@@ -1,11 +1,34 @@
 {
-    "Globals": {
-    },
     "Profiles": {
-        "default": {
+        "default" : {
+			"memory_pool": "./my_mpools/stm32n6-app2.mpool",
+            "machine_desc": "./my_mdescs/stm32n6.mdesc",
+            "options": "--native-float --mvei --cache-maintenance --Ocache-opt --Os --enable-virtual-mem-pools --Oauto-sched  --optimization 3 --Omax-ca-pipe 4"
+		},
+		"allmems--O3" : {
+			"memory_pool": "./my_mpools/stm32n6-app2.mpool",
+            "machine_desc": "./my_mdescs/stm32n6.mdesc",
+            "options": "--native-float --mvei --cache-maintenance --Ocache-opt --enable-virtual-mem-pools --Os --optimization 3 --Oauto-sched"
+		},
+        "allmems--auto" : {
+			"memory_pool": "./my_mpools/stm32n6-app2.mpool",
+            "machine_desc": "./my_mdescs/stm32n6.mdesc",
+            "options": "--native-float --mvei --cache-maintenance --Ocache-opt --enable-virtual-mem-pools --Os --Oauto"
+		},
+        "internal_mem_only": {
+            "memory_pool": "./my_mpools/stm32n6__internal_memories_only.mpool",
+            "machine_desc": "./my_mdescs/stm32n6.mdesc",
+            "options": "--native-float --mvei --cache-maintenance --Ocache-opt --enable-virtual-mem-pools --Os --Oauto-sched"
+        },
+        "minimal" : {
             "memory_pool": "./my_mpools/stm32n6-app2.mpool",
-            "memory_desc": "./my_mdescs/stm32n6.mdesc",
-            "options" : "--all-buffers-info --no-hw-sw-parallelism --cache-maintenance --enable-virtual-mem-pools --native-float --optimization 3 --Os --Omax-ca-pipe 4 --Ocache-opt"
+            "machine_desc": "./my_mdescs/stm32n6.mdesc",
+            "options": "--cache-maintenance --Ocache-opt --mvei --native-float --enable-virtual-mem-pools"
+        },
+        "reccomended" : {
+            "memory_pool": "./my_mpools/stm32n6-app2.mpool",
+            "machine_desc": "./my_mdescs/stm32n6.mdesc",
+            "options": "--cache-maintenance --Ocache-opt --mvei --native-float --enable-virtual-mem-pools --enable-epoch-controller -Os"
         }
     }
 }

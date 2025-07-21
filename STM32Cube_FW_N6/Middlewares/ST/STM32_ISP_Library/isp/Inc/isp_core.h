@@ -22,6 +22,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "isp_conf.h"
+#include "isp_platform.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,7 +114,7 @@ typedef struct
   ISP_StatusTypeDef (*Init)(void *hIsp, void *pAlgo);
   ISP_StatusTypeDef (*DeInit)(void *hIsp, void *pAlgo);
   ISP_StatusTypeDef (*Process)(void *hIsp, void *pAlgo);
-  /* Use for performance measurment */
+  /* Use for performance measurement */
   uint32_t perf_meas[NB_PERF_MEASURES];
   uint32_t iter;
 } ISP_AlgoTypeDef;
@@ -142,9 +143,8 @@ typedef struct
 typedef enum
 {
   ISP_DUMP_CFG_DEFAULT           = 0x00U,
-  ISP_DUMP_CFG_FULLSIZE_RAW8     = 0x01U,
-  ISP_DUMP_CFG_FULLSIZE_RGB888   = 0x02U,
-  ISP_DUMP_CFG_DUMP_PIPE_SENSOR  = 0x03U,
+  ISP_DUMP_CFG_FULLSIZE_RGB888   = 0x01U,
+  ISP_DUMP_CFG_DUMP_PIPE_SENSOR  = 0x02U,
 } ISP_DumpCfgTypeDef;
 
 #define ISP_SENSOR_INFO_MAX_LENGTH      (32U)
@@ -196,15 +196,6 @@ typedef struct
   ISP_StatusTypeDef (*SetSensorTestPattern)(uint32_t Instance, int32_t mode);
 } ISP_AppliHelpersTypeDef;
 
-/* ISP application callbacks providing information of ISP features */
-typedef struct
-{
-  /* Inform of the decimation factor update */
-  ISP_StatusTypeDef (*DecimationUpdated)(uint8_t factor);
-  /* Inform of the statistic area update */
-  ISP_StatusTypeDef (*StatAreaUpdated)(ISP_StatAreaTypeDef area);
-} ISP_AppliCBTypeDef;
-
 /* ISP Device handle structure */
 typedef struct
 {
@@ -213,10 +204,10 @@ typedef struct
   ISP_StatAreaTypeDef statArea;
   ISP_AlgoTypeDef **algorithm;
   ISP_AppliHelpersTypeDef appliHelpers;
-  ISP_AppliCBTypeDef appliCB;
   uint32_t MainPipe_FrameCount;
   uint32_t AncillaryPipe_FrameCount;
   uint32_t DumpPipe_FrameCount;
+  ISP_SensorInfoTypeDef sensorInfo;
 } ISP_HandleTypeDef;
 
 /* ISP Demosaicing type */
@@ -226,6 +217,7 @@ typedef enum
   ISP_DEMOS_TYPE_GRBG = 0x01U,
   ISP_DEMOS_TYPE_GBRG = 0x02U,
   ISP_DEMOS_TYPE_BGGR = 0x03U,
+  ISP_DEMOS_TYPE_MONO = 0x04U,
 } ISP_DemosTypeTypeDef;
 
 /* ISP Decimation factor type */
@@ -255,7 +247,7 @@ typedef struct
 typedef struct
 {
   uint8_t enable;             /* Enable or disable */
-  uint8_t type;               /* Type */
+  ISP_DemosTypeTypeDef type;  /* Bayer pattern type */
   uint8_t peak;               /* Peak detection relative algorithm strength */
   uint8_t lineV;              /* Vertical line detection relative algorithm strength */
   uint8_t lineH;              /* Horizontal line detection relative algorithm strength */
@@ -272,7 +264,7 @@ typedef struct
 
 typedef struct
 {
-  uint8_t factor;             /* Horizontal and vertical decimation factor */
+  ISP_DecimFactorTypeDef factor;  /* Horizontal and vertical decimation factor */
 } ISP_DecimationTypeDef;
 
 typedef struct
@@ -315,16 +307,6 @@ typedef struct
   uint8_t strength;           /* Strength of the bad pixel removal algorithm */
   uint32_t count;             /* Reported number of bad pixels */
 } ISP_BadPixelTypeDef;
-
-#define ISP_BLACKLEVEL_GAIN_REF             (5U)
-typedef struct
-{
-  uint8_t enable;             /* Enable or disable */
-  uint32_t referenceGain[ISP_BLACKLEVEL_GAIN_REF]; /* Array of reference gains in mdB */
-  uint8_t BLCR[ISP_BLACKLEVEL_GAIN_REF]; /* Array of level offsets for the red component */
-  uint8_t BLCG[ISP_BLACKLEVEL_GAIN_REF]; /* Array of level offsets for the green component */
-  uint8_t BLCB[ISP_BLACKLEVEL_GAIN_REF]; /* Array of level offsets for the blue component */
-} ISP_BlackLevelAlgoTypeDef;
 
 typedef struct
 {
@@ -397,11 +379,27 @@ typedef struct
   uint32_t histogram[12];     /* Histogram of the L, R, G or B component */
 } ISP_StatisticsTypeDef;
 
+/* Sensor delay */
+typedef struct
+{
+  uint8_t delay;              /* Sensor delay */
+} ISP_SensorDelayTypeDef;
+
+/* Meta data will transit through STLINK if validation test is enabled */
+typedef struct
+{
+  uint8_t outputEnable;
+  uint8_t averageL;
+  uint32_t exposureTarget;
+  uint32_t gain;              /* Gain in mdB */
+  uint32_t exposure;          /* Exposure time in micro seconds */
+  uint32_t colorTemp;
+} ISP_MetaTypeDef;
+
 /* IQ parameter */
 typedef struct
 {
   ISP_StatRemovalTypeDef statRemoval;
-  ISP_DecimationTypeDef decimation;
   ISP_DemosaicingTypeDef demosaicing;
   ISP_ContrastTypeDef contrast;
   ISP_StatAreaTypeDef statAreaStatic;
@@ -409,13 +407,13 @@ typedef struct
   ISP_SensorExposureTypeDef sensorExposureStatic;
   ISP_BadPixelAlgoTypeDef badPixelAlgo;
   ISP_BadPixelTypeDef badPixelStatic;
-  ISP_BlackLevelAlgoTypeDef blackLevelAlgo;
   ISP_BlackLevelTypeDef blackLevelStatic;
   ISP_AECAlgoTypeDef AECAlgo;
   ISP_AWBAlgoTypeDef AWBAlgo;
   ISP_ISPGainTypeDef ispGainStatic;
   ISP_ColorConvTypeDef colorConvStatic;
   ISP_GammaTypeDef gamma;
+  ISP_SensorDelayTypeDef sensorDelay;
 } ISP_IQParamTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
@@ -438,6 +436,9 @@ typedef struct
  * is 56 (((56/255)^(1/2.2))*255 = 128)
  */
 #define ISP_IDEAL_TARGET_EXPOSURE 56
+
+/* ISP pipeline is able to work on RAW line with maximum of 2688 pixels width */
+#define ISP_RAW_MAX_WIDTH 2688
 
 /* Exported macro ------------------------------------------------------------*/
 #define ERROR_MESSAGE(err) \
@@ -488,7 +489,7 @@ typedef struct
       : err == ISP_ERR_STAT_MAXCLIENTS ? "Stat Max Clients err" \
       : err == ISP_ERR_APP_HELPER_UNDEFINED ? "App Helper undefined" \
       : err == ISP_ERR_ALGO ? "Algo err" \
-      : err == ISP_ERR_SENSORTESTPATTERN ? "Sensor Test Patern" \
+      : err == ISP_ERR_SENSORTESTPATTERN ? "Sensor Test Pattern" \
       : "Unknown error" )
 
 /* Exported functions ------------------------------------------------------- */

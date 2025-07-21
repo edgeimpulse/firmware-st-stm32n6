@@ -2278,7 +2278,7 @@ int32_t BSP_AUDIO_IN_SetSampleRate(uint32_t Instance, uint32_t  SampleRate)
 
 #if (USE_HAL_MDF_REGISTER_CALLBACKS == 0)
         MDF_MspInit(&haudio_in_mdf);
-#endif
+#endif /* (USE_HAL_MDF_REGISTER_CALLBACKS == 0) */
         if (MX_MDF1_Init(&haudio_in_mdf, &mxMdfInit) != HAL_OK)
         {
           ret = BSP_ERROR_PERIPH_FAILURE;

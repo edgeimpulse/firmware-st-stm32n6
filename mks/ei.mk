@@ -30,6 +30,7 @@ CXX_INCLUDES += -IInc
 CXX_INCLUDES += -ILib
 CXX_INCLUDES += -ILib/AI_Runtime/Inc
 CXX_INCLUDES += -ILib/AI_Runtime/Npu/ll_aton
+CXX_INCLUDES += -ILib/AI_Runtime/Npu/Devices/STM32N6XX
 CXX_INCLUDES += -ILib/Camera_Middleware
 CXX_INCLUDES += -ILib/Camera_Middleware/sensors
 CXX_INCLUDES += -ILib/Camera_Middleware/ISP_Library/isp/Inc

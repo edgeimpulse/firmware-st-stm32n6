@@ -26,6 +26,7 @@ extern "C"
 
 #include "ll_aton.h"
 #include "ll_aton_NN_interface.h"
+#include "ll_aton_caches_interface.h"
 #include "ll_aton_lib_sw_operators.h"
 
 #ifndef _LL_LIB_DEBUG
@@ -490,13 +491,13 @@ int LL_LIB_TENSOR_ELEMENTS(const LL_LIB_TensorInfo_TypeDef *t);
    *   */
 
   int LL_ATON_LIB_ConvInteger(const LL_LIB_TensorInfo_TypeDef *inputs, unsigned int ninputs,
-                              const LL_LIB_TensorInfo_TypeDef *output);
-  /**
-   * @}
-   */
-
+                              const LL_LIB_TensorInfo_TypeDef *output, int pad_top, int pad_left, int pad_bottom,
+                              int pad_right, int stride_h, int stride_w, int dilations_h, int dilation_w, int pad_value,
+                              int ngroups, char *conv_name);
+/**
+ * @
+ */
 #ifdef __cplusplus
 }
 #endif
-
 #endif

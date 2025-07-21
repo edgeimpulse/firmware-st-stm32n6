@@ -32,7 +32,7 @@ typedef enum {
   ISP_CMD_OP_SET_FAILURE       = 0x81,
   ISP_CMD_OP_GET_OK            = 0x82,
   ISP_CMD_OP_GET_FAILURE       = 0x83,
-} ISP_Cmd_Operation_TypeDef;
+} ISP_CMD_Operation_TypeDef;
 
 typedef enum {
   ISP_CMD_STATREMOVAL          = 0x00,
@@ -44,229 +44,249 @@ typedef enum {
   ISP_CMD_SENSOREXPOSURE       = 0x06,
   ISP_CMD_BADPIXELALGO         = 0x07,
   ISP_CMD_BADPIXELSTATIC       = 0x08,
-  ISP_CMD_BLACKLEVELALGO       = 0x09,
-  ISP_CMD_BLACKLEVELSTATIC     = 0x0A,
-  ISP_CMD_AECALGO              = 0x0B,
-  ISP_CMD_AWBALGO              = 0x0C,
-  ISP_CMD_AWBPROFILE           = 0x0D,
-  ISP_CMD_ISPGAINSTATIC        = 0x0E,
-  ISP_CMD_COLORCONVSTATIC      = 0x0F,
-  ISP_CMD_STATISTICUP          = 0x10,
-  ISP_CMD_STATISTICDOWN        = 0x11,
-  ISP_CMD_WRITEMEMORY          = 0x12,
-  ISP_CMD_DUMPFRAME            = 0x13,
+  ISP_CMD_BLACKLEVELSTATIC     = 0x09,
+  ISP_CMD_AECALGO              = 0x0A,
+  ISP_CMD_AWBALGO              = 0x0B,
+  ISP_CMD_AWBPROFILE           = 0x0C,
+  ISP_CMD_ISPGAINSTATIC        = 0x0D,
+  ISP_CMD_COLORCONVSTATIC      = 0x0E,
+  ISP_CMD_STATISTICUP          = 0x0F,
+  ISP_CMD_STATISTICDOWN        = 0x10,
+  ISP_CMD_DUMP_PREVIEW_FRAME   = 0x11,
+  ISP_CMD_DUMP_ISP_FRAME       = 0x12,
+  ISP_CMD_DUMP_RAW_FRAME       = 0x13,
   ISP_CMD_STOPPREVIEW          = 0x14,
   ISP_CMD_STARTPREVIEW         = 0x15,
   ISP_CMD_DCMIPPVERSION        = 0x16,
   ISP_CMD_GAMMA                = 0x17,
   ISP_CMD_SENSORINFO           = 0x18,
   ISP_CMD_SENSORTESTPATTERN    = 0x19,
+  ISP_CMD_SENSORDELAY          = 0x1A,
+  ISP_CMD_SENSORDELAYMEASURE   = 0x1B,
   /* Application API commands */
   ISP_CMD_USER_EXPOSURETARGET  = 0x80,
   ISP_CMD_USER_LISTWBREFMODES  = 0x81,
   ISP_CMD_USER_WBREFMODE       = 0x82,
-} ISP_Cmd_ID_TypeDef;
+  ISP_CMD_USER_GETDECIMATION   = 0x83,
+  ISP_CMD_USER_STATISTICAREA   = 0x84,
+  /* Metadata output command */
+  ISP_CMD_METADATA_OUTPUT      = 0xFF,
+} ISP_CMD_ID_TypeDef;
 
 typedef struct
 {
   uint8_t operation;
   uint8_t id;
   uint8_t dummy[2]; /* Get that structure 32 bits aligned */
-} ISP_Cmd_HeaderTypeDef;
+} ISP_CMD_HeaderTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
-} ISP_Cmd_BaseTypeDef;
+  ISP_CMD_HeaderTypeDef header;
+} ISP_CMD_BaseTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_StatRemovalTypeDef data;
-} ISP_Cmd_StatRemovalTypeDef;
+} ISP_CMD_StatRemovalTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_DecimationTypeDef data;
 } ISP_CMD_DecimationTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_DemosaicingTypeDef data;
 } ISP_CMD_DemosaicingTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_ContrastTypeDef data;
 } ISP_CMD_ContrastTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_StatAreaTypeDef data;
 } ISP_CMD_StatAreaTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_SensorGainTypeDef data;
 } ISP_CMD_SensorGainTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_SensorExposureTypeDef data;
 } ISP_CMD_SensorExposureTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_BadPixelAlgoTypeDef data;
 } ISP_CMD_BadPixelAlgoTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_BadPixelTypeDef data;
 } ISP_CMD_BadPixelStaticTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
-  ISP_BlackLevelAlgoTypeDef data;
-} ISP_CMD_BlackLevelAlgoTypeDef;
-
-typedef struct
-{
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_BlackLevelTypeDef data;
-} ISP_Cmd_BlackLevelStaticTypeDef;
+} ISP_CMD_BlackLevelStaticTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_AECAlgoTypeDef data;
-} ISP_Cmd_AECAlgoTypeDef;
+} ISP_CMD_AECAlgoTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_AWBAlgoTypeDef data;
-} ISP_Cmd_AWBAlgoTypeDef;
+} ISP_CMD_AWBAlgoTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_AWBProfileTypeDef data;
-} ISP_Cmd_AWBProfileTypeDef;
+} ISP_CMD_AWBProfileTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_ISPGainTypeDef data;
-} ISP_Cmd_ISPGainStaticTypeDef;
+} ISP_CMD_ISPGainStaticTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_ColorConvTypeDef data;
-} ISP_Cmd_ColorConvStaticTypeDef;
+} ISP_CMD_ColorConvStaticTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_StatisticsTypeDef data;
-} ISP_Cmd_StatisticsUpTypeDef;
+} ISP_CMD_StatisticsUpTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_StatisticsTypeDef data;
-} ISP_Cmd_StatisticsDownTypeDef;
+} ISP_CMD_StatisticsDownTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_DumpFrameMetaTypeDef data;
-} ISP_Cmd_DumpFrameMetaTypeDef;
+} ISP_CMD_DumpFrameMetaTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_ExposureCompTypeDef exposureCompensation;
   uint32_t exposureTarget;
-} ISP_Cmd_ExposureTargetTypeDef;
+} ISP_CMD_ExposureTargetTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   uint32_t RefColorTemp[ISP_AWB_COLORTEMP_REF];
-} ISP_Cmd_ListWBRefModesTypeDef;
+} ISP_CMD_ListWBRefModesTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   uint8_t automatic;
   uint32_t refColorTemp;
-} ISP_Cmd_WBRefModeTypeDef;
+} ISP_CMD_WBRefModeTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_SensorTestPatternTypeDef data;
 } ISP_CMD_SensorTestPatternTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   uint32_t majrev;
   uint32_t minrev;
-} ISP_Cmd_DCMIPPVersionTypeDef;
+} ISP_CMD_DCMIPPVersionTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_GammaTypeDef data;
 } ISP_CMD_GammaTypeDef;
 
 typedef struct
 {
-  ISP_Cmd_HeaderTypeDef header;
+  ISP_CMD_HeaderTypeDef header;
   ISP_SensorInfoTypeDef data;
 } ISP_CMD_SensorInfoTypeDef;
 
+typedef struct
+{
+  ISP_CMD_HeaderTypeDef header;
+  ISP_SensorDelayTypeDef data;
+} ISP_CMD_SensorDelayTypeDef;
+
+typedef struct
+{
+  ISP_CMD_HeaderTypeDef header;
+  ISP_SensorDelayTypeDef data;
+} ISP_CMD_SensorDelayMeasureTypeDef;
+
+typedef struct
+{
+  ISP_CMD_HeaderTypeDef header;
+  uint8_t enable;
+} ISP_CMD_MetadataOutputTypeDef;
+
 typedef union {
-  ISP_Cmd_BaseTypeDef             base;
-  ISP_Cmd_StatRemovalTypeDef      statRemoval;
-  ISP_CMD_DecimationTypeDef       decimation;
-  ISP_CMD_DemosaicingTypeDef      demosaicing;
-  ISP_CMD_ContrastTypeDef         contrast;
-  ISP_CMD_StatAreaTypeDef         statArea;
-  ISP_CMD_SensorGainTypeDef       sensorGain;
-  ISP_CMD_SensorExposureTypeDef   sensorExposure;
-  ISP_CMD_BadPixelAlgoTypeDef     badPixelAlgo;
-  ISP_CMD_BadPixelStaticTypeDef   badPixelStatic;
-  ISP_CMD_BlackLevelAlgoTypeDef   blackLevelAlgo;
-  ISP_Cmd_BlackLevelStaticTypeDef blackLevelStatic;
-  ISP_Cmd_AECAlgoTypeDef          AECAlgo;
-  ISP_Cmd_AWBAlgoTypeDef          AWBAlgo;
-  ISP_Cmd_AWBProfileTypeDef       AWBProfile;
-  ISP_Cmd_ISPGainStaticTypeDef    ISPGainStatic;
-  ISP_Cmd_ColorConvStaticTypeDef  colorConvStatic;
-  ISP_Cmd_StatisticsUpTypeDef     statisticsUp;
-  ISP_Cmd_StatisticsDownTypeDef   statisticsDown;
-  ISP_Cmd_DumpFrameMetaTypeDef    dumpFrameMeta;
-  ISP_Cmd_ExposureTargetTypeDef   exposureTarget;
-  ISP_Cmd_ListWBRefModesTypeDef   listWBRefModes;
-  ISP_Cmd_WBRefModeTypeDef        WBRefMode;
-  ISP_Cmd_DCMIPPVersionTypeDef    DCMIPPVersion;
-  ISP_CMD_GammaTypeDef            gamma;
-  ISP_CMD_SensorInfoTypeDef       sensorInfo;
-  ISP_CMD_SensorTestPatternTypeDef  sensorTestPattern;
-} ISP_Cmd_TypeDef;
+  ISP_CMD_BaseTypeDef              base;
+  ISP_CMD_StatRemovalTypeDef       statRemoval;
+  ISP_CMD_DecimationTypeDef        decimation;
+  ISP_CMD_DemosaicingTypeDef       demosaicing;
+  ISP_CMD_ContrastTypeDef          contrast;
+  ISP_CMD_StatAreaTypeDef          statArea;
+  ISP_CMD_SensorGainTypeDef        sensorGain;
+  ISP_CMD_SensorExposureTypeDef    sensorExposure;
+  ISP_CMD_BadPixelAlgoTypeDef      badPixelAlgo;
+  ISP_CMD_BadPixelStaticTypeDef    badPixelStatic;
+  ISP_CMD_BlackLevelStaticTypeDef  blackLevelStatic;
+  ISP_CMD_AECAlgoTypeDef           AECAlgo;
+  ISP_CMD_AWBAlgoTypeDef           AWBAlgo;
+  ISP_CMD_AWBProfileTypeDef        AWBProfile;
+  ISP_CMD_ISPGainStaticTypeDef     ISPGainStatic;
+  ISP_CMD_ColorConvStaticTypeDef   colorConvStatic;
+  ISP_CMD_StatisticsUpTypeDef      statisticsUp;
+  ISP_CMD_StatisticsDownTypeDef    statisticsDown;
+  ISP_CMD_DumpFrameMetaTypeDef     dumpFrameMeta;
+  ISP_CMD_ExposureTargetTypeDef    exposureTarget;
+  ISP_CMD_ListWBRefModesTypeDef    listWBRefModes;
+  ISP_CMD_WBRefModeTypeDef         WBRefMode;
+  ISP_CMD_DCMIPPVersionTypeDef     DCMIPPVersion;
+  ISP_CMD_GammaTypeDef             gamma;
+  ISP_CMD_SensorInfoTypeDef        sensorInfo;
+  ISP_CMD_SensorTestPatternTypeDef sensorTestPattern;
+  ISP_CMD_SensorDelayTypeDef       sensorDelay;
+  ISP_CMD_SensorDelayMeasureTypeDef sensorDelayMeasure;
+  ISP_CMD_MetadataOutputTypeDef    metadataOutput;
+} ISP_CMD_TypeDef;
 
 /* Private constants ---------------------------------------------------------*/
 #define ISP_MAX_DUMP_SIZE         4096
@@ -284,8 +304,8 @@ static ISP_StatusTypeDef ISP_CmdParser_StatDownCb(ISP_AlgoTypeDef *pAlgo);
 static ISP_SVC_StatStateTypeDef ISP_CmdParser_stats;
 
 extern uint32_t current_awb_profId;
+extern ISP_MetaTypeDef Meta;
 
-/* Private functions ---------------------------------------------------------*/
 /**
   * @brief  ISP_CmdParser_ProcessCommand
   *         Parse and process a command received from the remote IQ tuning tool
@@ -296,7 +316,7 @@ extern uint32_t current_awb_profId;
 ISP_StatusTypeDef ISP_CmdParser_ProcessCommand(ISP_HandleTypeDef *hIsp, uint8_t *cmd)
 {
   ISP_StatusTypeDef ret = ISP_OK;
-  ISP_Cmd_TypeDef *c = (ISP_Cmd_TypeDef *)cmd;
+  ISP_CMD_TypeDef *c = (ISP_CMD_TypeDef *)cmd;
 
   switch(c->base.header.operation)
   {
@@ -315,6 +335,28 @@ ISP_StatusTypeDef ISP_CmdParser_ProcessCommand(ISP_HandleTypeDef *hIsp, uint8_t 
 }
 
 /**
+  * @brief  ISP_CmdParser_SendSensorDelayMeasure
+  *         Send the answer to the Get SensorDelay measure command
+  * @param  hIsp: ISP device handle
+  * @param  pSensorDelay: Pointer to the measured Sensor Delay
+  * @retval operation result
+  */
+ISP_StatusTypeDef ISP_CmdParser_SendSensorDelayMeasure(ISP_HandleTypeDef *hIsp, ISP_SensorDelayTypeDef *pSensorDelay)
+{
+  ISP_CMD_TypeDef cmd = { 0 };
+
+  /* Send the answer command */
+  cmd.base.header.id = ISP_CMD_SENSORDELAYMEASURE;
+  cmd.base.header.operation = pSensorDelay->delay ? ISP_CMD_OP_GET_OK : ISP_CMD_OP_GET_FAILURE;
+  cmd.sensorDelayMeasure.data = *pSensorDelay;
+
+  ISP_ToolCom_SendData((uint8_t*)&cmd, sizeof(cmd), NULL, NULL);
+
+  return ISP_OK;
+}
+
+/* Private functions ---------------------------------------------------------*/
+/**
   * @brief  ISP_CmdParser_SetConfig
   *         Parse and process a "Set configuration" command
   * @param  hIsp: ISP device handle
@@ -324,7 +366,7 @@ ISP_StatusTypeDef ISP_CmdParser_ProcessCommand(ISP_HandleTypeDef *hIsp, uint8_t 
 static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_t *cmd)
 {
   ISP_StatusTypeDef ret = ISP_OK;
-  ISP_Cmd_TypeDef base_cmd, c;
+  ISP_CMD_TypeDef base_cmd, c;
   ISP_IQParamTypeDef *IQParamConfig;
   uint8_t cmd_id;
 
@@ -349,18 +391,6 @@ static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_
       {
         IQParamConfig->statRemoval = c.statRemoval.data;
       }
-    }
-    break;
-
-  case ISP_CMD_DECIMATION:
-    /* Update both ISP and IQ params */
-    ret = ISP_SVC_ISP_SetDecimation(hIsp, &c.decimation.data);
-    if (ret == ISP_OK)
-    {
-      IQParamConfig->decimation = c.decimation.data;
-
-      /* Reconfigure stat area */
-      ret = ISP_SVC_ISP_SetStatArea(hIsp, &hIsp->statArea, &IQParamConfig->decimation);
     }
     break;
 
@@ -392,7 +422,7 @@ static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_
 
   case ISP_CMD_STATISTICAREA:
     /* Update both ISP and IQ params */
-    ret = ISP_SVC_ISP_SetStatArea(hIsp, &c.statArea.data, &IQParamConfig->decimation);
+    ret = ISP_SVC_ISP_SetStatArea(hIsp, &c.statArea.data);
     if (ret == ISP_OK)
     {
       IQParamConfig->statAreaStatic = c.statArea.data;
@@ -441,15 +471,6 @@ static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_
       {
         IQParamConfig->badPixelStatic = c.badPixelStatic.data;
       }
-    }
-    break;
-
-  case ISP_CMD_BLACKLEVELALGO:
-    /* Update only IQ params, the algo will consider this update at its next process call */
-    IQParamConfig->blackLevelAlgo.enable = c.blackLevelAlgo.data.enable;
-    if (IQParamConfig->blackLevelAlgo.enable)
-    {
-      IQParamConfig->blackLevelAlgo = c.blackLevelAlgo.data;
     }
     break;
 
@@ -515,10 +536,6 @@ static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_
     }
     break;
 
-  case ISP_CMD_WRITEMEMORY:
-    ret = ISP_SVC_IQParam_Flush(hIsp);
-    break;
-
   case ISP_CMD_USER_EXPOSURETARGET:
     /* Call the application API */
     ret = ISP_SetExposureTarget(hIsp, c.exposureTarget.exposureCompensation);
@@ -527,6 +544,16 @@ static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_
   case ISP_CMD_USER_WBREFMODE:
     /* Call the application API */
     ret = ISP_SetWBRefMode(hIsp, c.WBRefMode.automatic, c.WBRefMode.refColorTemp);
+    break;
+
+  case ISP_CMD_USER_STATISTICAREA:
+    /* Update both ISP and IQ params */
+    ret = ISP_SetStatArea(hIsp, &c.statArea.data);
+    if (ret == ISP_OK)
+    {
+      IQParamConfig->statAreaStatic = c.statArea.data;
+      hIsp->statArea = c.statArea.data;
+    }
     break;
 
   case ISP_CMD_STOPPREVIEW:
@@ -545,6 +572,16 @@ static ISP_StatusTypeDef ISP_CmdParser_SetConfig(ISP_HandleTypeDef *hIsp, uint8_
       IQParamConfig->gamma = c.gamma.data;
     }
     break;
+
+  case ISP_CMD_SENSORDELAY:
+    /* Update IQ params */
+    IQParamConfig->sensorDelay = c.sensorDelay.data;
+    break;
+
+  case ISP_CMD_METADATA_OUTPUT:
+    Meta.outputEnable = c.metadataOutput.enable;
+    break;
+
 
   default:
     ret = ISP_ERR_CMDPARSER_COMMAND;
@@ -580,13 +617,13 @@ static ISP_StatusTypeDef ISP_CmdParser_GetConfig(ISP_HandleTypeDef *hIsp, uint8_
 {
   ISP_StatusTypeDef ret = ISP_OK;
   ISP_IQParamTypeDef *IQParamConfig;
-  ISP_Cmd_TypeDef c = { 0 };
+  ISP_CMD_TypeDef c = { 0 };
   uint8_t cmd_id;
   uint32_t *pFrame = NULL;
 
   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
 
-  cmd_id = ((ISP_Cmd_TypeDef *)cmd)->base.header.id;
+  cmd_id = ((ISP_CMD_TypeDef *)cmd)->base.header.id;
   switch(cmd_id)
   {
   case ISP_CMD_STATREMOVAL:
@@ -594,7 +631,8 @@ static ISP_StatusTypeDef ISP_CmdParser_GetConfig(ISP_HandleTypeDef *hIsp, uint8_
     break;
 
   case ISP_CMD_DECIMATION:
-    c.decimation.data = IQParamConfig->decimation;
+    /* Get actual value from ISP, which may be defined at the ISP init according to the sensor resolution */
+    ret = ISP_SVC_ISP_GetDecimation(hIsp, &c.decimation.data);
     break;
 
   case ISP_CMD_DEMOSAICING:
@@ -627,10 +665,6 @@ static ISP_StatusTypeDef ISP_CmdParser_GetConfig(ISP_HandleTypeDef *hIsp, uint8_
   case ISP_CMD_BADPIXELSTATIC:
     /* Get actual value from ISP, which may be defined by a static configuration or updated by an algorithm */
     ret = ISP_SVC_ISP_GetBadPixel(hIsp, &c.badPixelStatic.data);
-    break;
-
-  case ISP_CMD_BLACKLEVELALGO:
-    c.blackLevelAlgo.data = IQParamConfig->blackLevelAlgo;
     break;
 
   case ISP_CMD_BLACKLEVELSTATIC:
@@ -669,8 +703,16 @@ static ISP_StatusTypeDef ISP_CmdParser_GetConfig(ISP_HandleTypeDef *hIsp, uint8_
     ret = ISP_SVC_Stats_GetNext(hIsp, &ISP_CmdParser_StatDownCb, NULL, &ISP_CmdParser_stats, ISP_STAT_LOC_DOWN, ISP_STAT_TYPE_ALL_TMP, 2);
     break;
 
-  case ISP_CMD_DUMPFRAME:
-    ret = ISP_SVC_Dump_GetFrame(hIsp, &pFrame, &c.dumpFrameMeta.data);
+  case ISP_CMD_DUMP_PREVIEW_FRAME:
+    ret = ISP_SVC_Dump_GetFrame(hIsp, &pFrame, ISP_DUMP_CFG_DEFAULT, &c.dumpFrameMeta.data);
+    break;
+
+  case ISP_CMD_DUMP_ISP_FRAME:
+    ret = ISP_SVC_Dump_GetFrame(hIsp, &pFrame, ISP_DUMP_CFG_FULLSIZE_RGB888, &c.dumpFrameMeta.data);
+    break;
+
+  case ISP_CMD_DUMP_RAW_FRAME:
+    ret = ISP_SVC_Dump_GetFrame(hIsp, &pFrame, ISP_DUMP_CFG_DUMP_PIPE_SENSOR, &c.dumpFrameMeta.data);
     break;
 
   case ISP_CMD_DCMIPPVERSION:
@@ -692,12 +734,35 @@ static ISP_StatusTypeDef ISP_CmdParser_GetConfig(ISP_HandleTypeDef *hIsp, uint8_
     ret = ISP_GetWBRefMode(hIsp, &c.WBRefMode.automatic, &c.WBRefMode.refColorTemp);
     break;
 
+  case ISP_CMD_USER_GETDECIMATION:
+    /* Call the application API */
+    ret = ISP_GetDecimationFactor(hIsp, &c.decimation.data);
+    break;
+
+  case ISP_CMD_USER_STATISTICAREA:
+    /* Get actual value from ISP, which may be defined by a static configuration or by the running application */
+    ret = ISP_GetStatArea(hIsp, &c.statArea.data);
+    break;
+
   case ISP_CMD_GAMMA:
     c.gamma.data = IQParamConfig->gamma;
     break;
 
   case ISP_CMD_SENSORINFO:
-    ret = ISP_SVC_Sensor_GetInfo(hIsp, &c.sensorInfo.data);
+    c.sensorInfo.data = hIsp->sensorInfo;
+    break;
+
+  case ISP_CMD_SENSORDELAY:
+    c.sensorDelay.data = IQParamConfig->sensorDelay;
+    break;
+
+  case ISP_CMD_SENSORDELAYMEASURE:
+    /* Start the sensor delay measure. Answer will be sent later at the end of the measure */
+    ISP_SVC_Misc_SensorDelayMeasureStart();
+    break;
+
+  case ISP_CMD_METADATA_OUTPUT:
+    c.metadataOutput.enable = Meta.outputEnable;
     break;
 
   default:
@@ -719,14 +784,14 @@ static ISP_StatusTypeDef ISP_CmdParser_GetConfig(ISP_HandleTypeDef *hIsp, uint8_
   /* Free the received message just before sending the answer message */
   ISP_ToolCom_PrepareNextCommand();
 
-  if (!((cmd_id == ISP_CMD_STATISTICUP || cmd_id == ISP_CMD_STATISTICDOWN) && (ret == ISP_OK)))
+  if (!((cmd_id == ISP_CMD_STATISTICUP || cmd_id == ISP_CMD_STATISTICDOWN || cmd_id == ISP_CMD_SENSORDELAYMEASURE) && (ret == ISP_OK)))
   {
-    /* Send command answer (except for statistic where the answer is sent upon callback call */
+    /* Send command answer (except for statistic and SensorDelayMeasuer where the answer is sent upon callback call */
     ISP_ToolCom_SendData((uint8_t*)&c, sizeof(c), NULL, NULL);
   }
 
   /* Send dump buffer if requested  */
-  if ((cmd_id == ISP_CMD_DUMPFRAME) && (ret == ISP_OK))
+  if (((cmd_id == ISP_CMD_DUMP_PREVIEW_FRAME) || (cmd_id == ISP_CMD_DUMP_ISP_FRAME) || (cmd_id == ISP_CMD_DUMP_RAW_FRAME)) && (ret == ISP_OK))
   {
     ISP_CmdParser_SendDumpData((uint8_t*)pFrame, c.dumpFrameMeta.data.size);
   }
@@ -791,7 +856,7 @@ static void ISP_CmdParser_SendDumpData(uint8_t* pFrame, uint32_t size)
   */
 static ISP_StatusTypeDef ISP_CmdParser_StatUpCb(ISP_AlgoTypeDef *pAlgo)
 {
-  ISP_Cmd_TypeDef cmd = { 0 };
+  ISP_CMD_TypeDef cmd = { 0 };
 
   /* Send the answer command */
   cmd.base.header.id = ISP_CMD_STATISTICUP;
@@ -811,7 +876,7 @@ static ISP_StatusTypeDef ISP_CmdParser_StatUpCb(ISP_AlgoTypeDef *pAlgo)
   */
 static ISP_StatusTypeDef ISP_CmdParser_StatDownCb(ISP_AlgoTypeDef *pAlgo)
 {
-  ISP_Cmd_TypeDef cmd = { 0 };
+  ISP_CMD_TypeDef cmd = { 0 };
 
   /* Send the answer command */
   cmd.base.header.id = ISP_CMD_STATISTICDOWN;

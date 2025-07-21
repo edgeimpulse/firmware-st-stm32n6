@@ -143,14 +143,10 @@ static const I2C_Charac_t I2C_Charac[] =
   */
 #if (USE_HAL_I2C_REGISTER_CALLBACKS == 1)
 static uint32_t IsI2c2MspCbValid = 0;
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 static uint32_t IsI2c1MspCbValid = 0;
-#endif /* STM32N6570_DK_REV */
 #endif /* (USE_HAL_I2C_REGISTER_CALLBACKS == 1) */
 static uint32_t I2c2InitCounter = 0;
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 static uint32_t I2c1InitCounter = 0;
-#endif /* STM32N6570_DK_REV */
 static I2C_Timings_t I2c_valid_timing[I2C_VALID_TIMING_NBR];
 static uint32_t      I2c_valid_timing_nbr = 0;
 #if defined(BSP_USE_CMSIS_OS)
@@ -163,9 +159,7 @@ static osSemaphoreId BspI2cSemaphore = 0;
 /** @defgroup STM32N6570_DK_BUS_Exported_Variables Exported Variables
   * @{
   */
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 I2C_HandleTypeDef hbus_i2c1;
-#endif /* STM32N6570_DK_REV */
 I2C_HandleTypeDef hbus_i2c2;
 /**
   * @}
@@ -174,12 +168,10 @@ I2C_HandleTypeDef hbus_i2c2;
 /** @defgroup STM32N6570_DK_BUS_Private_FunctionPrototypes BUS Private FunctionPrototypes
   * @{
   */
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 static void I2C1_MspInit(I2C_HandleTypeDef *phi2c);
 static void I2C1_MspDeInit(I2C_HandleTypeDef *phi2c);
 static int32_t I2C1_WriteReg(uint16_t DevAddr, uint16_t MemAddSize, uint16_t Reg, uint8_t *pData, uint16_t Length);
 static int32_t I2C1_ReadReg(uint16_t DevAddr, uint16_t MemAddSize, uint16_t Reg, uint8_t *pData, uint16_t Length);
-#endif /* STM32N6570_DK_REV */
 static void I2C2_MspInit(I2C_HandleTypeDef *phi2c);
 static void I2C2_MspDeInit(I2C_HandleTypeDef *phi2c);
 static int32_t I2C2_WriteReg(uint16_t DevAddr, uint16_t MemAddSize, uint16_t Reg, uint8_t *pData, uint16_t Length);
@@ -195,7 +187,6 @@ static void     I2C_Compute_PRESC_SCLDEL_SDADEL(uint32_t clock_src_freq, uint32_
   * @{
   */
 
-#if (STM32N6570_DK_REV > STM32N6570_DK_B01)
 /**
   * @brief  Initializes I2C1 HAL.
   * @retval BSP status
@@ -402,7 +393,7 @@ int32_t BSP_I2C1_ReadReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_
 int32_t BSP_I2C1_WriteReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
 {
   int32_t ret;
- #if defined(BSP_USE_CMSIS_OS)
+#if defined(BSP_USE_CMSIS_OS)
   /* Get semaphore to prevent multiple I2C access */
   osSemaphoreWait(BspI2cSemaphore, osWaitForever);
 #endif /* BSP_USE_CMSIS_OS */
@@ -668,7 +659,6 @@ static int32_t I2C1_ReadReg(uint16_t DevAddr, uint16_t Reg, uint16_t MemAddSize,
 
   return BSP_ERROR_BUS_FAILURE;
 }
-#endif /* STM32N6570_DK_REV */
 
 
 /**
@@ -877,7 +867,7 @@ int32_t BSP_I2C2_ReadReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_
 int32_t BSP_I2C2_WriteReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
 {
   int32_t ret;
- #if defined(BSP_USE_CMSIS_OS)
+#if defined(BSP_USE_CMSIS_OS)
   /* Get semaphore to prevent multiple I2C access */
   osSemaphoreWait(BspI2cSemaphore, osWaitForever);
 #endif /* BSP_USE_CMSIS_OS */

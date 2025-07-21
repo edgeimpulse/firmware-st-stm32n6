@@ -283,7 +283,7 @@ uint32_t              HAL_NAND_Read_Status(const NAND_HandleTypeDef *hnand);
 #define NAND_DEVICE                0x37EFF000UL
 #else
 #define NAND_DEVICE                0x27EFF000UL
-#endif
+#endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
 #define NAND_WRITE_TIMEOUT         0x01000000UL
 
 #define CMD_AREA                   (1UL<<4U)  /* A16 = CLE high */
