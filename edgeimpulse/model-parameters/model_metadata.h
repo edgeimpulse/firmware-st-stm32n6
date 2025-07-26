@@ -41,9 +41,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#ifdef __cplusplus
-#include <tuple>
-#endif
+
 #include "edge-impulse-sdk/classifier/ei_constants.h"
 
 #define EI_CLASSIFIER_NONE                       255
