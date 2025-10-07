@@ -21,11 +21,28 @@ CC_SOURCES = $(wildcard edgeimpulse/edge-impulse-sdk/tensorflow/lite/kernels/*.c
 	$(wildcard edgeimpulse/edge-impulse-sdk/tensorflow/lite/micro/memory_planner/*.cc) \
 	$(wildcard edgeimpulse/edge-impulse-sdk/tensorflow/lite/core/api/*.cc) \
 
+C_SOURCES += $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/TransformFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/CommonTables/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/BasicMathFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/ComplexMathFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/FastMathFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/SupportFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/MatrixFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/DSP/Source/StatisticsFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/ActivationFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/BasicMathFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/ConcatenationFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/ConvolutionFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/FullyConnectedFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/NNSupportFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/PoolingFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/ReshapeFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/SoftmaxFunctions/*.c) \
+			 $(wildcard edgeimpulse/edge-impulse-sdk/CMSIS/NN/Source/SVDFunctions/*.c)
+
 CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/classifier
 CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/classifier/inference_engines
 CXX_INCLUDES += -Iedgeimpulse
-CXX_INCLUDES += -ISTM32Cube_FW_N6/Drivers/CMSIS/Include
-CXX_INCLUDES += -ISTM32Cube_FW_N6/Drivers/CMSIS/DSP/Include
 CXX_INCLUDES += -IInc
 CXX_INCLUDES += -ILib
 CXX_INCLUDES += -ILib/AI_Runtime/Inc
@@ -38,7 +55,16 @@ CXX_INCLUDES += -ISTM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc
 CXX_INCLUDES += -ISTM32Cube_FW_N6/Drivers/CMSIS/Device/ST/STM32N6xx/Include
 CXX_INCLUDES += -ISTM32Cube_FW_N6/Drivers/BSP/STM32N6570-DK
 CXX_INCLUDES += -ISTM32Cube_FW_N6/Drivers/BSP/Components/Common
-# CXX_INCLUDES += -ISTM32Cube_FW_N6/Utilities/lcd
+CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk
+C_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS/Core/Include
+C_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS/DSP/Include
+C_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS
+C_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS/NN/Include
+C_INCLUDES += -Iedgeimpulse
+CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS/Core/Include
+CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS/DSP/Include
+CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS
+CXX_INCLUDES += -Iedgeimpulse/edge-impulse-sdk/CMSIS/NN/Include
 
 # for ei_classifier_porting.cpp
 C_DEFS += -DEI_PORTING_STM32_CUBEAI

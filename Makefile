@@ -136,12 +136,14 @@ C_DEFS += -DAPP_HAS_PARALLEL_NETWORKS=0
 C_INCLUDES += -IInc
 CXX_VERSION_FLAGS = -std=gnu++11
 
+CXX_COMPILER_FLAGS = -fpermissive -fno-rtti -fno-unwind-tables -fdata-sections
+
 # For now using the C flags for C++ as well
-CXXFLAGS = $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(OPT) $(CXX_VERSION_FLAGS) -fpermissive
+CXXFLAGS = $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(OPT) $(CXX_VERSION_FLAGS) $(CXX_COMPILER_FLAGS)
 
-
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fstack-usage -fdata-sections -ffunction-sections #-fcyclomatic-complexity
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fstack-usage -fdata-sections -ffunction-sections #-fcyclomatic-complexity
+C_COMPILER_FLAGS =  -Wall -fstack-usage -fdata-sections -ffunction-sections -flax-vector-conversions #-fcyclomatic-complexity
+ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) $(C_COMPILER_FLAGS)
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) $(C_COMPILER_FLAGS)
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 

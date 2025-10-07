@@ -35,7 +35,7 @@ CACHEAXI_HandleTypeDef hcacheaxi;
 UART_HandleTypeDef huart1;
 
 static TX_THREAD main_thread;
-static uint8_t main_tread_stack[4096];
+static uint8_t main_thread_stack[4096];
 
 static void SystemClock_Config(void);
 static void NPURam_enable();
@@ -81,8 +81,8 @@ void tx_application_define(void *first_unused_memory)
   const ULONG time_slice = 10;
   int ret;
 
-  ret = tx_thread_create(&main_thread, "main", main_thread_fct, 0, main_tread_stack,
-                         sizeof(main_tread_stack), priority, priority, time_slice, TX_AUTO_START);
+  ret = tx_thread_create(&main_thread, "main", main_thread_fct, 0, main_thread_stack,
+                         sizeof(main_thread_stack), priority, priority, time_slice, TX_AUTO_START);
   assert(ret == 0);
 }
 

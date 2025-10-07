@@ -5,7 +5,7 @@ ENTRY(Reset_Handler)
 _estack = ORIGIN(AXISRAM1_2_S) + LENGTH(AXISRAM1_2_S); /* end of "AXISRAM1_2_S" Ram type memory */
 _sstack = _estack - _Min_Stack_Size;
 
-_Min_Heap_Size = 0x8000; /* required amount of heap  */
+_Min_Heap_Size = 0x10000; /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Memories definition */

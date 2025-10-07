@@ -43,6 +43,7 @@ static uint8_t *global_camera_buffer;
 
 extern "C" void CAM_ei_PipeInitNn(int width, int height);
 extern "C" uint8_t *CAM_ei_capture_frame(void);
+extern void ei_print_buffer(uint8_t *data, uint16_t length);
 
 ei_device_snapshot_resolutions_t EiSTCamera::resolutions[] = {
         {96, 96},
@@ -214,14 +215,8 @@ bool ei_camera_read_encode_send_sample_buffer(const char *input, size_t length)
         }
 
         int to_send = base64_encode_buffer((char *)&buffer[address], bytes_to_read, (char *)buffer_out, output_size_check);
-#if (USE_UART == 1)
-        uart_print_to_console(buffer_out, to_send);
-#else
-        // comms_send(buffer_out, to_send, 1000);
-        for(int i = 0; i < to_send; i++) {
-            ei_putchar(buffer_out[i]);
-        }
-#endif
+
+        ei_print_buffer(buffer_out, to_send);
 
         address += bytes_to_read;
         length -= bytes_to_read;

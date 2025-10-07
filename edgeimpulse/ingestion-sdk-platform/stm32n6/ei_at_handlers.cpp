@@ -63,7 +63,6 @@ static bool at_run_nn_normal_cont(void);
 static bool at_run_impulse_debug(const char **argv, const int argc);
 static bool at_run_nn_normal(void);
 static bool at_run_nn_normal_cont(void);
-static bool at_run_impulse_debug(const char **argv, const int argc);
 
 static bool at_get_mgmt_settings(void);
 static bool at_set_mgmt_settings(const char **argv, const int argc);

@@ -29,11 +29,10 @@ C_SOURCES_FW += $(FW_REL_DIR)/Drivers/BSP/Components/aps256xx/aps256xx.c
 C_SOURCES_FW += $(FW_REL_DIR)/Drivers/BSP/Components/mx66uw1g45g/mx66uw1g45g.c
 C_SOURCES_FW += $(FW_REL_DIR)/Utilities/lcd/stm32_lcd.c
 
+
 C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/STM32N6xx_HAL_Driver/Inc
 C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/STM32N6xx_HAL_Driver/Inc/Legacy
 C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/CMSIS/Device/ST/STM32N6xx/Include
-C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/CMSIS/Include
-C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/CMSIS/DSP/Include
 C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/BSP/Components/Common
 C_INCLUDES_FW += -I$(FW_REL_DIR)/Drivers/BSP/STM32N6570-DK
 C_INCLUDES_FW += -I$(FW_REL_DIR)/Utilities/lcd

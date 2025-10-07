@@ -42,7 +42,6 @@
 
 extern UART_HandleTypeDef huart1;
 
-
 char ei_getchar(void)
 {
     HAL_StatusTypeDef status;
@@ -64,12 +63,22 @@ void ei_printf(const char *format, ...) {
     va_end(myargs);
 
     if (length > 0){
-        //comms_send((uint8_t*)buffer, length, 100);
-        HAL_UART_Transmit(&huart1, (uint8_t*)buffer, length, 10);
+        HAL_UART_Transmit(&huart1, (uint8_t*)buffer, (uint16_t)length, ~0);
     }
     
 }
 
+/**
+ * @brief Print a buffer of data to the UART
+ */
+void ei_print_buffer(uint8_t *data, uint16_t length)
+{
+    HAL_UART_Transmit(&huart1, (uint8_t*)data, length, ~0);
+}
+
+/**
+ * @brief Switch the UART baudrate
+ */
 void ei_uart_baudrate_switch(int32_t baudrate)
 {
     huart1.Init.BaudRate = baudrate;
