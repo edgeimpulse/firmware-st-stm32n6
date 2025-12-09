@@ -31,6 +31,13 @@ REV_BOARD = C01
 MODEL_DIR = Model
 BINARY_DIR = Binary
 
+# Value can be CPU or NPU
+BUILD_FOR ?= NPU
+
+define is_cpu
+$(if $(filter $(BUILD_FOR),CPU),1,0)
+endef
+
 ######################################
 # building variables
 ######################################
@@ -51,10 +58,13 @@ C_SOURCES += Src/app.c
 C_SOURCES += Src/app_fuseprogramming.c
 C_SOURCES += Src/stm32_lcd_ex.c
 C_SOURCES += Src/stm32n6xx_it.c
-C_SOURCES += Model/network.c
 C_SOURCES += Src/app_cam.c
 C_SOURCES += Src/threadx_hal.c
 C_SOURCES += Src/sysmem.c
+
+ifeq ($(call is_cpu),0)
+C_SOURCES += Model/network.c
+endif
 
 # ASM sources
 ASM_SOURCES =

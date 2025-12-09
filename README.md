@@ -114,6 +114,11 @@ Before running commands below be sure to have commands in your PATH.
 make -j8
 ```
 
+To build a model that runs on the CPU use:
+```bash
+make BUILD_FOR=CPU -j8
+```
+
 2. Open a gdb server connected to the STM32 target:
 
 ```bash
