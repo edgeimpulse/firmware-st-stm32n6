@@ -21,10 +21,12 @@
 
 /*** Platform choice ***/
 #include "ll_aton_config.h"
+#include "ll_aton_platform.h"
+#include "ll_aton_util.h"
 
 /*** Platform dependent definitions & includes ***/
 
-/* Bare metal Cortex-M NCSIM simulator OSAL*/
+/* Bare metal Cortex-M based platforms */
 #if (LL_ATON_OSAL == LL_ATON_OSAL_BARE_METAL)
 
 /* Macros for (de-)initialization of OSAL layer */
@@ -34,6 +36,10 @@
 /* Wait for / signal event from ATON runtime */
 #define LL_ATON_OSAL_WFE() __WFE()
 #define LL_ATON_OSAL_SIGNAL_EVENT()
+
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS != 0)
+#error "`LL_ATON_OSAL_BARE_METAL` does NOT support parallel networks!"
+#endif // APP_HAS_PARALLEL_NETWORKS
 
 #elif (LL_ATON_OSAL == LL_ATON_OSAL_LINUX_UIO)
 
@@ -52,18 +58,9 @@
 #define LL_ATON_OSAL_ENABLE_IRQ(irq_aton_line_nr)           linux_enable_irq(irq_aton_line_nr, true)
 #define LL_ATON_OSAL_DISABLE_IRQ(irq_aton_line_nr)          linux_enable_irq(irq_aton_line_nr, false)
 
-/* Enter/exit a critical section for the ATON runtime thread/task */
-#define LL_ATON_OSAL_ENTER_CS()                             /* NVIC_DisableIRQ(CDNN0_IRQn) */
-#define LL_ATON_OSAL_EXIT_CS()                              /* NVIC_EnableIRQ(CDNN0_IRQn) */
-
-/* Data synchronization barrier */
-#ifdef __ARM_ARCH
-#include <cmsis_compiler.h>
-#define LL_ATON_OSAL_DSB() __DSB()
-#else
-#include <immintrin.h>
-#define LL_ATON_OSAL_DSB() _mm_lfence()
-#endif
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS != 0)
+#error "`LL_ATON_OSAL_LINUX_UIO` does NOT support parallel networks!"
+#endif // APP_HAS_PARALLEL_NETWORKS
 
 #elif (LL_ATON_OSAL == LL_ATON_OSAL_LINUX_BW)
 #include "ll_aton_osal_linux_bw.h"
@@ -83,8 +80,9 @@
 #define LL_ATON_OSAL_ENTER_CS() bw_enter_cs()
 #define LL_ATON_OSAL_EXIT_CS()  bw_exit_cs()
 
-#include <immintrin.h>
-#define LL_ATON_OSAL_DSB() _mm_lfence()
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS != 0)
+#error "`LL_ATON_OSAL_LINUX_BW` does NOT support parallel networks!"
+#endif // APP_HAS_PARALLEL_NETWORKS
 
 #elif (LL_ATON_OSAL == LL_ATON_OSAL_THREADX)
 #include "ll_aton_osal_threadx.h"
@@ -97,7 +95,7 @@
 #define LL_ATON_OSAL_SIGNAL_EVENT() aton_osal_threadx_signal_event()
 
 /* Locks */
-#if APP_HAS_PARALLEL_NETWORKS
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS == 1)
 #ifdef LL_ATON_OSAL_TX_OLD
 #define LL_ATON_OSAL_LOCK_ATON()   aton_osal_threadx_pb_lock()
 #define LL_ATON_OSAL_UNLOCK_ATON() aton_osal_threadx_pb_unlock()
@@ -121,7 +119,7 @@
 #define LL_ATON_OSAL_SIGNAL_EVENT() aton_osal_freertos_signal_event()
 
 /* Locks */
-#if APP_HAS_PARALLEL_NETWORKS
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS == 1)
 #define LL_ATON_OSAL_LOCK_ATON()   aton_osal_freertos_dao_lock()
 #define LL_ATON_OSAL_UNLOCK_ATON() aton_osal_freertos_dao_unlock()
 #endif // APP_HAS_PARALLEL_NETWORKS
@@ -149,7 +147,7 @@
 #define LL_ATON_OSAL_SIGNAL_EVENT()                         aton_osal_zephyr_signal_event()
 
 /* Locks */
-#if APP_HAS_PARALLEL_NETWORKS
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS == 1)
 #define LL_ATON_OSAL_LOCK_ATON()   aton_osal_zephyr_dao_lock()
 #define LL_ATON_OSAL_UNLOCK_ATON() aton_osal_zephyr_dao_unlock()
 #endif // APP_HAS_PARALLEL_NETWORKS
@@ -157,14 +155,37 @@
 #define LL_ATON_OSAL_LOCK_NPU_CACHE()   aton_osal_zephyr_lock()
 #define LL_ATON_OSAL_UNLOCK_NPU_CACHE() aton_osal_zephyr_unlock()
 
+#elif (LL_ATON_OSAL == LL_ATON_OSAL_SR6X_SDK)
+#include "npu.h"
+
+/* Macros for (de-)initialization of OSAL layer */
+#define LL_ATON_OSAL_INIT()
+#define LL_ATON_OSAL_DEINIT()
+
+/* Wait for / signal event from ATON runtime */
+#define LL_ATON_OSAL_WFE() __WFE()
+#define LL_ATON_OSAL_SIGNAL_EVENT()
+
+#define LL_ATON_OSAL_INSTALL_IRQ(irq_aton_line_nr, handler) npu_set_handler(NPU_0_DEVICE_ID, irq_aton_line_nr, handler)
+#define LL_ATON_OSAL_REMOVE_IRQ(irq_aton_line_nr)           npu_set_handler(NPU_0_DEVICE_ID, irq_aton_line_nr, NULL)
+#define LL_ATON_OSAL_ENABLE_IRQ(irq_aton_line_nr)           npu_irq_enable(irq_aton_line_nr)
+#define LL_ATON_OSAL_DISABLE_IRQ(irq_aton_line_nr)          npu_irq_disable(irq_aton_line_nr)
+#define LL_ATON_OSAL_SET_PRIORITY(irq_aton_line_nr, prio)   npu_irq_init(irq_aton_line_nr, prio, IRQ_EDGE_TRIGGERED)
+#define LL_ATON_OSAL_ENTER_CS()                             LL_ATON_OSAL_DISABLE_IRQ(ATON_STD_IRQ_LINE)
+#define LL_ATON_OSAL_EXIT_CS()                              LL_ATON_OSAL_ENABLE_IRQ(ATON_STD_IRQ_LINE)
+
+#if defined(APP_HAS_PARALLEL_NETWORKS) && (APP_HAS_PARALLEL_NETWORKS != 0)
+#error "`LL_ATON_OSAL_SR6X_SDK` does NOT support parallel networks!"
+#endif // APP_HAS_PARALLEL_NETWORKS
+
 #elif (LL_ATON_OSAL == LL_ATON_OSAL_USER_IMPL)
-#include "ll_aton_osal_user_impl.h" /* file to be provided together with an implemetation of the custom OSAL by the user */
+#include "ll_aton_osal_user_impl.h" /* file to be provided together with an implementation for the custom OSAL by the user */
 
 #else
 #error No target OSAL is specified. Please define macro `LL_ATON_OSAL`
 #endif
 
-/*** Default implementations ***/
+/*** Default implementations (for Cortex-M based platforms) ***/
 
 /* Handling of ATON IRQ */
 #ifndef LL_ATON_OSAL_INSTALL_IRQ
@@ -194,7 +215,7 @@
       NVIC_EnableIRQ(CDNN3_IRQn);                                                                                      \
       break;                                                                                                           \
     default:                                                                                                           \
-      assert(0);                                                                                                       \
+      LL_ATON_ASSERT(0);                                                                                               \
       break;                                                                                                           \
     }                                                                                                                  \
   } while (0)
@@ -219,7 +240,7 @@
       NVIC_DisableIRQ(CDNN3_IRQn);                                                                                     \
       break;                                                                                                           \
     default:                                                                                                           \
-      assert(0);                                                                                                       \
+      LL_ATON_ASSERT(0);                                                                                               \
       break;                                                                                                           \
     }                                                                                                                  \
   } while (0)
@@ -244,7 +265,7 @@
       NVIC_SetPriority(CDNN3_IRQn, prio);                                                                              \
       break;                                                                                                           \
     default:                                                                                                           \
-      assert(0);                                                                                                       \
+      LL_ATON_ASSERT(0);                                                                                               \
       break;                                                                                                           \
     }                                                                                                                  \
   } while (0)
@@ -261,11 +282,6 @@
 #define LL_ATON_OSAL_EXIT_CS() NVIC_EnableIRQ(ATON_STD_IRQn)
 #endif // LL_ATON_OSAL_EXIT_CS
 
-/* Data synchronization barrier */
-#ifndef LL_ATON_OSAL_DSB
-#define LL_ATON_OSAL_DSB() __DSB()
-#endif // LL_ATON_OSAL_DSB
-
 /** Locking mechanisms for thread-safe ATON runtime **/
 
 /* ATON IP */
@@ -280,7 +296,7 @@
 /* NPU Cache Lock */
 // NOTE: Needs to be implemented only if NPU cache maintenance operations cannot be performed in parallel
 // NOTE: This lock may be taken while the ATON IP lock (aka `LL_ATON_OSAL_LOCK_ATON`) is held.
-//       Therfore, either use two independent locking mechanisms for them or one re-entrant mechanism
+//       Therefore, either use two independent locking mechanisms for them or one re-entrant mechanism
 #ifndef LL_ATON_OSAL_LOCK_NPU_CACHE
 #define LL_ATON_OSAL_LOCK_NPU_CACHE()
 #define LL_HAS_NO_ATON_OSAL_LOCK_NPU_CACHE
@@ -293,7 +309,7 @@
 /* MCU Cache Lock */
 // NOTE: Needs to be implemented only if MCU cache maintenance operations cannot be performed in parallel
 // NOTE: This lock may be taken while the ATON IP lock (aka `LL_ATON_OSAL_LOCK_ATON`) is held.
-//       Therfore, either use two independent locking mechanisms for them or one re-entrant mechanism
+//       Therefore, either use two independent locking mechanisms for them or one re-entrant mechanism
 #ifndef LL_ATON_OSAL_LOCK_MCU_CACHE
 #define LL_ATON_OSAL_LOCK_MCU_CACHE()
 #define LL_HAS_NO_ATON_OSAL_LOCK_MCU_CACHE

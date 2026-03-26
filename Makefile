@@ -64,6 +64,7 @@ C_SOURCES += Src/sysmem.c
 
 ifeq ($(call is_cpu),0)
 C_SOURCES += Model/network.c
+C_SOURCES += Model/stai_network.c
 endif
 
 # ASM sources
